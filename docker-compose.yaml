@@ -58,7 +58,7 @@ services:
             - 8055:8055
         volumes:
             # - ./uploads:/directus/uploads
-            - ./extensions:/directus/extensions
+            - .:/directus/extensions/directus-extension-dashboard-iframe
             # - ./templates:/directus/templates
         depends_on:
             - database
