@@ -53,7 +53,7 @@ services:
           PUBLIC_URL: "http://localhost:8055"
           CACHE_ENABLED: "false"  # Cache desabilitado
           ASSETS_CONTENT_SECURITY_POLICY_DIRECTIVES__MEDIA_SRC: array:'self',http://localhost:3000/   
-          CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "localhost:3000, devix.co"       
+          CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "*" # usar isso apenas em desenvolvimento.   
         ports:
             - 8055:8055
         volumes:
