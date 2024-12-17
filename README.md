@@ -7,7 +7,7 @@ Este projeto é uma extensão para o Directus que cria extensões voltadas para 
 - Baixe este projeto ou copie o arquivo `docker-compose.yml` e inicie uma instalação do zero;
 - Com o docker instalado na máquina ([saiba mais](https://docs.docker.com/get-docker/)), rode o comando:
 ```
- docker-compose up
+ docker compose up
 ```
 
 ## 💎 Criando extensões
