@@ -1,22 +1,15 @@
 <template>
   <private-view :title="page_title">
+    <template #navigation>
+      <NavMenu />
+    </template>
+
     <div class="container">
       <div v-if="loading">
         <p>Carregando...</p>
       </div>
 
       <div v-else>
-        <nav>
-          <ul>
-            <li v-for="item in items" :key="item.id">
-              <!-- Cada item redireciona para uma rota baseada no ID -->
-              <router-link :to="`/dashboard/${item.id}`">
-                {{ item.title }}
-              </router-link>
-            </li>
-          </ul>
-        </nav>
-
         <!-- Renderiza o conteúdo da rota ativa -->
         <router-view />
       </div>
@@ -26,34 +19,15 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { useApi } from "@directus/extensions-sdk";
+import NavMenu from "./components/NavMenu.vue";
 
 export default defineComponent({
   name: "DashboardList",
+  components: { NavMenu },
   setup() {
     const page_title = "Dashboard";
-    const items = ref([]);
-    const loading = ref(true);
-    const api = useApi();
-
-    const fetchItems = async () => {
-      try {
-        const response = await api.get("/items/dashboard");
-        items.value = response.data.data;
-      } catch (error) {
-        console.error("Erro ao buscar dados da coleção:", error);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    onMounted(() => {
-      fetchItems();
-    });
 
     return {
-      items,
-      loading,
       page_title,
     };
   },

@@ -1,24 +1,35 @@
 <template>
   <private-view :title="item.title">
-    <template v-if="breadcrumb.length > 0" #headline>
-      <v-breadcrumb :items="breadcrumb" />
+    <template #navigation>
+      <NavMenu />
     </template>
 
     <div class="main">
-      <div class="container"></div>
-      <div class="iframe-area">
-        <iframe :src="item.url" frameborder="0"></iframe>
+      <div v-if="loading">
+        <p>Carregando...</p>
+      </div>
+
+      <div v-else-if="item">
+        <div class="iframe-area">
+          <iframe :src="item.url" frameborder="0"></iframe>
+        </div>
+      </div>
+
+      <div v-else>
+        <p>Erro ao carregar os dados. Tente novamente mais tarde.</p>
       </div>
     </div>
   </private-view>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, watch, onMounted } from "vue";
 import { useApi } from "@directus/extensions-sdk";
+import NavMenu from "./NavMenu.vue";
 
 export default defineComponent({
   name: "ItemDetail",
+  components: { NavMenu },
   props: {
     id: {
       type: String,
@@ -31,9 +42,10 @@ export default defineComponent({
     const loading = ref(true);
     const api = useApi();
 
-    const fetchItem = async () => {
+    const fetchItem = async (id: string) => {
+      loading.value = true; // Reinicia o estado de carregamento
       try {
-        const response = await api.get(`/items/dashboard/${props.id}`);
+        const response = await api.get(`/items/dashboard/${id}`);
         item.value = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar o item:", error);
@@ -42,9 +54,18 @@ export default defineComponent({
       }
     };
 
+    // Busca inicial ao montar o componente
     onMounted(() => {
-      fetchItem();
+      fetchItem(props.id);
     });
+
+    // Observa mudanças no parâmetro `id`
+    watch(
+      () => props.id,
+      (newId) => {
+        fetchItem(newId); // Atualiza o item ao mudar a rota
+      }
+    );
 
     return {
       item,
