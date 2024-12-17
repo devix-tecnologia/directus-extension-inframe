@@ -1,6 +1,6 @@
 {
   "name": "directus-extension-modulo-iframe",
-  "description": "Please enter a description for your extension",
+  "description": "Extensão para Dashboard",
   "icon": "extension",
   "version": "1.0.0",
   "keywords": [
