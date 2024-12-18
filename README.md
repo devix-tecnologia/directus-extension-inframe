@@ -12,19 +12,14 @@ Este projeto é uma extensão do tipo Module para o Directus voltada para visual
 > [!IMPORTANT]
 > _O docker-compose usado neste projeto faz com que o Directus permita iframe de qualquer domínio através do código "CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "*". Em produção você deve liberar apenas domínios confiáveis."_
 
-## 💎 Criando extensões
 
-- Em um novo terminal utilize o comando:
+## 💎 Usando a extensão
 
-```
-npx create-directus-extension@latest
-```
+- Ative o novo módulo na página de configurações do Directus;
+- Crie uma nova Coleção com nome de `inframe` e adicione os seguintes campos: ` "id", "status", "icon", "url", "thumbnail", "translations.languages_code", "translations.title"`;
 
-- Um utilitário para criação de extensões será aberto para selecionar que tipo de extensão criar, o nome da extensão, a linguagem de programação que será usada etc.
-- Após criação no próprio terminal aparecerão os comandos básicos para rodar sua extensão.
+- [Veja mais sobre traduções aqui](https://docs.directus.io/guides/headless-cms/content-translations.html)
 
-> [!IMPORTANT]
-> _Cada vez que criar uma nova extensão ou atualizar uma já existente será necessário reiniciar o Directus_
 
 ## 📌 Links importantes
 
