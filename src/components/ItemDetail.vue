@@ -14,7 +14,11 @@
 
       <div v-else-if="item">
         <div class="iframe-area">
-          <iframe :src="item.url" frameborder="0"></iframe>
+          <iframe
+            :src="item.url"
+            frameborder="0"
+            sandbox="allow-scripts allow-same-origin"
+          ></iframe>
         </div>
       </div>
 
