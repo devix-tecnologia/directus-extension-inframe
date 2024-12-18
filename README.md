@@ -1,6 +1,6 @@
-# Directus - Extensão iframe
+# Directus - Extensão Module inFrame
 
-Este projeto é uma extensão para o Directus que cria extensões voltadas para visualização de conteúdo em iframes.
+Este projeto é uma extensão do tipo Module para o Directus voltada para visualização de conteúdo em iframes.
 
 ##  🚀  Levantando um Directus a partir de docker-compose
 
@@ -9,10 +9,12 @@ Este projeto é uma extensão para o Directus que cria extensões voltadas para 
 ```
  docker compose up
 ```
+> [!IMPORTANT]
+> _O docker-compose usado neste projeto faz com que o Directus permita iframe de qualquer domínio através do código "CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "*". Em produção você deve liberar apenas domínios confiáveis."_
 
 ## 💎 Criando extensões
 
-- Em um novo terminal, vá até a pasta `/extensions` (ou, caso tenha configurado o docker-compose de outra forma, até a pasta que foi mapeada para tal) e utilize o comando:
+- Em um novo terminal utilize o comando:
 
 ```
 npx create-directus-extension@latest
@@ -28,5 +30,6 @@ npx create-directus-extension@latest
 
 - [Quickstart Directus](https://docs.directus.io/getting-started/quickstart.html) (na aba Docker Installation)
 - [Como Criar uma extensão](https://docs.directus.io/extensions/creating-extensions.html) 
+- [Criando um Module personalizado](https://docs.directus.io/guides/extensions/modules-build-landing-page.html)
 - [Acessar serviços do Directus](https://docs.directus.io/extensions/services/introduction.html)
-- [Acessar itens gravados nas coleções](https://docs.directus.io/extensions/services/accessing-items.html) (Por exemplo: consultar, inserir, excluir os clientes)
+- [Acessar itens gravados nas coleções](https://docs.directus.io/extensions/services/accessing-items.html) 

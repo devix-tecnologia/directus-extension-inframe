@@ -1,12 +1,10 @@
 import { defineModule } from "@directus/extensions-sdk";
-import Home from "./Home.vue";
-import Contact from "./Contact.vue";
 import List from "./List.vue";
 import ItemDetail from "./components/ItemDetail.vue";
 
 export default defineModule({
-  id: "dashboard",
-  name: "Dashboard",
+  id: "inframe",
+  name: "inFrame",
   icon: "rocket_launch",
   routes: [
     {
@@ -19,19 +17,13 @@ export default defineModule({
     //   path: ":page",
     //   props: true,
     //   component: Home,
+    // // },
+    // {
+    //   name: "list",
+    //   path: "list",
+    //   props: true,
+    //   component: List,
     // },
-    {
-      name: "contact",
-      path: "contact",
-      props: true,
-      component: Contact,
-    },
-    {
-      name: "list",
-      path: "list",
-      props: true,
-      component: List,
-    },
     {
       path: ":id", // Rota dinâmica para cada item
       component: ItemDetail,

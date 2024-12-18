@@ -1,5 +1,5 @@
 <template>
-  <private-view :title="item.title">
+  <private-view v-if="item" :title="item.title">
     <template v-if="breadcrumb.length > 0" #headline>
       <v-breadcrumb :items="breadcrumb" />
     </template>
@@ -40,7 +40,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const breadcrumb = [{ name: "Home", to: `/dashboard` }];
+    const breadcrumb = [{ name: "Home", to: `/inframe` }];
     const item = ref(null);
     const loading = ref(true);
     const api = useApi();
@@ -48,7 +48,7 @@ export default defineComponent({
     const fetchItem = async (id: string) => {
       loading.value = true; // Reinicia o estado de carregamento
       try {
-        const response = await api.get(`/items/dashboard/${id}`);
+        const response = await api.get(`/items/inframe/${id}`);
         item.value = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar o item:", error);
@@ -80,7 +80,21 @@ export default defineComponent({
 </script>
 
 <style scoped>
-@import "./style.css";
+.container {
+  margin: 20px 50px;
+}
+
+h2 {
+  color: var(--theme--foreground-accent);
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--theme--foreground-accent);
+}
+
 .main {
   position: relative;
   width: 100%;

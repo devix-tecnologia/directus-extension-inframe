@@ -13,7 +13,7 @@
         <!-- Exibe os cards com os itens -->
         <div class="card-container">
           <div v-for="item in items" :key="item.id" class="card">
-            <router-link :to="`/dashboard/${item.id}`" class="card-link">
+            <router-link :to="`/inframe/${item.id}`" class="card-link">
               <div class="card-header">
                 <h3>{{ item.title }}</h3>
               </div>
@@ -37,17 +37,17 @@ import NavMenu from "./components/NavMenu.vue";
 import { useApi } from "@directus/extensions-sdk";
 
 export default defineComponent({
-  name: "DashboardList",
+  name: "inframeList",
   components: { NavMenu },
   setup() {
-    const page_title = "Dashboard";
+    const page_title = "inFrame";
     const items = ref([]);
     const loading = ref(true);
     const api = useApi();
 
     const fetchItems = async () => {
       try {
-        const response = await api.get("/items/dashboard");
+        const response = await api.get("/items/inframe");
         items.value = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar dados da coleção:", error);

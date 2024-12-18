@@ -4,7 +4,7 @@
       <li v-for="item in items" :key="item.id" class="menu-item">
         <!-- Ícones de Material Design -->
         <router-link
-          :to="`/dashboard/${item.id}`"
+          :to="`/inframe/${item.id}`"
           class="menu-link"
           active-class="active-link"
         >
@@ -27,7 +27,7 @@ export default defineComponent({
 
     const fetchItems = async () => {
       try {
-        const response = await api.get("/items/dashboard");
+        const response = await api.get("/items/inframe");
         items.value = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar dados da coleção:", error);
