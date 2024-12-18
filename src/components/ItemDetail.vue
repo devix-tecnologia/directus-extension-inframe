@@ -1,5 +1,5 @@
 <template>
-  <private-view v-if="item" :title="item.title">
+  <private-view v-if="item" :title="getTitle(item.translations)">
     <template v-if="breadcrumb.length > 0" #headline>
       <v-breadcrumb :items="breadcrumb" />
     </template>
@@ -27,8 +27,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch, onMounted } from "vue";
-import { useApi } from "@directus/extensions-sdk";
 import NavMenu from "./NavMenu.vue";
+import { useFetchItem } from "../utils/useFetchItems";
 
 export default defineComponent({
   name: "ItemDetail",
@@ -41,21 +41,7 @@ export default defineComponent({
   },
   setup(props) {
     const breadcrumb = [{ name: "Home", to: `/inframe` }];
-    const item = ref(null);
-    const loading = ref(true);
-    const api = useApi();
-
-    const fetchItem = async (id: string) => {
-      loading.value = true; // Reinicia o estado de carregamento
-      try {
-        const response = await api.get(`/items/inframe/${id}`);
-        item.value = response.data.data;
-      } catch (error) {
-        console.error("Erro ao buscar o item:", error);
-      } finally {
-        loading.value = false;
-      }
-    };
+    const { item, loading, fetchItem, getTitle } = useFetchItem();
 
     // Busca inicial ao montar o componente
     onMounted(() => {
@@ -74,6 +60,7 @@ export default defineComponent({
       item,
       loading,
       breadcrumb,
+      getTitle,
     };
   },
 });

@@ -5,56 +5,34 @@
     </template>
 
     <div class="container">
-      <div v-if="loading">
-        <p>Carregando...</p>
-      </div>
-
-      <div v-else>
-        <!-- Exibe os cards com os itens -->
-        <div class="card-container">
-          <div v-for="item in items" :key="item.id" class="card">
-            <router-link :to="`/inframe/${item.id}`" class="card-link">
-              <div class="card-header">
-                <h3>{{ item.title }}</h3>
-              </div>
-              <div class="card-body">
-                <p>{{ item.description }}</p>
-                <!-- Exemplo de descrição do item -->
-              </div>
-            </router-link>
-          </div>
+      <!-- Exibe os cards com os itens -->
+      <div class="card-container">
+        <div v-for="item in items" :key="item.id" class="card">
+          <router-link :to="`/inframe/${item.id}`" class="card-link">
+            <div class="card-header">
+              <h3>{{ getTitle(item.translations) }}</h3>
+              <!-- Exibindo a thumbnail se disponível -->
+            </div>
+          </router-link>
         </div>
-        <!-- Renderiza o conteúdo da rota ativa -->
-        <router-view />
       </div>
+      <!-- Renderiza o conteúdo da rota ativa -->
+      <router-view />
     </div>
   </private-view>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, onMounted } from "vue";
 import NavMenu from "./components/NavMenu.vue";
-import { useApi } from "@directus/extensions-sdk";
+import { useFetchItems } from "./utils/useFetchItems";
 
 export default defineComponent({
   name: "inframeList",
   components: { NavMenu },
   setup() {
     const page_title = "inFrame";
-    const items = ref([]);
-    const loading = ref(true);
-    const api = useApi();
-
-    const fetchItems = async () => {
-      try {
-        const response = await api.get("/items/inframe");
-        items.value = response.data.data;
-      } catch (error) {
-        console.error("Erro ao buscar dados da coleção:", error);
-      } finally {
-        loading.value = false;
-      }
-    };
+    const { items, fetchItems, getTitle } = useFetchItems();
 
     onMounted(() => {
       fetchItems();
@@ -62,8 +40,8 @@ export default defineComponent({
 
     return {
       items,
-      loading,
       page_title,
+      getTitle,
     };
   },
 });
@@ -81,13 +59,19 @@ export default defineComponent({
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  width: 100%;
 }
 
 .card {
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 250px;
+  flex: 1 1 25%;
+  height: 150px;
+  display: flex; /* Torna o container um flexbox */
+  justify-content: center; /* Alinha o conteúdo horizontalmente */
+  align-items: center; /* Alinha o conteúdo verticalmente */
+  text-align: center;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -119,5 +103,11 @@ export default defineComponent({
 
 .card-body p {
   margin: 0;
+}
+
+.thumbnail {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
 }
 </style>

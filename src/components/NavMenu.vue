@@ -8,7 +8,8 @@
           class="menu-link"
           active-class="active-link"
         >
-          <span>{{ item.title }}</span>
+          <v-icon class="menu-icon" :name="item.icon" />
+          <span class="menu-link-text">{{ getTitle(item.translations) }}</span>
         </router-link>
       </li>
     </ul>
@@ -17,29 +18,20 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { useApi } from "@directus/extensions-sdk";
+import { useFetchItems } from "../utils/useFetchItems";
 
 export default defineComponent({
   name: "NavMenu",
   setup() {
-    const items = ref([]);
-    const api = useApi();
-
-    const fetchItems = async () => {
-      try {
-        const response = await api.get("/items/inframe");
-        items.value = response.data.data;
-      } catch (error) {
-        console.error("Erro ao buscar dados da coleção:", error);
-      }
-    };
+    const { items, fetchItems, getTitle } = useFetchItems(); // Usando a função para obter os itens
 
     onMounted(() => {
-      fetchItems();
+      fetchItems(); // Chama a função que busca os itens
     });
 
     return {
       items,
+      getTitle,
     };
   },
 });
@@ -87,7 +79,6 @@ export default defineComponent({
 .menu-icon {
   margin-right: 10px;
   font-size: 20px;
-  color: var(--theme--primary-accent);
 }
 
 .menu-link span {
