@@ -48,7 +48,6 @@ export default defineComponent({
 <style scoped>
 .nav-menu {
   margin-top: 20px;
-  height: 100%;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -61,7 +60,7 @@ export default defineComponent({
 }
 
 .menu-item {
-  margin-bottom: 8px; /* Espaçamento entre os itens */
+  margin-bottom: 8px;
 }
 
 .menu-link {
@@ -75,21 +74,20 @@ export default defineComponent({
 }
 
 .menu-link:hover {
-  background-color: var(--theme--background); /* Cor de hover */
-  color: var(--theme--primary); /* Cor do texto no hover */
+  background-color: var(--theme--primary-light);
+  color: var(--theme--primary);
 }
 
 .menu-link.active-link {
-  /* Estilo para o item ativo */
-  background-color: var(--theme--primary-light); /* Cor de fundo quando ativo */
-  color: var(--theme--primary); /* Cor do texto quando ativo */
-  font-weight: bold; /* Para destacar o texto ativo */
+  background-color: var(--theme--primary);
+  color: var(--theme--foreground-accent);
+  font-weight: bold;
 }
 
 .menu-icon {
   margin-right: 10px;
   font-size: 20px;
-  color: var(--theme--primary-accent); /* Cor dos ícones */
+  color: var(--theme--primary-accent);
 }
 
 .menu-link span {

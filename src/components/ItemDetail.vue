@@ -1,5 +1,8 @@
 <template>
   <private-view :title="item.title">
+    <template v-if="breadcrumb.length > 0" #headline>
+      <v-breadcrumb :items="breadcrumb" />
+    </template>
     <template #navigation>
       <NavMenu />
     </template>
