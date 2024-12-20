@@ -111,7 +111,7 @@ export default defineComponent({
   padding: 0;
   font-size: 18px;
   font-weight: bold;
-  color: var(--theme--foreground);
+  color: var(--white);
   width: 100%;
 }
 

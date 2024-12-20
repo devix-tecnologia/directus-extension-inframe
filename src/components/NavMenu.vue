@@ -72,7 +72,7 @@ export default defineComponent({
 
 .menu-link.active-link {
   background-color: var(--theme--primary);
-  color: var(--theme--foreground-accent);
+  color: var(--white);
   font-weight: bold;
 }
 
