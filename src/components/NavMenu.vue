@@ -1,7 +1,7 @@
 <template>
   <nav class="nav-menu">
     <ul class="menu-list">
-      <li v-for="item in items" :key="item.id" class="menu-item">
+      <li v-for="item in items()" :key="item.id" class="menu-item">
         <!-- Ícones de Material Design -->
         <router-link
           :to="`/inframe/${item.id}`"
@@ -17,20 +17,32 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, onMounted } from "vue";
 import { useFetchItems } from "../utils/useFetchItems";
 
 export default defineComponent({
   name: "NavMenu",
   setup() {
-    const { items, fetchItems, getTitle } = useFetchItems(); // Usando a função para obter os itens
+    const { items, fetchItems, getTitle } = useFetchItems();
+
+    // Função para ordenar os itens, colocando o "published" primeiro
+    const sortedItems = () => {
+      if (!items.value || items.value.length === 0) return [];
+      const publishedItem = items.value.find(
+        (item) => item.status === "published"
+      );
+      const otherItems = items.value.filter(
+        (item) => item.status !== "published"
+      );
+      return publishedItem ? [publishedItem, ...otherItems] : [...otherItems];
+    };
 
     onMounted(() => {
-      fetchItems(); // Chama a função que busca os itens
+      fetchItems(); // Busca os itens ao montar o componente
     });
 
     return {
-      items,
+      items: sortedItems, // Retorna a função como propriedade reativa
       getTitle,
     };
   },

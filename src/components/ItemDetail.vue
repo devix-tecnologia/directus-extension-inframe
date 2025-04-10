@@ -1,8 +1,8 @@
 <template>
   <private-view v-if="item" :title="getTitle(item.translations)">
-    <template v-if="breadcrumb.length > 0" #headline>
+    <!-- <template v-if="breadcrumb.length > 0" #headline>
       <v-breadcrumb :items="breadcrumb" />
-    </template>
+    </template> -->
     <template #navigation>
       <NavMenu />
     </template>
@@ -71,6 +71,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.header-bar {
+  display: none !important;
+}
+
+:deep(.header-bar) {
+  display: none !important;
+}
 .container {
   margin: 20px 50px;
 }
@@ -89,7 +96,7 @@ p {
 .main {
   position: relative;
   width: 100%;
-  height: calc(100% - 120px);
+  height: 100%;
   margin: 0;
   padding: 0;
 }

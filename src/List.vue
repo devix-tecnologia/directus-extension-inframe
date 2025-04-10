@@ -5,21 +5,7 @@
     </template>
 
     <div class="container">
-      <!-- Exibe os cards com os itens -->
-      <div class="card-container">
-        <div v-for="item in items" :key="item.id" class="card">
-          <router-link
-            :to="`/inframe/${item.id}`"
-            class="card-link"
-            :style="{ backgroundImage: `url('/assets/${item.thumbnail}')` }"
-          >
-            <div class="card-header">
-              <h3>{{ getTitle(item.translations) }}</h3>
-            </div>
-          </router-link>
-        </div>
-      </div>
-      <!-- Renderiza o conteúdo da rota ativa -->
+      <!-- O router-view vai renderizar o conteúdo do primeiro item automaticamente -->
       <router-view />
     </div>
   </private-view>
@@ -27,6 +13,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import NavMenu from "./components/NavMenu.vue";
 import { useFetchItems } from "./utils/useFetchItems";
 
@@ -34,11 +21,25 @@ export default defineComponent({
   name: "inframeList",
   components: { NavMenu },
   setup() {
-    const page_title = "inFrame";
+    const page_title = "Organograma";
     const { items, fetchItems, getTitle } = useFetchItems();
+    const router = useRouter(); // Instanciar o router
 
-    onMounted(() => {
-      fetchItems();
+    onMounted(async () => {
+      await fetchItems(); // Busca os itens
+      if (items.value && items.value.length > 0) {
+        // Encontra o item com status "published"
+        const publishedItem = items.value.find(
+          (item) => item.status === "published"
+        );
+        if (publishedItem) {
+          // Redireciona para o item encontrado
+          router.push(`/inframe/${publishedItem.id}`);
+        } else {
+          console.warn("Nenhum item com status 'published' encontrado.");
+          // Opcional: redirecionar para uma página de fallback ou deixar como está
+        }
+      }
     });
 
     return {

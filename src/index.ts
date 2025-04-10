@@ -4,8 +4,8 @@ import ItemDetail from "./components/ItemDetail.vue";
 
 export default defineModule({
   id: "inframe",
-  name: "inFrame",
-  icon: "rocket_launch",
+  name: "Organograma",
+  icon: "account_tree",
   routes: [
     {
       path: "",
