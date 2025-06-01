@@ -3,11 +3,7 @@
     <ul class="menu-list">
       <li v-for="item in items()" :key="item.id" class="menu-item">
         <!-- Ícones de Material Design -->
-        <router-link
-          :to="`/inframe/${item.id}`"
-          class="menu-link"
-          active-class="active-link"
-        >
+        <router-link :to="`/inframe/${item.id}`" class="menu-link" active-class="active-link">
           <v-icon class="menu-icon" :name="item.icon" />
           <span class="menu-link-text">{{ getTitle(item.translations) }}</span>
         </router-link>
@@ -17,23 +13,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
-import { useFetchItems } from "../utils/useFetchItems";
+import { defineComponent, onMounted } from 'vue';
+import { useFetchItems } from '../utils/useFetchItems';
 
 export default defineComponent({
-  name: "NavMenu",
+  name: 'NavMenu',
   setup() {
     const { items, fetchItems, getTitle } = useFetchItems();
 
     // Função para ordenar os itens, colocando o "published" primeiro
     const sortedItems = () => {
       if (!items.value || items.value.length === 0) return [];
-      const publishedItem = items.value.find(
-        (item) => item.status === "published"
-      );
-      const otherItems = items.value.filter(
-        (item) => item.status !== "published"
-      );
+
+      const publishedItem = items.value.find((item) => item.status === 'published');
+
+      const otherItems = items.value.filter((item) => item.status !== 'published');
+
       return publishedItem ? [publishedItem, ...otherItems] : [...otherItems];
     };
 
@@ -74,7 +69,9 @@ export default defineComponent({
   color: var(--theme--foreground-accent);
   font-size: 16px;
   padding: 12px 20px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .menu-link:hover {

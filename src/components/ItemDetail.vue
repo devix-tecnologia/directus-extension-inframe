@@ -14,11 +14,7 @@
 
       <div v-else-if="item">
         <div class="iframe-area">
-          <iframe
-            :src="item.url"
-            frameborder="0"
-            sandbox="allow-scripts allow-same-origin"
-          ></iframe>
+          <iframe :src="item.url" frameborder="0" sandbox="allow-scripts allow-same-origin"></iframe>
         </div>
       </div>
 
@@ -30,12 +26,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted } from "vue";
-import NavMenu from "./NavMenu.vue";
-import { useFetchItem } from "../utils/useFetchItems";
+import { defineComponent, ref, watch, onMounted } from 'vue';
+import NavMenu from './NavMenu.vue';
+import { useFetchItem } from '../utils/useFetchItems';
 
 export default defineComponent({
-  name: "ItemDetail",
+  name: 'ItemDetail',
   components: { NavMenu },
   props: {
     id: {
@@ -44,7 +40,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const breadcrumb = [{ name: "Home", to: `/inframe` }];
+    const breadcrumb = [{ name: 'Home', to: `/inframe` }];
     const { item, loading, fetchItem, getTitle } = useFetchItem();
 
     // Busca inicial ao montar o componente
@@ -57,7 +53,7 @@ export default defineComponent({
       () => props.id,
       (newId) => {
         fetchItem(newId); // Atualiza o item ao mudar a rota
-      }
+      },
     );
 
     return {

@@ -1,14 +1,14 @@
-import { defineModule } from "@directus/extensions-sdk";
-import List from "./List.vue";
-import ItemDetail from "./components/ItemDetail.vue";
+import { defineModule } from '@directus/extensions-sdk';
+import List from './List.vue';
+import ItemDetail from './components/ItemDetail.vue';
 
 export default defineModule({
-  id: "inframe",
-  name: "Organograma",
-  icon: "account_tree",
+  id: 'inframe',
+  name: 'Organograma',
+  icon: 'account_tree',
   routes: [
     {
-      path: "",
+      path: '',
       props: true,
       component: List,
     },
@@ -25,7 +25,7 @@ export default defineModule({
     //   component: List,
     // },
     {
-      path: ":id", // Rota dinâmica para cada item
+      path: ':id', // Rota dinâmica para cada item
       component: ItemDetail,
       props: true, // Passa os parâmetros da rota como props
     },

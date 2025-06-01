@@ -12,32 +12,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import NavMenu from "./components/NavMenu.vue";
-import { useFetchItems } from "./utils/useFetchItems";
+import { defineComponent, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import NavMenu from './components/NavMenu.vue';
+import { useFetchItems } from './utils/useFetchItems';
 
 export default defineComponent({
-  name: "inframeList",
+  name: 'InframeList',
   components: { NavMenu },
   setup() {
-    const page_title = "Organograma";
+    const page_title = 'Organograma';
     const { items, fetchItems, getTitle } = useFetchItems();
     const router = useRouter(); // Instanciar o router
 
     onMounted(async () => {
       await fetchItems(); // Busca os itens
+
       if (items.value && items.value.length > 0) {
         // Encontra o item com status "published"
-        const publishedItem = items.value.find(
-          (item) => item.status === "published"
-        );
+        const publishedItem = items.value.find((item) => item.status === 'published');
+
         if (publishedItem) {
           // Redireciona para o item encontrado
           router.push(`/inframe/${publishedItem.id}`);
-        } else {
-          console.warn("Nenhum item com status 'published' encontrado.");
-          // Opcional: redirecionar para uma página de fallback ou deixar como está
         }
       }
     });
@@ -78,7 +75,9 @@ export default defineComponent({
   align-items: center;
   text-align: center;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .card:hover {
