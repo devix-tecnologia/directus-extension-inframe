@@ -31,7 +31,7 @@ export default defineComponent({
       if (items.value && items.value.length > 0 && !items.value[0]) {
         // Encontra o item com status "published"
         const itemSelecionado = items.value[0];
-        
+
         // Redireciona para o item encontrado, se definido
         if (itemSelecionado) {
           //@ts-ignore

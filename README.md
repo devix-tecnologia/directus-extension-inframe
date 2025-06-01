@@ -27,11 +27,3 @@ Este projeto é uma extensão do tipo Module para o Directus voltada para visual
 ```yaml
 CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: '*' # permite iframe de qualquer domínio
 ```
-
-## 📌 Links importantes
-
-- [Quickstart Directus](https://docs.directus.io/getting-started/quickstart.html) (na aba Docker Installation)
-- [Como Criar uma extensão](https://docs.directus.io/extensions/creating-extensions.html)
-- [Criando um Module personalizado](https://docs.directus.io/guides/extensions/modules-build-landing-page.html)
-- [Acessar serviços do Directus](https://docs.directus.io/extensions/services/introduction.html)
-- [Acessar itens gravados nas coleções](https://docs.directus.io/extensions/services/accessing-items.html)

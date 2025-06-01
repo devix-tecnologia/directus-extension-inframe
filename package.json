@@ -1,7 +1,6 @@
 {
   "name": "directus-extension-inframe",
   "description": "Extensão para módulo de visualização de conteúdo em iframes",
-  "author": "Fernando Gatti",
   "icon": "extension",
   "version": "1.0.0",
   "keywords": [
@@ -29,23 +28,31 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@directus/extensions-sdk": "^13.1.1",
     "@eslint/js": "9.28.0",
     "eslint": "9.28.0",
     "eslint-config-prettier": "10.1.5",
     "eslint-plugin-vue": "10.1.0",
     "globals": "^16.2.0",
     "prettier": "3.5.3",
+    "rollup": "^2.79.1",
     "typescript": "^5.8.3",
     "typescript-eslint": "8.33.0",
-    "vue": "^3.5.16"
+    "vue": "^3.5.16",
+    "vue-eslint-parser": "^10.0.0"
   },
   "dependencies": {
-    "@directus/extensions-sdk": "^13.1.1",
     "vue-router": "^4.5.1"
   },
   "packageManager": "pnpm@9.15.6",
   "engines": {
     "node": "22",
     "pnpm": "9"
-  }
+  },
+  "author": "Devix Tecnologia",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/utomic-media/directus-extension-field-actions/issues"
+  },
+  "homepage": "https://github.com/devix-tecnologia/directus-extension-inframe#readme"
 }

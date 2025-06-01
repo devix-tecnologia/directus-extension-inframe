@@ -77,7 +77,7 @@ export const useFetchItem = () => {
     if (!id) {
       return;
     }
-    
+
     loading.value = true; // Reinicia o estado de carregamento
 
     try {
