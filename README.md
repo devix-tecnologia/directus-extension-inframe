@@ -5,7 +5,7 @@ Este projeto é uma extensão do tipo Module para o Directus voltada para visual
 ## 💎 Usando a extensão
 
 - Ative o novo módulo na página de configurações do Directus;
-- Crie uma nova Coleção com nome de `inframe` e adicione os seguintes campos: ` "id", "status", "icon", "url", "thumbnail", "translations.languages_code", "translations.title"`;
+- Crie uma nova Coleção com nome de `inframe` e adicione os seguintes campos: ` "id", "sort", "status", "icon", "url", "thumbnail", "translations.languages_code", "translations.title"`;
 
 
 - [Veja mais sobre traduções aqui](https://docs.directus.io/guides/headless-cms/content-translations.html)
