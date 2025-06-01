@@ -3,7 +3,7 @@
   "description": "Extensão para módulo de visualização de conteúdo em iframes",
   "icon": "extension",
   "private": false,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "keywords": [
     "directus",
     "directus-extension",
@@ -11,7 +11,10 @@
   ],
   "type": "module",
   "files": [
-    "dist"
+    "dist/**/*",
+    "README.md",
+    "LICENSE",
+    "package.json"
   ],
   "directus:extension": {
     "type": "module",
