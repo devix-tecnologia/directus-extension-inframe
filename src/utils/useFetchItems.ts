@@ -51,6 +51,9 @@ export const useFetchItems = () => {
               },
             },
           },
+          filter: {
+            status: { _eq: 'published' }, // Filtra apenas itens publicados
+          },
           sort: ['sort'],
         },
       });
@@ -71,6 +74,10 @@ export const useFetchItem = () => {
   const api = useApi();
 
   const fetchItem = async (id: string) => {
+    if (!id) {
+      return;
+    }
+    
     loading.value = true; // Reinicia o estado de carregamento
 
     try {
@@ -94,6 +101,9 @@ export const useFetchItem = () => {
                 languages_code: { _eq: languageCode }, // Filtro pelo idioma configurado no Directus
               },
             },
+          },
+          filter: {
+            status: { _eq: 'published' }, // Filtra apenas itens publicados
           },
         },
       });

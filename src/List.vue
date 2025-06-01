@@ -28,13 +28,14 @@ export default defineComponent({
     onMounted(async () => {
       await fetchItems(); // Busca os itens
 
-      if (items.value && items.value.length > 0) {
+      if (items.value && items.value.length > 0 && !items.value[0]) {
         // Encontra o item com status "published"
-        const publishedItem = items.value.find((item) => item.status === 'published');
-
-        if (publishedItem) {
-          // Redireciona para o item encontrado
-          router.push(`/inframe/${publishedItem.id}`);
+        const itemSelecionado = items.value[0];
+        
+        // Redireciona para o item encontrado, se definido
+        if (itemSelecionado) {
+          //@ts-ignore
+          router.push(`/inframe/${itemSelecionado.id}`);
         }
       }
     });
