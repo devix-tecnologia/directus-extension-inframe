@@ -2,7 +2,7 @@ import { useApi } from "@directus/extensions-sdk";
 import { ref } from "vue";
 
 // Função que busca o idioma do usuário logado
-const fetchLanguage = async (api) => {
+const fetchLanguage = async (api: ReturnType<typeof useApi>) => {
   try {
     const response = await api.get("/users/me");
     return response.data.data.language || "en-US"; // Idioma padrão se não houver resposta
@@ -13,8 +13,8 @@ const fetchLanguage = async (api) => {
 };
 
 // Função para obter o título traduzido
-const getTitle = (translations) => {
-  if (!translations || translations.length === 0) {
+const getTitle = (translations: {title: string}[]) => {
+  if (!translations || translations.length === 0 || !translations[0]) {
     return "Item inFrame";
   }
   return translations[0].title || "Item inFrame";
@@ -34,6 +34,7 @@ export const useFetchItems = () => {
         params: {
           fields: [
             "id",
+            "sort",
             "status",
             "icon",
             "url",
@@ -48,6 +49,7 @@ export const useFetchItems = () => {
               },
             },
           },
+          sort: ["sort"],
         },
       });
       items.value = response.data.data;
@@ -76,6 +78,7 @@ export const useFetchItem = () => {
           fields: [
             "id",
             "status",
+            "sort",
             "icon",
             "url",
             "thumbnail",
