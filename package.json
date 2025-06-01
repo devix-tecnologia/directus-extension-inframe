@@ -29,7 +29,6 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@directus/extensions-sdk": "13.1.1",
     "@eslint/js": "9.28.0",
     "eslint": "9.28.0",
     "eslint-config-prettier": "10.1.5",
@@ -41,6 +40,7 @@
     "vue": "^3.5.16"
   },
   "dependencies": {
+    "@directus/extensions-sdk": "^13.1.1",
     "vue-router": "^4.5.1"
   },
   "packageManager": "pnpm@9.15.6",

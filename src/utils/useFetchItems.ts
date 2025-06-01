@@ -56,7 +56,6 @@ export const useFetchItems = () => {
       });
 
       items.value = response.data.data;
-    } catch (error) {
     } finally {
       loading.value = false;
     }
