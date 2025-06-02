@@ -1,8 +1,7 @@
 <template>
   <nav class="nav-menu">
     <ul class="menu-list">
-      <li v-for="item in items()" :key="item.id" class="menu-item">
-        <!-- Ícones de Material Design -->
+      <li v-for="item in items" :key="item.id" class="menu-item">
         <router-link :to="`/inframe/${item.id}`" class="menu-link" active-class="active-link">
           <v-icon class="menu-icon" :name="item.icon" />
           <span class="menu-link-text">{{ getTitle(item.translations) }}</span>
@@ -13,31 +12,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue';
+import { defineComponent } from 'vue';
 import { useFetchItems } from '../utils/useFetchItems';
+import { Item } from '../types';
 
 export default defineComponent({
   name: 'NavMenu',
+  props: {
+    items: {
+      type: Array<Item>,
+      required: true,
+    },
+  },
   setup() {
-    const { items, fetchItems, getTitle } = useFetchItems();
-
-    // Função para ordenar os itens, colocando o "published" primeiro
-    const sortedItems = () => {
-      if (!items.value || items.value.length === 0) return [];
-
-      const publishedItem = items.value.find((item) => item.status === 'published');
-
-      const otherItems = items.value.filter((item) => item.status !== 'published');
-
-      return publishedItem ? [publishedItem, ...otherItems] : [...otherItems];
-    };
-
-    onMounted(() => {
-      fetchItems(); // Busca os itens ao montar o componente
-    });
+    const { getTitle } = useFetchItems();
 
     return {
-      items: sortedItems, // Retorna a função como propriedade reativa
       getTitle,
     };
   },

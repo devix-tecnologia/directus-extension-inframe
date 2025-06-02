@@ -4,26 +4,14 @@ import ItemDetail from './components/ItemDetail.vue';
 
 export default defineModule({
   id: 'inframe',
-  name: 'Organograma',
-  icon: 'account_tree',
+  name: 'Relatórios',
+  icon: 'document_scanner',
   routes: [
     {
       path: '',
       props: true,
       component: List,
     },
-    // {
-    //   name: "page",
-    //   path: ":page",
-    //   props: true,
-    //   component: Home,
-    // // },
-    // {
-    //   name: "list",
-    //   path: "list",
-    //   props: true,
-    //   component: List,
-    // },
     {
       path: ':id', // Rota dinâmica para cada item
       component: ItemDetail,

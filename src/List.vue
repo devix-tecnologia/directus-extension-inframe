@@ -1,7 +1,7 @@
 <template>
   <private-view :title="page_title">
     <template #navigation>
-      <NavMenu />
+      <NavMenu :items />
     </template>
 
     <div class="container">

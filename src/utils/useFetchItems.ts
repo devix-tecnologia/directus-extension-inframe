@@ -1,28 +1,25 @@
 import { useApi } from '@directus/extensions-sdk';
 import { ref } from 'vue';
+import { Item } from '../types';
 
 // Função que busca o idioma do usuário logado
 const fetchLanguage = async (api: ReturnType<typeof useApi>) => {
-  try {
-    const response = await api.get('/users/me');
-    return response.data.data.language || 'en-US'; // Idioma padrão se não houver resposta
-  } catch (error) {
-    return 'en-US'; // Retorna um idioma padrão em caso de erro
-  }
+  const response = await api.get('/users/me');
+  return response.data.data.language || 'en-US'; // Idioma padrão se não houver resposta
 };
 
 // Função para obter o título traduzido
 const getTitle = (translations: { title: string }[]) => {
-  if (!translations || translations.length === 0 || !translations[0]) {
+  if (!translations || translations.length === 0 || !translations[0] || !translations[0].title) {
     return 'Item inFrame';
   }
 
-  return translations[0].title || 'Item inFrame';
+  return translations[0].title;
 };
 
 // Função para buscar múltiplos itens
 export const useFetchItems = () => {
-  const items = ref([]);
+  const items = ref<Item[]>([]);
   const loading = ref(false);
   const api = useApi();
 
@@ -32,7 +29,7 @@ export const useFetchItems = () => {
     try {
       const languageCode = await fetchLanguage(api); // Obtém o idioma do usuário
 
-      const response = await api.get('/items/inframe', {
+      const response = await api.get<Item[]>('/items/inframe', {
         params: {
           fields: [
             'id',
@@ -58,7 +55,7 @@ export const useFetchItems = () => {
         },
       });
 
-      items.value = response.data.data;
+      items.value = response.data;
     } finally {
       loading.value = false;
     }
@@ -69,7 +66,7 @@ export const useFetchItems = () => {
 
 // Função para buscar um item específico
 export const useFetchItem = () => {
-  const item = ref(null);
+  const item = ref<Item | null>(null);
   const loading = ref(false);
   const api = useApi();
 
@@ -83,7 +80,7 @@ export const useFetchItem = () => {
     try {
       const languageCode = await fetchLanguage(api); // Obtém o idioma do usuário
 
-      const response = await api.get(`/items/inframe/${id}`, {
+      const response = await api.get<Item>(`/items/inframe/${id}`, {
         params: {
           fields: [
             'id',
@@ -108,7 +105,7 @@ export const useFetchItem = () => {
         },
       });
 
-      item.value = response.data.data;
+      item.value = response.data;
     } finally {
       loading.value = false;
     }
