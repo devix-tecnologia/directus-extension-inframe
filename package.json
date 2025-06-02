@@ -1,26 +1,37 @@
 {
-  "name": "directus-extension-inframe",
+  "name": "@devix-tecnologia/directus-extension-inframe",
   "description": "Extensão para módulo de visualização de conteúdo em iframes",
   "icon": "extension",
   "private": false,
   "version": "2.0.1",
-  "keywords": [
+   "keywords": [
     "directus",
     "directus-extension",
-    "directus-extension-module"
+    "directus-custom-module",
+    "node",
+    "npm",
+    "library",
+    "directus",
+    "directus-extensions",
+    "inframe",
+    "iframe",
+    "devix"
   ],
   "type": "module",
   "files": [
     "dist/**/*",
-    "README.md",
-    "LICENSE",
-    "package.json"
+    "package.json",
+    "pnpm-lock.yaml"
   ],
   "directus:extension": {
     "type": "module",
     "path": "dist/index.js",
     "source": "src/index.ts",
     "host": "^10.10.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "scripts": {
     "build": "directus-extension build",
@@ -54,6 +65,18 @@
     "pnpm": "9"
   },
   "author": "Devix Tecnologia",
+  "contributors": [
+    {
+      "name": "Sidarta Veloso",
+      "github": "https://github.com/sidartaveloso",
+      "linkedin": "https://www.linkedin.com/in/sidartaveloso"
+    },
+    {
+      "name": "Fernando Gatti",
+      "github": "https://github.com/gattifernando",
+      "linkedin": "https://www.linkedin.com/in/gattifernando/"
+    }
+  ],
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/utomic-media/directus-extension-field-actions/issues"
