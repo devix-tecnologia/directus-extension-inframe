@@ -16,6 +16,7 @@ import { defineComponent, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import NavMenu from './components/NavMenu.vue';
 import { useFetchItems } from './utils/useFetchItems';
+import { useNavigationPersistence } from './utils/useNavigationPersistence';
 
 export default defineComponent({
   name: 'InframeList',
@@ -24,12 +25,20 @@ export default defineComponent({
     const page_title = 'Organograma';
     const { items, fetchItems, getTitle } = useFetchItems();
     const router = useRouter(); // Instanciar o router
+    const { restoreLastRoute, startAutoSave } = useNavigationPersistence();
 
     onMounted(async () => {
       await fetchItems(); // Busca os itens
 
-      if (items.value && items.value.length > 0 && !items.value[0]) {
-        // Encontra o item com status "published"
+      // Inicia o monitoramento automático de rotas
+      startAutoSave();
+
+      // Tenta restaurar a última rota visitada
+      const hasRestoredRoute = await restoreLastRoute();
+
+      // Se não conseguiu restaurar uma rota e há itens disponíveis, redireciona para o primeiro
+      if (!hasRestoredRoute && items.value && items.value.length > 0) {
+        // Encontra o primeiro item com status "published"
         const itemSelecionado = items.value[0];
 
         // Redireciona para o item encontrado, se definido
