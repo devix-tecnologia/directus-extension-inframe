@@ -1,6 +1,6 @@
 import { defineModule } from '@directus/extensions-sdk';
 import List from './List.vue';
-import ItemDetail from './components/ItemDetail.vue';
+import ItemDetailRoute from './ItemDetailRoute.vue';
 
 export default defineModule({
   id: 'inframe',
@@ -14,7 +14,7 @@ export default defineModule({
     },
     {
       path: ':id', // Rota dinâmica para cada item
-      component: ItemDetail,
+      component: ItemDetailRoute,
       props: true, // Passa os parâmetros da rota como props
     },
   ],
