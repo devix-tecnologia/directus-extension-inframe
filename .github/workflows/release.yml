@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.6
+          run_install: false
+      - run: pnpm install
+      - run: pnpm lint
+      - run: pnpm format:check
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.6
+          run_install: false
+      - run: pnpm install
+      - run: pnpm build
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.6
+          run_install: false
+      - run: pnpm install
+      - name: Start Docker Compose
+        run: docker compose -f docker-compose.test.yml up -d
+      - name: Run tests
+        run: pnpm test
+      - name: Docker logs (on failure)
+        if: failure()
+        run: docker compose -f docker-compose.test.yml logs
+      - name: Stop Docker Compose
+        if: always()
+        run: docker compose -f docker-compose.test.yml down
+
+  update-directus-versions:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.6
+          run_install: false
+      - run: pnpm install
+      - name: Update Directus versions in tests
+        run: node .github/scripts/updateDirectusVersions.js
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update directus versions in tests'
+          title: 'chore: update directus versions in tests'
+          body: 'Automated update of Directus versions for testing'
+          branch: 'update-directus-versions'
+          delete-branch: true
+
+  release:
+    needs: [lint, build, test]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.6
+          run_install: false
+      - run: pnpm install
+      - run: pnpm build
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release --access public

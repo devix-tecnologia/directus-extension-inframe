@@ -26,6 +26,62 @@ onde parou em sua última sessão.
 A Persistência de Navegação funciona discretamente em segundo plano, sem comprometer o desempenho ou exigir
 configurações adicionais.
 
+## 🧪 Testes
+
+Esta extensão inclui testes automatizados que verificam a compatibilidade com diferentes versões do Directus.
+
+### Estrutura de Testes
+
+```
+tests/
+├── index.spec.ts          # Testes principais
+├── setup.ts              # Configuração do ambiente
+├── helper_test.ts        # Funções auxiliares
+├── test-env.ts           # Variáveis de ambiente
+├── test-logger.ts        # Sistema de logs
+└── directus-versions.js  # Versões testadas
+```
+
+### Executando os testes
+
+```bash
+# Instalar dependências
+pnpm install
+
+# Executar todos os testes
+pnpm test
+
+# Executar testes em modo watch
+pnpm test:watch
+
+# Executar testes com coverage
+pnpm test:coverage
+```
+
+### Testando com diferentes versões do Directus
+
+Os testes são executados automaticamente com múltiplas versões do Directus usando Docker:
+
+```bash
+# Testar com uma versão específica
+DIRECTUS_VERSION=11.10.2 pnpm test
+
+# Iniciar container de teste manualmente
+docker compose -f docker-compose.test.yml up -d
+
+# Parar container de teste
+docker compose -f docker-compose.test.yml down
+```
+
+### Versões do Directus testadas
+
+Os testes são executados nas seguintes versões:
+
+- Directus 9.x (últimas versões estáveis)
+- Directus 10.x (últimas versões estáveis)
+- Directus 11.x (últimas versões estáveis)
+- Directus latest
+
 ## 💎 Usando a extensão
 
 - Ative o novo módulo na página de configurações do Directus;

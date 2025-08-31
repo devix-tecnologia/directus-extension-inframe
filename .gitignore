@@ -3,3 +3,12 @@ dist/
 .env
 .eslintcache
 .DS_Store
+
+# Test artifacts
+coverage/
+.nyc_output
+test-results/
+
+# Docker volumes
+volume/
+uploads/

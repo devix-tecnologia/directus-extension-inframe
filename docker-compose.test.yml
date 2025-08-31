@@ -1,0 +1,26 @@
+services:
+  directus:
+    image: directus/directus:${DIRECTUS_VERSION:-9.23.1}
+    container_name: directus-inframe-${DIRECTUS_VERSION:-latest}
+    environment:
+      DB_CLIENT: 'sqlite3'
+      DB_FILENAME: '/tmp/data/directus.db'
+      KEY: 'test-key'
+      SECRET: 'test-secret'
+      ADMIN_EMAIL: 'admin@example.com'
+      ADMIN_PASSWORD: 'admin123'
+      PUBLIC_URL: 'http://localhost:18055'
+      STORAGE_LOCAL_ROOT: '/directus/uploads'
+      EXTENSIONS_PATH: './extensions'
+    ports:
+      - 18055:8055
+    tmpfs:
+      - /directus/uploads:rw,noexec,nosuid,size=64M,mode=777 # Usa memória temporária para uploads com permissões adequadas
+      - /tmp/data:rw,noexec,nosuid,size=64M # Usa memória temporária para o banco de dados
+    networks:
+      - directus-test-network
+
+networks:
+  directus-test-network:
+    driver: bridge
+    name: directus-inframe-test-${DIRECTUS_VERSION:-latest}
