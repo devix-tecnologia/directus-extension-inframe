@@ -2,6 +2,26 @@
 
 Este projeto é uma extensão do tipo Module para o Directus voltada para visualização de conteúdo em iframes.
 
+## ✨ Funcionalidades
+
+### 🔄 Persistência de Navegação (Novo!)
+
+A extensão agora inclui um sistema avançado de persistência de navegação que permite que você continue exatamente de onde parou em sua última sessão.
+
+**Principais benefícios:**
+- **Continuidade de trabalho:** retome instantaneamente suas atividades sem perder o contexto
+- **Navegação simplificada:** economize tempo ao evitar repetir passos de navegação  
+- **Experiência personalizada:** o sistema se adapta ao seu fluxo de trabalho individual
+- **Múltiplas estratégias:** utiliza localStorage e parâmetros de URL para máxima confiabilidade
+
+**Como funciona:**
+- Salva automaticamente a rota atual sempre que você navega para uma nova página
+- Restaura sua última visualização quando você retorna à aplicação
+- Funciona mesmo após recarregar a página ou fechar/abrir o navegador
+- Integrado nativamente com o sistema de roteamento do Directus
+
+A Persistência de Navegação funciona discretamente em segundo plano, sem comprometer o desempenho ou exigir configurações adicionais.
+
 ## 💎 Usando a extensão
 
 - Ative o novo módulo na página de configurações do Directus;
