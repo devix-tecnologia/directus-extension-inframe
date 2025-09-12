@@ -34,7 +34,7 @@ configurações adicionais.
 
 - [Veja mais sobre traduções aqui](https://docs.directus.io/guides/headless-cms/content-translations.html)
 
-![Tela de visualização da extensão](docs/tela.jpg)
+![Tela de visualização da extensão](https://github.com/devix-tecnologia/directus-extension-inframe/raw/develop/docs/tela.jpg)
 
 ## 🚀 Levantando um Directus a partir de docker-compose
 

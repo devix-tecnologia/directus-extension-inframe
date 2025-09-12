@@ -3,3 +3,4 @@ dist/
 .env
 .eslintcache
 .DS_Store
+*.tgz
