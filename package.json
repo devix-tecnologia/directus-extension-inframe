@@ -3,27 +3,22 @@
   "description": "Extensão para módulo de visualização de conteúdo em iframes",
   "icon": "extension",
   "private": false,
-  "version": "2.0.3",
+  "version": "2.0.4",
   "keywords": [
     "directus",
     "directus-extension",
-    "directus-custom-module",
-    "node",
-    "npm",
-    "library",
-    "directus",
-    "directus-extensions",
-    "inframe",
+    "directus-module",
     "iframe",
-    "devix"
+    "embed",
+    "visualization",
+    "cms",
+    "admin-panel"
   ],
   "type": "module",
   "files": [
     "dist/**/*",
     "package.json",
-    "pnpm-lock.yaml",
-    "README.md",
-    "docs/**/*"
+    "README.md"
   ],
   "directus:extension": {
     "type": "module",
@@ -35,10 +30,16 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devix-tecnologia/directus-extension-inframe.git"
+  },
   "scripts": {
     "build": "directus-extension build",
     "dev": "directus-extension build -w --no-minify",
     "link": "directus-extension link",
+    "validate": "directus-extension validate",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts,.vue",
     "lint:fix": "eslint . --ext .ts,.vue --fix",
     "format": "prettier --write .",
@@ -81,7 +82,7 @@
   ],
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/utomic-media/directus-extension-field-actions/issues"
+    "url": "https://github.com/devix-tecnologia/directus-extension-inframe/issues"
   },
   "homepage": "https://github.com/devix-tecnologia/directus-extension-inframe#readme"
 }
