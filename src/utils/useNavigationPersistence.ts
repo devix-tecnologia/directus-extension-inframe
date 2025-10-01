@@ -39,7 +39,7 @@ export const useNavigationPersistence = () => {
         .catch(() => {
           // Ignora erros de navegação redundante
         });
-    } catch (error) {
+    } catch {
       // Silently handle errors - could be logged to external service in production
     }
   };
@@ -63,7 +63,7 @@ export const useNavigationPersistence = () => {
       if (storedRoute) {
         return storedRoute;
       }
-    } catch (error) {
+    } catch {
       // Silently handle errors - could be logged to external service in production
     }
 
@@ -85,7 +85,7 @@ export const useNavigationPersistence = () => {
       isRestoringRoute.value = true;
       await router.push(`/inframe/${lastRoute}`);
       return true;
-    } catch (error) {
+    } catch {
       // Silently handle errors - could be logged to external service in production
       return false;
     } finally {
@@ -111,7 +111,7 @@ export const useNavigationPersistence = () => {
         .catch(() => {
           // Ignora erros de navegação redundante
         });
-    } catch (error) {
+    } catch {
       // Silently handle errors - could be logged to external service in production
     }
   };
