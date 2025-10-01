@@ -3,6 +3,7 @@ dist/
 .env
 .eslintcache
 .DS_Store
+*.tgz
 
 # Test artifacts
 coverage/

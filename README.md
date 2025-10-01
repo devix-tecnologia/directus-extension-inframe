@@ -90,7 +90,7 @@ Os testes são executados nas seguintes versões:
 
 - [Veja mais sobre traduções aqui](https://docs.directus.io/guides/headless-cms/content-translations.html)
 
-![Tela de visualização da extensão](docs/tela.jpg)
+![Tela de visualização da extensão](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/develop/docs/tela.jpg)
 
 ## 🚀 Levantando um Directus a partir de docker-compose
 
