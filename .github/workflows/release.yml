@@ -16,9 +16,6 @@ jobs:
         with:
           node-version: 22.17.0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.6
-          run_install: false
       - run: pnpm install
       - run: pnpm lint
       - run: pnpm format:check
@@ -31,9 +28,6 @@ jobs:
         with:
           node-version: 22.17.0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.6
-          run_install: false
       - run: pnpm install
       - run: pnpm build
 
@@ -45,9 +39,6 @@ jobs:
         with:
           node-version: 22.17.0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.6
-          run_install: false
       - run: pnpm install
       - name: Start Docker Compose
         run: docker compose -f docker-compose.test.yml up -d
@@ -71,9 +62,6 @@ jobs:
         with:
           node-version: 22.17.0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.6
-          run_install: false
       - run: pnpm install
       - name: Update Directus versions in tests
         run: node .github/scripts/updateDirectusVersions.js
@@ -97,9 +85,6 @@ jobs:
         with:
           node-version: 22.17.0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.6
-          run_install: false
       - run: pnpm install
       - run: pnpm build
       - name: Release
