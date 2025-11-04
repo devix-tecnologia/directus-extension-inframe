@@ -13,11 +13,11 @@ export async function dockerHttpRequest(
   headers?: Record<string, string>,
 ): Promise<any> {
   const containerName = `directus-inframe-${process.env.DIRECTUS_VERSION}`;
-  
+
   // Cria um script Node.js para fazer a requisição HTTP
   const headersJson = JSON.stringify(headers || {}).replace(/"/g, '\\"');
   const dataJson = data ? JSON.stringify(data).replace(/"/g, '\\"') : '';
-  
+
   const nodeScript = `
 const http = require('http');
 const options = {
@@ -40,7 +40,7 @@ req.end();
 
   const escapedScript = nodeScript.replace(/\n/g, ' ').replace(/'/g, "'\\''");
   const fullCommand = `docker exec ${containerName} node -e '${escapedScript}'`;
-  
+
   try {
     const { stdout } = await execAsync(fullCommand);
     // Se stdout estiver vazio, retornar objeto vazio ao invés de tentar fazer parse
@@ -71,7 +71,7 @@ async function cleanupDocker() {
     logger.warn('Warning while cleaning test containers:', error);
     // Tenta forçar a remoção de containers órfãos
     try {
-      await execAsync('docker ps -a | grep directus-inframe | awk \'{print $1}\' | xargs -r docker rm -f');
+      await execAsync("docker ps -a | grep directus-inframe | awk '{print $1}' | xargs -r docker rm -f");
     } catch {
       // Ignora erros na limpeza forçada
     }
@@ -83,20 +83,20 @@ async function waitForContainerHealth(containerName: string, retries = 60, delay
     try {
       const { stdout } = await execAsync(`docker inspect --format='{{.State.Health.Status}}' ${containerName}`);
       const healthStatus = stdout.trim();
-      
+
       if (healthStatus === 'healthy') {
         logger.info(`Container ${containerName} is healthy`);
         return;
       }
-      
+
       logger.debug(`Container health: ${healthStatus} (attempt ${i + 1}/${retries})`);
     } catch (error) {
       logger.debug(`Waiting for container to be created (attempt ${i + 1}/${retries})`);
     }
-    
+
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
-  
+
   throw new Error(`Container ${containerName} did not become healthy`);
 }
 

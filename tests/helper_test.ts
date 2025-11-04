@@ -97,7 +97,7 @@ export async function getTestItems() {
 
   // A resposta do Directus pode estar em response.data.data ou response.data
   const items = response.data?.data || response.data || response;
-  
+
   // Se items não for um array, retornar array vazio
   return Array.isArray(items) ? items : [];
 }
