@@ -12,8 +12,10 @@ services:
       PUBLIC_URL: 'http://directus:8055'
       STORAGE_LOCAL_ROOT: '/directus/uploads'
       EXTENSIONS_PATH: './extensions'
+      EXTENSIONS_AUTO_RELOAD: 'true'
     volumes:
-      - ./dist:/directus/extensions/directus-extension-inframe/dist:ro
+      - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
+      - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro
       - ./package.json:/directus/extensions/directus-extension-inframe/package.json:ro
     tmpfs:
       - /directus/uploads:rw,noexec,nosuid,size=64M,mode=777 # Usa memória temporária para uploads com permissões adequadas

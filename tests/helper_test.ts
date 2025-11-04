@@ -95,7 +95,11 @@ export async function getTestItems() {
     Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
   });
 
-  return response.data || response;
+  // A resposta do Directus pode estar em response.data.data ou response.data
+  const items = response.data?.data || response.data || response;
+  
+  // Se items não for um array, retornar array vazio
+  return Array.isArray(items) ? items : [];
 }
 
 export async function deleteTestCollection() {

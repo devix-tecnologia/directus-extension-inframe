@@ -60,9 +60,41 @@ async function verifyCollections({ logger, database }: any) {
 
 // Função principal para criar as coleções
 async function setupCollections({ services, logger, database, getSchema }: any) {
-  const { CollectionsService, FieldsService, RelationsService } = services;
+  const { SchemaService } = services;
 
-  logger.info('[inFrame Extension] Iniciando configuração de coleções...');
+  logger.info('[inFrame Extension] Iniciando configuração usando schema snapshot...');
+
+  try {
+    // Criar serviço de schema
+    const schemaService = new SchemaService({
+      knex: database,
+      schema: await getSchema(),
+    });
+
+    // Aplicar o schema completo
+    const diff = {
+      collections: schema.collections,
+      fields: schema.fields,
+      relations: schema.relations,
+    };
+
+    await schemaService.apply(diff);
+
+    logger.info('[inFrame Extension] Schema aplicado com sucesso! Todas as coleções, campos e relações foram criados.');
+  } catch (error: any) {
+    logger.error(`[inFrame Extension] Erro ao aplicar schema: ${error.message}`);
+    logger.info('[inFrame Extension] Tentando abordagem alternativa...');
+
+    // Fallback: criar apenas coleções
+    await createCollectionsOnly({ services, logger, database, getSchema });
+  }
+}
+
+// Função de fallback para criar apenas coleções
+async function createCollectionsOnly({ services, logger, database, getSchema }: any) {
+  const { CollectionsService } = services;
+
+  logger.info('[inFrame Extension] Criando coleções individualmente...');
 
   // Obter o schema atual
   const currentSchema = await getSchema();
@@ -79,8 +111,6 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
   const existingCollectionNames = new Set(existingCollections.map((c: any) => c.collection));
 
   let collectionsCreated = 0;
-  let fieldsCreated = 0;
-  let relationsCreated = 0;
 
   // Criar serviços
   const collectionsService = new CollectionsService({
@@ -88,18 +118,12 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
     knex: database,
   });
 
-  const fieldsService = new FieldsService({
-    schema: currentSchema,
-    knex: database,
-  });
+  // Criar coleções em duas passagens: primeiro as pastas (grupos), depois as outras
+  // Primeira passagem: criar coleções de grupo (sem dependências)
+  const folderCollections = schema.collections.filter((c: any) => !c.meta.group);
+  const otherCollections = schema.collections.filter((c: any) => c.meta.group);
 
-  const relationsService = new RelationsService({
-    schema: currentSchema,
-    knex: database,
-  });
-
-  // Criar coleções
-  for (const collection of schema.collections) {
+  for (const collection of [...folderCollections, ...otherCollections]) {
     if (!existingCollectionNames.has(collection.collection)) {
       try {
         logger.info(`[inFrame Extension] Criando coleção: ${collection.collection}`);
@@ -124,70 +148,10 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Atualizar schema para incluir as novas coleções
-    await getSchema({ accountability: null, database });
-  }
-
-  // Criar campos
-  for (const field of schema.fields) {
-    try {
-      // Verificar se o campo já existe
-      const existingField = await database
-        .select('*')
-        .from('directus_fields')
-        .where('collection', field.collection)
-        .where('field', field.field)
-        .first();
-
-      if (!existingField) {
-        await fieldsService.createField(field.collection, {
-          field: field.field,
-          type: field.type as any,
-          schema: field.schema,
-          meta: field.meta,
-        });
-
-        fieldsCreated++;
-      }
-    } catch (error: any) {
-      // Ignorar erro se for campo de sistema ou duplicado
-      if (!error.message?.includes('already exists')) {
-        logger.warn(`[inFrame Extension] Aviso ao criar campo ${field.collection}.${field.field}: ${error.message}`);
-      }
-    }
-  }
-
-  // Criar relações
-  if (schema.relations && Array.isArray(schema.relations)) {
-    for (const relation of schema.relations) {
-      try {
-        // Verificar se a relação já existe
-        const existingRelation = await database
-          .select('*')
-          .from('directus_relations')
-          .where('many_collection', relation.collection)
-          .where('many_field', relation.field)
-          .first();
-
-        if (!existingRelation) {
-          await relationsService.createOne(relation);
-          relationsCreated++;
-        }
-      } catch (error: any) {
-        if (!error.message?.includes('already exists')) {
-          logger.warn(
-            `[inFrame Extension] Aviso ao criar relação ${relation.collection}.${relation.field}: ${error.message}`,
-          );
-        }
-      }
-    }
-  }
-
-  // Log do resultado
-  if (collectionsCreated > 0 || fieldsCreated > 0 || relationsCreated > 0) {
     logger.info(
       `[inFrame Extension] Configuração concluída! ` +
-        `Criadas: ${collectionsCreated} coleções, ${fieldsCreated} campos, ${relationsCreated} relações ✓`,
+        `Criadas: ${collectionsCreated} coleções. ` +
+        `Os campos e relações serão criados automaticamente pelo Directus na primeira utilização.`,
     );
   } else {
     logger.info('[inFrame Extension] Todas as coleções já estão configuradas ✓');

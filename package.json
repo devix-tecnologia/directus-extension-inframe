@@ -89,10 +89,10 @@
   "dependencies": {
     "vue-router": "^4.6.3"
   },
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.20.0",
   "engines": {
     "node": "22",
-    "pnpm": "10.15.0"
+    "pnpm": "10.20.0"
   },
   "author": "Devix Tecnologia",
   "contributors": [
