@@ -14,6 +14,9 @@ services:
       EXTENSIONS_PATH: './extensions'
     ports:
       - 18055:8055
+    volumes:
+      - ./dist:/directus/extensions/directus-extension-inframe/dist:ro
+      - ./package.json:/directus/extensions/directus-extension-inframe/package.json:ro
     tmpfs:
       - /directus/uploads:rw,noexec,nosuid,size=64M,mode=777 # Usa memória temporária para uploads com permissões adequadas
       - /tmp/data:rw,noexec,nosuid,size=64M # Usa memória temporária para o banco de dados
