@@ -1,6 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import axios from 'axios';
-import { setupTestEnvironment, teardownTestEnvironment } from './setup.js';
+import { setupTestEnvironment, teardownTestEnvironment, dockerHttpRequest } from './setup.js';
 import { logger } from './test-logger.js';
 import schema from '../schema.json';
 
@@ -16,15 +15,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created all collections from schema', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/collections', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const collections = response.data.data;
+    const collections = response.data || response;
     const collectionNames = collections.map((c: any) => c.collection);
 
     // Verificar se todas as coleções do schema foram criadas
@@ -40,15 +35,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created inframe collection with correct metadata', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections/inframe`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/collections/inframe', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const collection = response.data.data;
+    const collection = response.data || response;
 
     expect(collection).toBeDefined();
     expect(collection.collection).toBe('inframe');
@@ -60,15 +51,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created languages collection', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections/languages`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/collections/languages', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const collection = response.data.data;
+    const collection = response.data || response;
 
     expect(collection).toBeDefined();
     expect(collection.collection).toBe('languages');
@@ -77,15 +64,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created inframe_translations collection', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections/inframe_translations`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/collections/inframe_translations', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const collection = response.data.data;
+    const collection = response.data || response;
 
     expect(collection).toBeDefined();
     expect(collection.collection).toBe('inframe_translations');
@@ -95,15 +78,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created inframe_pasta collection (folder group)', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections/inframe_pasta`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/collections/inframe_pasta', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const collection = response.data.data;
+    const collection = response.data || response;
 
     expect(collection).toBeDefined();
     expect(collection.collection).toBe('inframe_pasta');
@@ -113,15 +92,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created all required fields for inframe collection', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/fields/inframe`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/fields/inframe', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const fields = response.data.data;
+    const fields = response.data || response;
     const fieldNames = fields.map((f: any) => f.field);
 
     // Campos essenciais que devem existir
@@ -135,15 +110,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created fields for languages collection', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/fields/languages`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/fields/languages', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const fields = response.data.data;
+    const fields = response.data || response;
     const fieldNames = fields.map((f: any) => f.field);
 
     // Campos essenciais
@@ -157,15 +128,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created translations relation', async () => {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/relations`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/relations', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const relations = response.data.data;
+    const relations = response.data || response;
 
     // Procurar pela relação de traduções
     const translationsRelation = relations.find((r: any) => r.collection === 'inframe' && r.field === 'translations');
@@ -178,8 +145,6 @@ describe('Auto Setup Hook - Collection Creation', () => {
 
   test('Collections should be ready to receive data', async () => {
     // Tentar criar um item simples na coleção inframe para verificar se está pronta
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/items/inframe`;
-
     const testItem = {
       status: 'draft',
       sort: 1,
@@ -188,29 +153,22 @@ describe('Auto Setup Hook - Collection Creation', () => {
     };
 
     try {
-      const response = await axios.post(url, testItem, {
-        headers: {
-          Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-        },
+      const response = await dockerHttpRequest('POST', '/items/inframe', testItem, {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
       });
 
-      expect(response.status).toBe(200);
-      expect(response.data.data).toBeDefined();
-      expect(response.data.data.id).toBeDefined();
+      expect(response.data || response).toBeDefined();
+      expect(response.data.id).toBeDefined();
 
       logger.info('✓ inframe collection is ready to receive data');
 
       // Limpar o item de teste
-      const deleteUrl = `${process.env.DIRECTUS_PUBLIC_URL}/items/inframe/${response.data.data.id}`;
-
-      await axios.delete(deleteUrl, {
-        headers: {
-          Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-        },
+      await dockerHttpRequest('DELETE', `/items/inframe/${response.data.id}`, undefined, {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
       });
     } catch (error: any) {
       // Se falhar com 403, pode ser problema de permissões (conhecido)
-      if (error.response?.status === 403) {
+      if (error.message?.includes('403')) {
         logger.warn('⚠ 403 error when creating test item - this is a known permissions issue, not a setup problem');
 
         // Ainda assim consideramos o teste passou porque as coleções existem
@@ -225,15 +183,11 @@ describe('Auto Setup Hook - Collection Creation', () => {
     // Este teste verifica se o hook foi executado
     // Como o hook roda no servidor Directus, verificamos indiretamente
     // através da existência das coleções
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    const response = await dockerHttpRequest('GET', '/collections', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
 
-    const collections = response.data.data;
+    const collections = response.data || response;
     const expectedCollections = schema.collections.map((c: any) => c.collection);
 
     const createdCount = expectedCollections.filter((name: string) =>

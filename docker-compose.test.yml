@@ -9,11 +9,9 @@ services:
       SECRET: 'test-secret'
       ADMIN_EMAIL: 'admin@example.com'
       ADMIN_PASSWORD: 'admin123'
-      PUBLIC_URL: 'http://localhost:18055'
+      PUBLIC_URL: 'http://directus:8055'
       STORAGE_LOCAL_ROOT: '/directus/uploads'
       EXTENSIONS_PATH: './extensions'
-    ports:
-      - 18055:8055
     volumes:
       - ./dist:/directus/extensions/directus-extension-inframe/dist:ro
       - ./package.json:/directus/extensions/directus-extension-inframe/package.json:ro
@@ -22,6 +20,12 @@ services:
       - /tmp/data:rw,noexec,nosuid,size=64M # Usa memória temporária para o banco de dados
     networks:
       - directus-test-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/health']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
 
 networks:
   directus-test-network:

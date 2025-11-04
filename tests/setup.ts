@@ -1,23 +1,103 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import axios from 'axios';
 import { setupTestEnv, testEnv } from './test-env.js';
 import { logger } from './test-logger.js';
 
 const execAsync = promisify(exec);
 
+// Função para fazer requisições HTTP via Node.js dentro do container
+export async function dockerHttpRequest(
+  method: string,
+  path: string,
+  data?: any,
+  headers?: Record<string, string>,
+): Promise<any> {
+  const containerName = `directus-inframe-${process.env.DIRECTUS_VERSION}`;
+  
+  // Cria um script Node.js para fazer a requisição HTTP
+  const headersJson = JSON.stringify(headers || {}).replace(/"/g, '\\"');
+  const dataJson = data ? JSON.stringify(data).replace(/"/g, '\\"') : '';
+  
+  const nodeScript = `
+const http = require('http');
+const options = {
+  hostname: '127.0.0.1',
+  port: 8055,
+  path: '${path}',
+  method: '${method}',
+  headers: JSON.parse("${headersJson}")
+};
+${data ? `const postData = "${dataJson}"; options.headers['Content-Type'] = 'application/json'; options.headers['Content-Length'] = Buffer.byteLength(postData);` : ''}
+const req = http.request(options, (res) => {
+  let data = '';
+  res.on('data', (chunk) => { data += chunk; });
+  res.on('end', () => { console.log(data); });
+});
+req.on('error', (error) => { console.error(JSON.stringify({error: error.message})); process.exit(1); });
+${data ? `req.write(postData);` : ''}
+req.end();
+`;
+
+  const escapedScript = nodeScript.replace(/\n/g, ' ').replace(/'/g, "'\\''");
+  const fullCommand = `docker exec ${containerName} node -e '${escapedScript}'`;
+  
+  try {
+    const { stdout } = await execAsync(fullCommand);
+    // Se stdout estiver vazio, retornar objeto vazio ao invés de tentar fazer parse
+    if (!stdout || stdout.trim() === '') {
+      return {};
+    }
+    return JSON.parse(stdout);
+  } catch (error: any) {
+    logger.error('Docker HTTP request failed:', error);
+    throw error;
+  }
+}
+
 async function cleanupDocker() {
   try {
     logger.debug('Cleaning up test containers...');
 
+    // Para e remove containers
     await execAsync(
-      `DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans`,
+      `DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes`,
     );
 
+    // Aguarda um pouco para garantir que as portas foram liberadas
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     logger.debug('Test containers removed');
-  } catch {
-    logger.warn('Warning while cleaning test containers');
+  } catch (error) {
+    logger.warn('Warning while cleaning test containers:', error);
+    // Tenta forçar a remoção de containers órfãos
+    try {
+      await execAsync('docker ps -a | grep directus-inframe | awk \'{print $1}\' | xargs -r docker rm -f');
+    } catch {
+      // Ignora erros na limpeza forçada
+    }
   }
+}
+
+async function waitForContainerHealth(containerName: string, retries = 60, delay = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const { stdout } = await execAsync(`docker inspect --format='{{.State.Health.Status}}' ${containerName}`);
+      const healthStatus = stdout.trim();
+      
+      if (healthStatus === 'healthy') {
+        logger.info(`Container ${containerName} is healthy`);
+        return;
+      }
+      
+      logger.debug(`Container health: ${healthStatus} (attempt ${i + 1}/${retries})`);
+    } catch (error) {
+      logger.debug(`Waiting for container to be created (attempt ${i + 1}/${retries})`);
+    }
+    
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  
+  throw new Error(`Container ${containerName} did not become healthy`);
 }
 
 export async function setupTestEnvironment() {
@@ -44,17 +124,22 @@ export async function setupTestEnvironment() {
       logger.dockerProgress(stdout || stderr);
     }
 
+    // Wait for container to be healthy (using docker healthcheck)
+    logger.info('Waiting for container to be healthy...');
+    const containerName = `directus-inframe-${process.env.DIRECTUS_VERSION}`;
+    await waitForContainerHealth(containerName);
+
     // Wait for Directus to be ready
     logger.info('Waiting for Directus to be ready...');
     await waitForBootstrap();
 
-    // Login to get admin access token
-    const loginResponse = await axios.post(`${testEnv.DIRECTUS_PUBLIC_URL}/auth/login`, {
+    // Login to get admin access token via docker exec
+    const loginResponse = await dockerHttpRequest('POST', '/auth/login', {
       email: testEnv.DIRECTUS_ADMIN_EMAIL,
       password: testEnv.DIRECTUS_ADMIN_PASSWORD,
     });
 
-    const accessToken = loginResponse.data.data.access_token;
+    const accessToken = loginResponse.data?.access_token || loginResponse.access_token;
 
     // Set access token for tests
     process.env.DIRECTUS_ACCESS_TOKEN = accessToken;
@@ -84,16 +169,16 @@ async function waitForBootstrap(retries = 60, delay = 2000) {
     try {
       logger.debug(`Connection attempt ${i + 1}/${retries}`);
 
-      // Check if server is responding
-      const healthCheck = await axios.get(`${testEnv.DIRECTUS_PUBLIC_URL}/server/health`);
+      // Check if server is responding via docker exec
+      const healthCheck = await dockerHttpRequest('GET', '/server/health');
 
-      if (healthCheck.data.status !== 'ok') {
+      if (healthCheck.status !== 'ok') {
         throw new Error('Health check failed');
       }
 
       // Try to login to verify if the system is fully ready
       try {
-        await axios.post(`${testEnv.DIRECTUS_PUBLIC_URL}/auth/login`, {
+        await dockerHttpRequest('POST', '/auth/login', {
           email: testEnv.DIRECTUS_ADMIN_EMAIL,
           password: testEnv.DIRECTUS_ADMIN_PASSWORD,
         });

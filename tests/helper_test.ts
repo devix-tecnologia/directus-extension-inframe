@@ -1,8 +1,6 @@
-import axios from 'axios';
+import { dockerHttpRequest } from './setup.js';
 
 export async function createTestCollection(): Promise<string> {
-  const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections`;
-
   const collectionData = {
     collection: 'test_inframe_items',
     fields: [
@@ -71,53 +69,39 @@ export async function createTestCollection(): Promise<string> {
     },
   };
 
-  const response = await axios.post(url, collectionData, {
-    headers: {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    },
+  const response = await dockerHttpRequest('POST', '/collections', collectionData, {
+    Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
   });
 
-  return response.data.data.collection;
+  return response.data?.collection || response.collection;
 }
 
 export async function createTestItem(title: string, url: string, status = 'published') {
-  const collectionUrl = `${process.env.DIRECTUS_PUBLIC_URL}/items/test_inframe_items`;
-
   const itemData = {
     title,
     url,
     status,
   };
 
-  const response = await axios.post(collectionUrl, itemData, {
-    headers: {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    },
+  const response = await dockerHttpRequest('POST', '/items/test_inframe_items', itemData, {
+    Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
   });
 
-  return response.data.data;
+  return response.data || response;
 }
 
 export async function getTestItems() {
-  const url = `${process.env.DIRECTUS_PUBLIC_URL}/items/test_inframe_items`;
-
-  const response = await axios.get(url, {
-    headers: {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    },
+  const response = await dockerHttpRequest('GET', '/items/test_inframe_items', undefined, {
+    Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
   });
 
-  return response.data.data;
+  return response.data || response;
 }
 
 export async function deleteTestCollection() {
   try {
-    const url = `${process.env.DIRECTUS_PUBLIC_URL}/collections/test_inframe_items`;
-
-    await axios.delete(url, {
-      headers: {
-        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-      },
+    await dockerHttpRequest('DELETE', '/collections/test_inframe_items', undefined, {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
     });
   } catch {
     // Collection might not exist, ignore error
