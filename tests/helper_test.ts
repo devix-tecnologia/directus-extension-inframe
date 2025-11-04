@@ -63,6 +63,24 @@ export async function createTestCollection(): Promise<string> {
           is_nullable: false,
         },
       },
+      {
+        field: 'status',
+        type: 'string',
+        meta: {
+          interface: 'select-dropdown',
+          options: {
+            choices: [
+              { text: 'Published', value: 'published' },
+              { text: 'Draft', value: 'draft' },
+              { text: 'Archived', value: 'archived' },
+            ],
+          },
+        },
+        schema: {
+          default_value: 'draft',
+          is_nullable: false,
+        },
+      },
     ],
     meta: {
       icon: 'article',
