@@ -13,6 +13,8 @@ services:
       STORAGE_LOCAL_ROOT: '/directus/uploads'
       EXTENSIONS_PATH: './extensions'
       EXTENSIONS_AUTO_RELOAD: 'true'
+      PERMISSIONS_CACHE_TTL: '0'
+      CACHE_ENABLED: 'false'
     volumes:
       - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
       - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro

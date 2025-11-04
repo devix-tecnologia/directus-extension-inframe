@@ -73,7 +73,24 @@ export async function createTestCollection(): Promise<string> {
     Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
   });
 
-  return response.data?.collection || response.collection;
+  if (process.env.DEBUG_TESTS) {
+    console.log('[DEBUG] Create collection response:', JSON.stringify(response, null, 2));
+  }
+
+  const collectionName = response.data?.collection || response.collection;
+
+  if (!collectionName) {
+    throw new Error('Failed to create collection: ' + JSON.stringify(response));
+  }
+
+  // Aguardar um pouco para garantir que a tabela foi criada no banco
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  
+  if (process.env.DEBUG_TESTS) {
+    console.log('[DEBUG] Collection created:', collectionName);
+  }
+
+  return collectionName;
 }
 
 export async function createTestItem(title: string, url: string, status = 'published') {
@@ -87,7 +104,13 @@ export async function createTestItem(title: string, url: string, status = 'publi
     Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
   });
 
-  return response.data || response;
+  const item = response.data?.data || response.data || response;
+  
+  if (process.env.DEBUG_TESTS) {
+    console.log('[DEBUG] Created item:', item);
+  }
+  
+  return item;
 }
 
 export async function getTestItems() {
@@ -97,6 +120,12 @@ export async function getTestItems() {
 
   // A resposta do Directus pode estar em response.data.data ou response.data
   const items = response.data?.data || response.data || response;
+
+  if (process.env.DEBUG_TESTS) {
+    console.log('[DEBUG] getTestItems response:', JSON.stringify(response, null, 2));
+    console.log('[DEBUG] Extracted items:', items);
+    console.log('[DEBUG] Is array:', Array.isArray(items));
+  }
 
   // Se items não for um array, retornar array vazio
   return Array.isArray(items) ? items : [];
