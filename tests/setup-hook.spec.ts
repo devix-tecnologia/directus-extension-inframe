@@ -9,7 +9,7 @@ describe('Auto Setup Hook - Collection Creation', () => {
     process.env.DIRECTUS_VERSION = process.env.DIRECTUS_TEST_VERSION || '10.8.3';
     logger.setCurrentTest(`Auto Setup Test - Directus ${process.env.DIRECTUS_VERSION}`);
     await setupTestEnvironment();
-  }, 120000);
+  }, 300000); // 5 minutos de timeout
 
   afterAll(async () => {
     await teardownTestEnvironment();

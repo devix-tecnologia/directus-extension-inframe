@@ -2,194 +2,180 @@ import { defineHook } from '@directus/extensions-sdk';
 import schema from '../../schema.json';
 
 export default defineHook(({ action }, { services, logger, database, getSchema }) => {
-  // Hook executado quando a extensão é carregada/instalada
-  action('server.start', async () => {
-    try {
-      await setupCollections({ services, logger, database, getSchema });
-    } catch (error: any) {
-      logger.error(`[inFrame Extension] Erro durante setup inicial: ${error.message}`);
-    }
-  });
+	logger.info('[inFrame Extension] 🔧 Hook registrado e inicializado!');
 
-  // Hook executado quando uma extensão é instalada
-  action('extensions.install', async ({ extension }: any) => {
-    if (extension?.includes('inframe') || extension?.includes('@devix-tecnologia/directus-extension-inframe')) {
-      logger.info('[inFrame Extension] Extensão instalada, configurando coleções...');
+	action('server.start', async () => {
+		logger.info('[inFrame Extension] 🚀 Evento server.start disparado!');
 
-      try {
-        await setupCollections({ services, logger, database, getSchema });
-      } catch (error: any) {
-        logger.error(`[inFrame Extension] Erro durante instalação: ${error.message}`);
-      }
-    }
-  });
+		try {
+			await setupCollections({ services, logger, database, getSchema });
+		} catch (error: any) {
+			logger.error(`[inFrame Extension] ❌ Erro durante setup inicial: ${error.message}`);
+			logger.error(error.stack);
+		}
+	});
 
-  // Hook executado quando extensões são recarregadas
-  action('extensions.reload', async () => {
-    logger.info('[inFrame Extension] Verificando configuração das coleções...');
+	action('extensions.install', async ({ extension }: any) => {
+		if (extension?.includes('inframe') || extension?.includes('@devix-tecnologia/directus-extension-inframe')) {
+			logger.info('[inFrame Extension] Extensão instalada, configurando coleções...');
 
-    try {
-      await verifyCollections({ logger, database });
-    } catch (error: any) {
-      logger.warn(`[inFrame Extension] Erro ao verificar coleções: ${error.message}`);
-    }
-  });
+			try {
+				await setupCollections({ services, logger, database, getSchema });
+			} catch (error: any) {
+				logger.error(`[inFrame Extension] Erro durante instalação: ${error.message}`);
+			}
+		}
+	});
+
+	action('extensions.reload', async () => {
+		logger.info('[inFrame Extension] Verificando configuração das coleções...');
+
+		try {
+			await verifyCollections({ logger, database });
+		} catch (error: any) {
+			logger.warn(`[inFrame Extension] Erro ao verificar coleções: ${error.message}`);
+		}
+	});
 });
 
-// Função para verificar se as coleções existem
 async function verifyCollections({ logger, database }: any) {
-  const existingCollections = await database
-    .select('collection')
-    .from('directus_collections')
-    .whereIn(
-      'collection',
-      schema.collections.map((c: any) => c.collection),
-    );
+	const existingCollections = await database
+		.select('collection')
+		.from('directus_collections')
+		.whereIn('collection', schema.collections.map((c: any) => c.collection));
 
-  const existingCount = existingCollections.length;
-  const totalCount = schema.collections.length;
+	const existingCount = existingCollections.length;
+	const totalCount = schema.collections.length;
 
-  if (existingCount === totalCount) {
-    logger.info(`[inFrame Extension] Todas as ${totalCount} coleções estão configuradas corretamente ✓`);
-  } else {
-    logger.warn(
-      `[inFrame Extension] ${existingCount}/${totalCount} coleções encontradas. Execute setup se necessário.`,
-    );
-  }
+	if (existingCount === totalCount) {
+		logger.info(`[inFrame Extension] Todas as ${totalCount} coleções estão configuradas corretamente ✓`);
+	} else {
+		logger.warn(`[inFrame Extension] ${existingCount}/${totalCount} coleções encontradas.`);
+	}
 }
 
-// Função principal para criar as coleções
 async function setupCollections({ services, logger, database, getSchema }: any) {
-  const { CollectionsService, FieldsService, RelationsService } = services;
+	logger.info('[inFrame Extension] 📋 Função setupCollections chamada');
 
-  logger.info('[inFrame Extension] Iniciando configuração de coleções...');
+	const { CollectionsService, FieldsService, RelationsService } = services;
 
-  // Obter o schema atual
-  const currentSchema = await getSchema();
+	logger.info('[inFrame Extension] Iniciando configuração de coleções...');
 
-  // Verificar se as coleções já existem
-  const existingCollections = await database
-    .select('collection')
-    .from('directus_collections')
-    .whereIn(
-      'collection',
-      schema.collections.map((c: any) => c.collection),
-    );
+	try {
+		const currentSchema = await getSchema();
 
-  const existingCollectionNames = new Set(existingCollections.map((c: any) => c.collection));
+		const existingCollections = await database
+			.select('collection')
+			.from('directus_collections')
+			.whereIn('collection', schema.collections.map((c: any) => c.collection));
 
-  let collectionsCreated = 0;
-  let fieldsCreated = 0;
-  let relationsCreated = 0;
+		const existingCollectionNames = new Set(existingCollections.map((c: any) => c.collection));
 
-  // Criar serviços
-  const collectionsService = new CollectionsService({
-    schema: currentSchema,
-    knex: database,
-  });
+		logger.info(
+			`[inFrame Extension] 📊 Coleções encontradas: ${Array.from(existingCollectionNames).join(', ') || 'nenhuma'}`,
+		);
 
-  const fieldsService = new FieldsService({
-    schema: currentSchema,
-    knex: database,
-  });
+		if (existingCollectionNames.size === schema.collections.length) {
+			logger.info('[inFrame Extension] ✅ Todas as coleções já existem.');
+			return;
+		}
 
-  const relationsService = new RelationsService({
-    schema: currentSchema,
-    knex: database,
-  });
+		// Serviços com permissões de admin
+		const collectionsService = new CollectionsService({
+			knex: database,
+			schema: currentSchema,
+			accountability: null,
+		});
 
-  // Criar coleções
-  for (const collection of schema.collections) {
-    if (!existingCollectionNames.has(collection.collection)) {
-      try {
-        logger.info(`[inFrame Extension] Criando coleção: ${collection.collection}`);
+		const fieldsService = new FieldsService({
+			knex: database,
+			schema: currentSchema,
+			accountability: null,
+		});
 
-        // Criar apenas com metadata, sem schema de campos (para evitar foreign key errors)
-        await collectionsService.createOne({
-          collection: collection.collection,
-          meta: collection.meta,
-          // NÃO incluir schema aqui - será criado pelos campos depois
-        });
+		const relationsService = new RelationsService({
+			knex: database,
+			schema: currentSchema,
+			accountability: null,
+		});
 
-        collectionsCreated++;
-      } catch (error: any) {
-        logger.error(`[inFrame Extension] Erro ao criar coleção ${collection.collection}: ${error.message}`);
-      }
-    }
-  }
+		const created = { collections: 0, fields: 0, relations: 0 };
 
-  // Aguardar um pouco para garantir que as coleções foram criadas
-  if (collectionsCreated > 0) {
-    logger.info(`[inFrame Extension] ${collectionsCreated} coleções criadas, aguardando sincronização...`);
+		// 1. Criar coleções (ordem: pasta primeiro, depois outras)
+		const ordered = ['inframe_pasta', 'languages', 'inframe', 'inframe_translations'];
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+		for (const name of ordered) {
+			const col = schema.collections.find((c: any) => c.collection === name);
 
-    // Atualizar schema para incluir as novas coleções
-    await getSchema({ accountability: null, database });
-  }
+			if (!col || existingCollectionNames.has(name)) continue;
 
-  // Criar campos
-  for (const field of schema.fields) {
-    try {
-      // Verificar se o campo já existe
-      const existingField = await database
-        .select('*')
-        .from('directus_fields')
-        .where('collection', field.collection)
-        .where('field', field.field)
-        .first();
+			try {
+				logger.info(`[inFrame Extension] 🔨 Criando: ${name}`);
+				await collectionsService.createOne({ collection: col.collection, meta: col.meta });
+				created.collections++;
+				logger.info(`[inFrame Extension] ✅ ${name} criada`);
+			} catch (error: any) {
+				logger.error(`[inFrame Extension] ❌ Erro em ${name}: ${error.message}`);
+			}
+		}
 
-      if (!existingField) {
-        await fieldsService.createField(field.collection, {
-          field: field.field,
-          type: field.type as any,
-          schema: field.schema,
-          meta: field.meta,
-        });
+		// Aguardar um pouco para garantir que o schema foi atualizado
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        fieldsCreated++;
-      }
-    } catch (error: any) {
-      // Ignorar erro se for campo de sistema ou duplicado
-      if (!error.message?.includes('already exists')) {
-        logger.warn(`[inFrame Extension] Aviso ao criar campo ${field.collection}.${field.field}: ${error.message}`);
-      }
-    }
-  }
+		// 2. Atualizar schema e criar campos
+		const newSchema = await getSchema();
 
-  // Criar relações
-  if (schema.relations && Array.isArray(schema.relations)) {
-    for (const relation of schema.relations) {
-      try {
-        // Verificar se a relação já existe
-        const existingRelation = await database
-          .select('*')
-          .from('directus_relations')
-          .where('many_collection', relation.collection)
-          .where('many_field', relation.field)
-          .first();
+		const updatedFieldsService = new FieldsService({
+			knex: database,
+			schema: newSchema,
+			accountability: null,
+		});
 
-        if (!existingRelation) {
-          await relationsService.createOne(relation);
-          relationsCreated++;
-        }
-      } catch (error: any) {
-        if (!error.message?.includes('already exists')) {
-          logger.warn(
-            `[inFrame Extension] Aviso ao criar relação ${relation.collection}.${relation.field}: ${error.message}`,
-          );
-        }
-      }
-    }
-  }
+		for (const field of schema.fields.filter((f: any) => !existingCollectionNames.has(f.collection))) {
+			try {
+				await updatedFieldsService.createField(field.collection, field);
+				created.fields++;
+			} catch (error: any) {
+				logger.warn(`[inFrame Extension] ⚠ Campo ${field.collection}.${field.field}: ${error.message}`);
+			}
+		}
 
-  // Log do resultado
-  if (collectionsCreated > 0 || fieldsCreated > 0 || relationsCreated > 0) {
-    logger.info(
-      `[inFrame Extension] Configuração concluída! ` +
-        `Criadas: ${collectionsCreated} coleções, ${fieldsCreated} campos, ${relationsCreated} relações ✓`,
-    );
-  } else {
-    logger.info('[inFrame Extension] Todas as coleções já estão configuradas ✓');
-  }
+		// Aguardar um pouco para garantir que o schema foi atualizado
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
+		// 3. Criar relações
+		const finalSchema = await getSchema();
+
+		const updatedRelationsService = new RelationsService({
+			knex: database,
+			schema: finalSchema,
+			accountability: null,
+		});
+
+		for (const rel of schema.relations || []) {
+			const exists = finalSchema.relations.some(
+				(r: any) =>
+					r.collection === rel.collection &&
+					r.field === rel.field &&
+					r.related_collection === rel.related_collection,
+			);
+
+			if (exists) continue;
+
+			try {
+				await updatedRelationsService.createOne(rel);
+				created.relations++;
+			} catch (error: any) {
+				logger.warn(`[inFrame Extension] ⚠ Relação: ${error.message}`);
+			}
+		}
+
+		logger.info(
+			`[inFrame Extension] ✅ Concluído! ${created.collections} coleções, ${created.fields} campos, ${created.relations} relações`,
+		);
+	} catch (error: any) {
+		logger.error(`[inFrame Extension] ❌ Erro: ${error.message}`);
+		logger.error(error.stack);
+		throw error;
+	}
 }
