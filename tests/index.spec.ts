@@ -113,7 +113,7 @@ describe.each(directusVersions)('Directus Extension Inframe Integration Tests - 
 
   test('Should handle Directus API connection', async () => {
     expect(process.env.DIRECTUS_ACCESS_TOKEN).toBeDefined();
-    expect(process.env.DIRECTUS_PUBLIC_URL).toBe('http://localhost:18055');
+    expect(process.env.DIRECTUS_PUBLIC_URL).toBe('http://directus:8055');
 
     // Test if we can access the items
     const items = await getTestItems();

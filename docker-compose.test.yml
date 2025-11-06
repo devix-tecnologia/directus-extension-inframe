@@ -9,19 +9,27 @@ services:
       SECRET: 'test-secret'
       ADMIN_EMAIL: 'admin@example.com'
       ADMIN_PASSWORD: 'admin123'
-      PUBLIC_URL: 'http://localhost:18055'
+      PUBLIC_URL: 'http://directus:8055'
       STORAGE_LOCAL_ROOT: '/directus/uploads'
       EXTENSIONS_PATH: './extensions'
-    ports:
-      - 18055:8055
+      EXTENSIONS_AUTO_RELOAD: 'true'
+      PERMISSIONS_CACHE_TTL: '0'
+      CACHE_ENABLED: 'false'
     volumes:
-      - ./dist:/directus/extensions/directus-extension-inframe/dist:ro
+      - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
+      - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro
       - ./package.json:/directus/extensions/directus-extension-inframe/package.json:ro
     tmpfs:
       - /directus/uploads:rw,noexec,nosuid,size=64M,mode=1777 # Usa memória temporária para uploads com permissões adequadas
       - /tmp/data:rw,size=64M,mode=1777 # Usa memória temporária para o banco de dados
     networks:
       - directus-test-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/health']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
 
 networks:
   directus-test-network:

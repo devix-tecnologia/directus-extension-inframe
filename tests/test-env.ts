@@ -12,7 +12,8 @@ export const testEnv = {
   DIRECTUS_SECRET: '6116487b-cda1-52c2-b5b5-c8022c45e263',
   DIRECTUS_ADMIN_EMAIL: 'admin@example.com',
   DIRECTUS_ADMIN_PASSWORD: 'admin123',
-  DIRECTUS_PUBLIC_URL: 'http://localhost:18055',
+  DIRECTUS_PUBLIC_URL: 'http://directus:8055',
+  DIRECTUS_INTERNAL_URL: 'http://localhost:8055', // URL interna dentro do container
 
   // Outras configs
   STORAGE_LOCAL_ROOT: '/directus/uploads',

@@ -20,7 +20,7 @@ build:
         node-version: 22.17.0
     - uses: pnpm/action-setup@v4
       with:
-        version: 10.15.0
+        version: 10.20.0
         run_install: false
     - run: pnpm install
     - run: pnpm build
