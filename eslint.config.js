@@ -22,7 +22,13 @@ export default typescriptEslint.config(
 
   // Ignored files
   {
-    ignores: ['**/dist/', 'packages/extensions-sdk/templates/', 'docs/.vitepress/cache/', 'api/extensions/'],
+    ignores: [
+      '**/dist/',
+      'packages/extensions-sdk/templates/',
+      'docs/.vitepress/cache/',
+      'api/extensions/',
+      'tests/debug-items.js',
+    ],
   },
 
   // Enable recommended rules for JS files

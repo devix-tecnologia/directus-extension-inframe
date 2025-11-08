@@ -4,20 +4,28 @@ import { logger } from './test-logger.js';
 import schema from '../schema.json';
 
 describe('Auto Setup Hook - Collection Creation', () => {
+  const testSuiteId = 'hook';
+
   beforeAll(async () => {
     process.env.DIRECTUS_VERSION = process.env.DIRECTUS_TEST_VERSION || '10.8.3';
     logger.setCurrentTest(`Auto Setup Test - Directus ${process.env.DIRECTUS_VERSION}`);
-    await setupTestEnvironment();
+    await setupTestEnvironment(testSuiteId);
   }, 300000); // 5 minutos de timeout
 
   afterAll(async () => {
-    await teardownTestEnvironment();
+    await teardownTestEnvironment(testSuiteId);
   });
 
   test('Should have created all collections from schema', async () => {
-    const response = await dockerHttpRequest('GET', '/collections', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'GET',
+      '/collections',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
 
     const collections = response.data || response;
     const collectionNames = collections.map((c: any) => c.collection);
@@ -35,9 +43,15 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created inframe collection with correct metadata', async () => {
-    const response = await dockerHttpRequest('GET', '/collections/inframe', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'GET',
+      '/collections/inframe',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
 
     const collection = response.data || response;
 
@@ -51,9 +65,15 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created languages collection', async () => {
-    const response = await dockerHttpRequest('GET', '/collections/languages', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'GET',
+      '/collections/languages',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
 
     const collection = response.data || response;
 
@@ -64,9 +84,15 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created inframe_translations collection', async () => {
-    const response = await dockerHttpRequest('GET', '/collections/inframe_translations', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'GET',
+      '/collections/inframe_translations',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
 
     const collection = response.data || response;
 
@@ -78,9 +104,15 @@ describe('Auto Setup Hook - Collection Creation', () => {
   });
 
   test('Should have created inframe_pasta collection (folder group)', async () => {
-    const response = await dockerHttpRequest('GET', '/collections/inframe_pasta', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'GET',
+      '/collections/inframe_pasta',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
 
     const collection = response.data || response;
 
@@ -115,9 +147,15 @@ describe('Auto Setup Hook - Collection Creation', () => {
   test('Collections should be ready to receive data', async () => {
     // Como os campos não são criados automaticamente pelo hook,
     // este teste verifica apenas que as coleções existem
-    const response = await dockerHttpRequest('GET', '/collections/inframe', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'GET',
+      '/collections/inframe',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
 
     const collection = response.data || response;
     expect(collection).toBeDefined();
@@ -130,9 +168,15 @@ describe('Auto Setup Hook - Collection Creation', () => {
     // Este teste verifica se o hook foi executado
     // Como o hook roda no servidor Directus, verificamos indiretamente
     // através da existência das coleções
-    const response = await dockerHttpRequest('GET', '/collections', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'GET',
+      '/collections',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
 
     const collections = response.data || response;
     const expectedCollections = schema.collections.map((c: any) => c.collection);

@@ -34,9 +34,11 @@ req.end();
   
   try {
     const { stdout } = await execAsync(fullCommand);
+
     if (!stdout || stdout.trim() === '') {
       return {};
     }
+
     return JSON.parse(stdout);
   } catch (error) {
     console.error('Request failed:', error.message);
@@ -47,6 +49,7 @@ req.end();
 async function test() {
   try {
     console.log('1. Login...');
+
     const loginResponse = await dockerHttpRequest('POST', '/auth/login', {
       email: 'admin@example.com',
       password: 'admin123',
@@ -61,6 +64,7 @@ async function test() {
     console.log('   Has data:', !!collectionsResponse.data);
     
     console.log('\n3. Create test collection...');
+
     const collectionData = {
       collection: 'debug_test',
       fields: [

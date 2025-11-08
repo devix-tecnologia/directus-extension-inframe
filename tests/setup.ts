@@ -11,8 +11,10 @@ export async function dockerHttpRequest(
   path: string,
   data?: any,
   headers?: Record<string, string>,
+  testSuiteId?: string,
 ): Promise<any> {
-  const containerName = `directus-inframe-${process.env.DIRECTUS_VERSION}`;
+  const suiteId = testSuiteId || process.env.TEST_SUITE_ID || 'main';
+  const containerName = `directus-inframe-${suiteId}-${process.env.DIRECTUS_VERSION}`;
 
   // Cria um script Node.js para fazer a requisição HTTP
   const headersJson = JSON.stringify(headers || {}).replace(/"/g, '\\"');
@@ -43,10 +45,12 @@ req.end();
 
   try {
     const { stdout } = await execAsync(fullCommand);
+
     // Se stdout estiver vazio, retornar objeto vazio ao invés de tentar fazer parse
     if (!stdout || stdout.trim() === '') {
       return {};
     }
+
     return JSON.parse(stdout);
   } catch (error: any) {
     logger.error('Docker HTTP request failed:', error);
@@ -54,13 +58,13 @@ req.end();
   }
 }
 
-async function cleanupDocker() {
+async function cleanupDocker(testSuiteId: string) {
   try {
     logger.debug('Cleaning up test containers...');
 
     // Para e remove containers
     await execAsync(
-      `DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes`,
+      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes`,
     );
 
     // Aguarda um pouco para garantir que as portas foram liberadas
@@ -69,6 +73,7 @@ async function cleanupDocker() {
     logger.debug('Test containers removed');
   } catch (error) {
     logger.warn('Warning while cleaning test containers:', error);
+
     // Tenta forçar a remoção de containers órfãos
     try {
       await execAsync("docker ps -a | grep directus-inframe | awk '{print $1}' | xargs -r docker rm -f");
@@ -90,7 +95,7 @@ async function waitForContainerHealth(containerName: string, retries = 60, delay
       }
 
       logger.debug(`Container health: ${healthStatus} (attempt ${i + 1}/${retries})`);
-    } catch (error) {
+    } catch {
       logger.debug(`Waiting for container to be created (attempt ${i + 1}/${retries})`);
     }
 
@@ -100,10 +105,10 @@ async function waitForContainerHealth(containerName: string, retries = 60, delay
   throw new Error(`Container ${containerName} did not become healthy`);
 }
 
-export async function setupTestEnvironment() {
+export async function setupTestEnvironment(testSuiteId: string = 'main') {
   try {
     // Limpa o ambiente Docker
-    await cleanupDocker();
+    await cleanupDocker(testSuiteId);
 
     // Configura o ambiente de teste
     setupTestEnv();
@@ -112,7 +117,7 @@ export async function setupTestEnvironment() {
     logger.info('Starting test environment...');
 
     const { stdout, stderr } = await execAsync(
-      `DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml up -d`,
+      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml up -d`,
     );
 
     // Docker Compose uses stderr for progress messages
@@ -126,18 +131,24 @@ export async function setupTestEnvironment() {
 
     // Wait for container to be healthy (using docker healthcheck)
     logger.info('Waiting for container to be healthy...');
-    const containerName = `directus-inframe-${process.env.DIRECTUS_VERSION}`;
+    const containerName = `directus-inframe-${testSuiteId}-${process.env.DIRECTUS_VERSION}`;
     await waitForContainerHealth(containerName);
 
     // Wait for Directus to be ready
     logger.info('Waiting for Directus to be ready...');
-    await waitForBootstrap();
+    await waitForBootstrap(testSuiteId);
 
     // Login to get admin access token via docker exec
-    const loginResponse = await dockerHttpRequest('POST', '/auth/login', {
-      email: testEnv.DIRECTUS_ADMIN_EMAIL,
-      password: testEnv.DIRECTUS_ADMIN_PASSWORD,
-    });
+    const loginResponse = await dockerHttpRequest(
+      'POST',
+      '/auth/login',
+      {
+        email: testEnv.DIRECTUS_ADMIN_EMAIL,
+        password: testEnv.DIRECTUS_ADMIN_PASSWORD,
+      },
+      undefined,
+      testSuiteId,
+    );
 
     const accessToken = loginResponse.data?.access_token || loginResponse.access_token;
 
@@ -151,12 +162,12 @@ export async function setupTestEnvironment() {
   }
 }
 
-export async function teardownTestEnvironment() {
+export async function teardownTestEnvironment(testSuiteId: string = 'main') {
   try {
     logger.info('Shutting down test environment...');
 
     await execAsync(
-      `DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans`,
+      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans`,
     );
   } catch (error) {
     logger.error('Erro ao finalizar ambiente de teste:', error);
@@ -164,13 +175,13 @@ export async function teardownTestEnvironment() {
   }
 }
 
-async function waitForBootstrap(retries = 60, delay = 2000) {
+async function waitForBootstrap(testSuiteId: string, retries = 60, delay = 2000) {
   for (let i = 0; i < retries; i++) {
     try {
       logger.debug(`Connection attempt ${i + 1}/${retries}`);
 
       // Check if server is responding via docker exec
-      const healthCheck = await dockerHttpRequest('GET', '/server/health');
+      const healthCheck = await dockerHttpRequest('GET', '/server/health', undefined, undefined, testSuiteId);
 
       if (healthCheck.status !== 'ok') {
         throw new Error('Health check failed');
@@ -178,10 +189,16 @@ async function waitForBootstrap(retries = 60, delay = 2000) {
 
       // Try to login to verify if the system is fully ready
       try {
-        await dockerHttpRequest('POST', '/auth/login', {
-          email: testEnv.DIRECTUS_ADMIN_EMAIL,
-          password: testEnv.DIRECTUS_ADMIN_PASSWORD,
-        });
+        await dockerHttpRequest(
+          'POST',
+          '/auth/login',
+          {
+            email: testEnv.DIRECTUS_ADMIN_EMAIL,
+            password: testEnv.DIRECTUS_ADMIN_PASSWORD,
+          },
+          undefined,
+          testSuiteId,
+        );
 
         logger.info('Directus is ready and accepting authentication');
         return;

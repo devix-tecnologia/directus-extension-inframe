@@ -1,6 +1,7 @@
 import { dockerHttpRequest } from './setup.js';
+import { logger } from './test-logger.js';
 
-export async function createTestCollection(): Promise<string> {
+export async function createTestCollection(testSuiteId?: string): Promise<string> {
   const collectionData = {
     collection: 'test_inframe_items',
     fields: [
@@ -87,12 +88,18 @@ export async function createTestCollection(): Promise<string> {
     },
   };
 
-  const response = await dockerHttpRequest('POST', '/collections', collectionData, {
-    Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-  });
+  const response = await dockerHttpRequest(
+    'POST',
+    '/collections',
+    collectionData,
+    {
+      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+    },
+    testSuiteId,
+  );
 
   if (process.env.DEBUG_TESTS) {
-    console.log('[DEBUG] Create collection response:', JSON.stringify(response, null, 2));
+    logger.info('[DEBUG] Create collection response:', JSON.stringify(response, null, 2));
   }
 
   const collectionName = response.data?.collection || response.collection;
@@ -103,57 +110,95 @@ export async function createTestCollection(): Promise<string> {
 
   // Aguardar um pouco para garantir que a tabela foi criada no banco
   await new Promise((resolve) => setTimeout(resolve, 1000));
-  
+
   if (process.env.DEBUG_TESTS) {
-    console.log('[DEBUG] Collection created:', collectionName);
+    logger.info('[DEBUG] Collection created:', collectionName);
   }
 
   return collectionName;
 }
 
-export async function createTestItem(title: string, url: string, status = 'published') {
+export async function createTestItem(title: string, url: string, status = 'published', testSuiteId?: string) {
   const itemData = {
     title,
     url,
     status,
   };
 
-  const response = await dockerHttpRequest('POST', '/items/test_inframe_items', itemData, {
-    Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-  });
-
-  const item = response.data?.data || response.data || response;
-  
-  if (process.env.DEBUG_TESTS) {
-    console.log('[DEBUG] Created item:', item);
-  }
-  
-  return item;
-}
-
-export async function getTestItems() {
-  const response = await dockerHttpRequest('GET', '/items/test_inframe_items', undefined, {
-    Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-  });
-
-  // A resposta do Directus pode estar em response.data.data ou response.data
-  const items = response.data?.data || response.data || response;
-
-  if (process.env.DEBUG_TESTS) {
-    console.log('[DEBUG] getTestItems response:', JSON.stringify(response, null, 2));
-    console.log('[DEBUG] Extracted items:', items);
-    console.log('[DEBUG] Is array:', Array.isArray(items));
-  }
-
-  // Se items não for um array, retornar array vazio
-  return Array.isArray(items) ? items : [];
-}
-
-export async function deleteTestCollection() {
   try {
-    await dockerHttpRequest('DELETE', '/collections/test_inframe_items', undefined, {
-      Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-    });
+    const response = await dockerHttpRequest(
+      'POST',
+      '/items/test_inframe_items',
+      itemData,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
+
+    const item = response.data?.data || response.data || response;
+
+    if (process.env.DEBUG_TESTS) {
+      logger.info('[DEBUG] Created item:', item);
+    }
+
+    return item;
+  } catch (error: any) {
+    logger.error('[ERROR] Failed to create test item:', error.message);
+
+    if (error.response?.status === 403) {
+      logger.warn('[WARN] 403 error when creating test item - this is a known permissions issue');
+    }
+
+    throw error;
+  }
+}
+
+export async function getTestItems(testSuiteId?: string) {
+  try {
+    const response = await dockerHttpRequest(
+      'GET',
+      '/items/test_inframe_items',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
+
+    // A resposta do Directus pode estar em response.data.data ou response.data
+    const items = response.data?.data || response.data || response;
+
+    if (process.env.DEBUG_TESTS) {
+      logger.info('[DEBUG] getTestItems response:', JSON.stringify(response, null, 2));
+      logger.info('[DEBUG] Extracted items:', items);
+      logger.info('[DEBUG] Is array:', Array.isArray(items));
+    }
+
+    // Se items não for um array, retornar array vazio
+    return Array.isArray(items) ? items : [];
+  } catch (error: any) {
+    logger.error('[ERROR] Failed to get test items:', error.message);
+
+    if (error.response?.status === 403) {
+      logger.warn('[WARN] 403 error when getting test items - this is a known permissions issue');
+    }
+
+    return [];
+  }
+}
+
+export async function deleteTestCollection(testSuiteId?: string) {
+  try {
+    await dockerHttpRequest(
+      'DELETE',
+      '/collections/test_inframe_items',
+      undefined,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
   } catch {
     // Collection might not exist, ignore error
   }

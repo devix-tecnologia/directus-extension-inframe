@@ -25,6 +25,7 @@ const mockInframeModule = {
 
 describe.each(directusVersions)('Directus Extension Inframe Integration Tests - Directus %s', (version: string) => {
   let testCollectionName: string;
+  const testSuiteId = 'integration';
 
   beforeEach(() => {
     logger.setCurrentTest(`Directus ${version}`);
@@ -32,24 +33,24 @@ describe.each(directusVersions)('Directus Extension Inframe Integration Tests - 
 
   beforeAll(async () => {
     process.env.DIRECTUS_VERSION = version;
-    await setupTestEnvironment();
+    await setupTestEnvironment(testSuiteId);
 
     // Cleanup any existing test collection
-    await deleteTestCollection();
+    await deleteTestCollection(testSuiteId);
 
     // Create test collection
-    testCollectionName = await createTestCollection();
+    testCollectionName = await createTestCollection(testSuiteId);
 
     // Create test items
-    await createTestItem('Test Report 1', 'https://example.com/report1');
-    await createTestItem('Test Report 2', 'https://example.com/report2');
-    await createTestItem('Draft Report', 'https://example.com/draft', 'draft');
-  }, 120000);
+    await createTestItem('Test Report 1', 'https://example.com/report1', 'published', testSuiteId);
+    await createTestItem('Test Report 2', 'https://example.com/report2', 'published', testSuiteId);
+    await createTestItem('Draft Report', 'https://example.com/draft', 'draft', testSuiteId);
+  }, 300000); // 5 minutos de timeout
 
   afterAll(async () => {
     // Cleanup test collection
-    await deleteTestCollection();
-    await teardownTestEnvironment();
+    await deleteTestCollection(testSuiteId);
+    await teardownTestEnvironment(testSuiteId);
   });
 
   test('Extension module should have correct configuration', () => {
@@ -78,7 +79,7 @@ describe.each(directusVersions)('Directus Extension Inframe Integration Tests - 
   });
 
   test('Should create and retrieve test items', async () => {
-    const items = await getTestItems();
+    const items = await getTestItems(testSuiteId);
 
     expect(Array.isArray(items)).toBe(true);
     expect(items.length).toBeGreaterThanOrEqual(2);
@@ -96,7 +97,7 @@ describe.each(directusVersions)('Directus Extension Inframe Integration Tests - 
   });
 
   test('Should filter published items correctly', async () => {
-    const items = await getTestItems();
+    const items = await getTestItems(testSuiteId);
     const publishedItems = items.filter((item: any) => item.status === 'published');
     const draftItems = items.filter((item: any) => item.status === 'draft');
 
@@ -116,7 +117,7 @@ describe.each(directusVersions)('Directus Extension Inframe Integration Tests - 
     expect(process.env.DIRECTUS_PUBLIC_URL).toBe('http://directus:8055');
 
     // Test if we can access the items
-    const items = await getTestItems();
+    const items = await getTestItems(testSuiteId);
     expect(Array.isArray(items)).toBe(true);
   });
 
