@@ -2,6 +2,7 @@
   "name": "@devix-tecnologia/directus-extension-inframe",
   "description": "Extensão para módulo de visualização de conteúdo em iframes",
   "icon": "extension",
+  "type": "module",
   "private": false,
   "version": "2.0.4",
   "keywords": [
