@@ -58,28 +58,35 @@ req.end();
   }
 }
 
-async function cleanupDocker(testSuiteId: string) {
+async function cleanupDocker(_testSuiteId: string) {
   try {
     logger.debug('Cleaning up test containers...');
 
-    // Para e remove containers
-    await execAsync(
-      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes`,
-    );
+    // NOTE: The following cleanup is commented out so test containers
+    // remain available after the tests for manual inspection. To re-enable
+    // automatic cleanup, uncomment the lines below.
 
-    // Aguarda um pouco para garantir que as portas foram liberadas
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // // Para e remove containers
+    // await execAsync(
+    //   `TEST_SUITE_ID=${_testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes`,
+    // );
 
-    logger.debug('Test containers removed');
+    // // Aguarda um pouco para garantir que as portas foram liberadas
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // logger.debug('Test containers removed');
   } catch (error) {
     logger.warn('Warning while cleaning test containers:', error);
 
-    // Tenta forçar a remoção de containers órfãos
-    try {
-      await execAsync("docker ps -a | grep directus-inframe | awk '{print $1}' | xargs -r docker rm -f");
-    } catch {
-      // Ignora erros na limpeza forçada
-    }
+    // NOTE: The forced removal fallback is also commented out to avoid
+    // deleting containers during debugging. Uncomment if automatic forced
+    // removal is desired.
+
+    // try {
+    //   await execAsync("docker ps -a | grep directus-inframe | awk '{print $1}' | xargs -r docker rm -f");
+    // } catch {
+    //   // Ignora erros na limpeza forçada
+    // }
   }
 }
 
@@ -162,13 +169,17 @@ export async function setupTestEnvironment(testSuiteId: string = 'main') {
   }
 }
 
-export async function teardownTestEnvironment(testSuiteId: string = 'main') {
+export async function teardownTestEnvironment(_testSuiteId: string = 'main') {
   try {
     logger.info('Shutting down test environment...');
 
-    await execAsync(
-      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans`,
-    );
+    // NOTE: The automatic teardown is commented out so the test containers
+    // are left running for manual inspection after tests complete. To re-enable
+    // automatic teardown, uncomment the lines below.
+
+    // await execAsync(
+    //   `TEST_SUITE_ID=${_testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans`,
+    // );
   } catch (error) {
     logger.error('Erro ao finalizar ambiente de teste:', error);
     throw error;

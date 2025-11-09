@@ -10,6 +10,14 @@ coverage/
 .nyc_output
 test-results/
 
+# E2E test artifacts
+tests/e2e/auth-storage.json
+tests/e2e/screenshots/
+
 # Docker volumes
 volume/
 uploads/
+
+playwright-report
+test-output.log
+test-run-keep-containers.log

@@ -1,0 +1,7 @@
+# Screenshots gerados pelos testes E2E
+screenshots/
+
+# Relatórios do Playwright
+test-results/
+playwright-report/
+playwright/.cache/

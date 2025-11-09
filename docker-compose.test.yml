@@ -2,6 +2,8 @@ services:
   directus:
     image: directus/directus:${DIRECTUS_VERSION:-9.23.1}
     container_name: directus-inframe-${TEST_SUITE_ID:-main}-${DIRECTUS_VERSION:-latest}
+    ports:
+      - '8055:8055'
     environment:
       DB_CLIENT: 'sqlite3'
       DB_FILENAME: '/tmp/data/directus.db'
@@ -15,6 +17,8 @@ services:
       EXTENSIONS_AUTO_RELOAD: 'true'
       PERMISSIONS_CACHE_TTL: '0'
       CACHE_ENABLED: 'false'
+      ACCEPT_TERMS: 'true'
+      PROJECT_OWNER: 'admin@example.com'
     volumes:
       - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
       - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro
