@@ -1,16 +1,14 @@
 import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * Credenciais de admin padrão do ambiente de teste
  */
 const ADMIN_EMAIL = 'admin@example.com';
 const ADMIN_PASSWORD = 'admin123';
+
+// Para CommonJS, usamos __dirname diretamente
 const storageFile = path.resolve(__dirname, 'auth-storage.json');
 
 // Variáveis compartilhadas entre os testes
