@@ -1,9 +1,13 @@
 import { defineHook } from '@directus/extensions-sdk';
 import schema from '../../schema.json';
 
-export default defineHook(({ action }, { services, logger, database, getSchema }) => {
-  // Hook executado quando a extensão é carregada/instalada
-  action('server.start', async () => {
+export default defineHook(({ action, init }, { services, logger, database, getSchema }) => {
+  logger.info('[inFrame Extension] 🔌 Hook registrado, aguardando eventos...');
+
+  // Hook no evento de inicialização - executa após as rotas serem registradas
+  init('routes.after', async () => {
+    logger.info('[inFrame Extension] 🚀 Evento routes.after disparado, executando setup...');
+
     try {
       await setupCollections({ services, logger, database, getSchema });
     } catch (error: any) {
@@ -11,7 +15,18 @@ export default defineHook(({ action }, { services, logger, database, getSchema }
     }
   });
 
-  // Hook executado quando uma extensão é instalada
+  // Hook no evento de start do servidor (action)
+  action('server.start', async () => {
+    logger.info('[inFrame Extension] 🚀 Evento server.start disparado, executando setup...');
+
+    try {
+      await setupCollections({ services, logger, database, getSchema });
+    } catch (error: any) {
+      logger.error(`[inFrame Extension] Erro durante setup inicial: ${error.message}`);
+    }
+  });
+
+  // Hook para quando a extensão for instalada/atualizada
   action('extensions.install', async ({ extension }: any) => {
     if (extension?.includes('inframe') || extension?.includes('@devix-tecnologia/directus-extension-inframe')) {
       logger.info('[inFrame Extension] Extensão instalada, configurando coleções...');
@@ -24,7 +39,7 @@ export default defineHook(({ action }, { services, logger, database, getSchema }
     }
   });
 
-  // Hook executado quando extensões são recarregadas
+  // Hook para quando as extensões forem recarregadas
   action('extensions.reload', async () => {
     logger.info('[inFrame Extension] Verificando configuração das coleções...');
 
@@ -40,7 +55,7 @@ export default defineHook(({ action }, { services, logger, database, getSchema }
 async function verifyCollections({ logger, services, getSchema }: any) {
   const { CollectionsService } = services;
   const currentSchema = await getSchema();
-  
+
   const collectionsService = new CollectionsService({
     schema: currentSchema,
     knex: null as any,
@@ -49,9 +64,9 @@ async function verifyCollections({ logger, services, getSchema }: any) {
   try {
     const allCollections = await collectionsService.readByQuery();
     const existingCollectionNames = new Set(allCollections.map((c: any) => c.collection));
-    
+
     const ourCollections = schema.collections.map((c: any) => c.collection);
-    const existingCount = ourCollections.filter(c => existingCollectionNames.has(c)).length;
+    const existingCount = ourCollections.filter((c) => existingCollectionNames.has(c)).length;
     const totalCount = ourCollections.length;
 
     if (existingCount === totalCount) {
@@ -68,7 +83,7 @@ async function verifyCollections({ logger, services, getSchema }: any) {
 
 // Função principal para criar as coleções
 async function setupCollections({ services, logger, database, getSchema }: any) {
-  const { CollectionsService, RelationsService } = services;
+  const { CollectionsService, RelationsService, FieldsService } = services;
 
   logger.info('[inFrame Extension] Iniciando configuração de coleções...');
 
@@ -83,7 +98,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
   // Verificar se as coleções já existem usando o serviço
   let allCollections: any[] = [];
-  
+
   try {
     allCollections = await collectionsService.readByQuery();
   } catch (error: any) {
@@ -110,9 +125,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
   const collectionNames = orderedCollections.map((c: any) => c.collection);
 
-  logger.info(
-    `[inFrame Extension] 📋 Coleções a serem criadas (se não existirem): ${collectionNames.join(', ')}`,
-  );
+  logger.info(`[inFrame Extension] 📋 Coleções a serem criadas (se não existirem): ${collectionNames.join(', ')}`);
 
   // Criar coleções com campos incluídos (conforme documentação oficial)
   for (const collection of orderedCollections) {
@@ -122,19 +135,18 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
         // Buscar campos que pertencem a esta coleção
         const collectionFields = schema.fields.filter((f: any) => f.collection === collection.collection);
-        
-        // Criar coleção com campos incluídos (API do Directus suporta isso)
+
+        // Criar apenas a coleção primeiro (SEM campos)
         await collectionsService.createOne({
           collection: collection.collection,
           meta: collection.meta,
-          fields: collectionFields.length > 0 ? collectionFields : undefined,
+          schema: collection.schema || null,
         });
 
         collectionsCreated++;
-        fieldsCreated += collectionFields.length;
-        
+
         logger.info(
-          `[inFrame Extension] ✅ Coleção ${collection.collection} criada com ${collectionFields.length} campo(s)`
+          `[inFrame Extension] ✅ Coleção ${collection.collection} criada (${collectionFields.length} campo(s) serão criados depois)`,
         );
       } catch (error: any) {
         logger.error(`[inFrame Extension] ❌ Erro ao criar coleção ${collection.collection}: ${error.message}`);
@@ -146,33 +158,71 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
   // Se criamos novas coleções, limpar cache e forçar reload do schema
   if (collectionsCreated > 0) {
-    logger.info(`[inFrame Extension] ${collectionsCreated} coleção(ões) criada(s) com ${fieldsCreated} campo(s)`);
+    logger.info(`[inFrame Extension] ${collectionsCreated} coleção(ões) criada(s)`);
     logger.info('[inFrame Extension] 🧹 Aguardando propagação do schema no Directus...');
-    
+
     // Aguardar para o schema ser atualizado no banco
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    
+
     // Forçar atualização do schema chamando getSchema várias vezes
     for (let i = 0; i < 3; i++) {
       await getSchema({ accountability: null, database });
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-    
+
     logger.info('[inFrame Extension] ✅ Schema sincronizado (aguardou 9 segundos)');
+    logger.info('[inFrame Extension] 🔨 Criando campos...');
+
+    // Criar FieldsService com schema atualizado
+    const updatedSchemaForFields = await getSchema({ accountability: null, database });
+
+    const fieldsService = new FieldsService({
+      schema: updatedSchemaForFields,
+      knex: database,
+    });
+
+    // Criar campos
+    for (const field of schema.fields) {
+      try {
+        // Verificar se o campo já existe
+        const existingField = await database
+          .select('*')
+          .from('directus_fields')
+          .where('collection', field.collection)
+          .where('field', field.field)
+          .first();
+
+        if (!existingField) {
+          logger.info(`[inFrame Extension] 🔨 Criando campo: ${field.collection}.${field.field}`);
+
+          await fieldsService.createField(field.collection, {
+            field: field.field,
+            type: field.type,
+            schema: field.schema,
+            meta: field.meta,
+          });
+
+          fieldsCreated++;
+          logger.info(`[inFrame Extension] ✅ Campo ${field.collection}.${field.field} criado`);
+        }
+      } catch (error: any) {
+        logger.error(`[inFrame Extension] ❌ Erro ao criar campo ${field.collection}.${field.field}: ${error.message}`);
+      }
+    }
+
+    logger.info(`[inFrame Extension] ✅ ${fieldsCreated} campo(s) criado(s)`);
   }
 
   // Atualizar schema para criação de relações (forçar reload completo)
   const updatedSchema = await getSchema({ accountability: null, database });
-  
+
   logger.info('[inFrame Extension] 📋 Verificando relações...');
-  
+
   // Debug: listar todas as coleções disponíveis no schema
   const availableCollections = Object.keys(updatedSchema.collections || {});
 
-  const ourCollections = availableCollections.filter(c => 
-    c.startsWith('inframe') || c === 'languages'
-  );
-  
+  const ourCollections = availableCollections.filter((c) => c.startsWith('inframe') || c === 'languages');
+
   logger.info(`[inFrame Extension] 🔍 Coleções encontradas no schema: ${ourCollections.join(', ') || 'nenhuma'}`);
   logger.info(`[inFrame Extension] 📊 Total de coleções no schema: ${availableCollections.length}`);
 
@@ -193,7 +243,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
           .from('directus_collections')
           .where('collection', relation.collection)
           .first();
-        
+
         if (!collectionExists) {
           logger.warn(
             `[inFrame Extension] ⚠️  Coleção ${relation.collection} não encontrada no banco, pulando relação`,
@@ -209,7 +259,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
           .from('directus_collections')
           .where('collection', relation.related_collection)
           .first();
-          
+
         if (!relatedExists) {
           logger.warn(
             `[inFrame Extension] ⚠️  Coleção relacionada ${relation.related_collection} não encontrada no banco, pulando relação`,
@@ -232,9 +282,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
         continue;
       }
 
-      logger.info(
-        `[inFrame Extension] 🔗 Criando relação: ${relation.collection}.${relation.field}`,
-      );
+      logger.info(`[inFrame Extension] 🔗 Criando relação: ${relation.collection}.${relation.field}`);
 
       // Como o schema não é atualizado a tempo, vamos criar a relação diretamente no banco
       try {
@@ -244,12 +292,14 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
           one_collection: relation.meta.one_collection,
           one_field: relation.meta.one_field,
           one_collection_field: relation.meta.one_collection_field,
-          one_allowed_collections: relation.meta.one_allowed_collections ? JSON.stringify(relation.meta.one_allowed_collections) : null,
+          one_allowed_collections: relation.meta.one_allowed_collections
+            ? JSON.stringify(relation.meta.one_allowed_collections)
+            : null,
           junction_field: relation.meta.junction_field,
           sort_field: relation.meta.sort_field,
           one_deselect_action: relation.meta.one_deselect_action || 'nullify',
         });
-        
+
         relationsCreated++;
 
         logger.info(
@@ -258,7 +308,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
       } catch (dbError: any) {
         // Se der erro (ex: já existe), tentar com o serviço
         logger.warn(`[inFrame Extension] Tentativa direta falhou: ${dbError.message}, tentando com serviço...`);
-        
+
         await updatedRelationsService.createOne({
           collection: relation.collection,
           field: relation.field,
@@ -269,9 +319,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
         relationsCreated++;
 
-        logger.info(
-          `[inFrame Extension] ✅ Relação ${relation.collection}.${relation.field} criada via serviço`,
-        );
+        logger.info(`[inFrame Extension] ✅ Relação ${relation.collection}.${relation.field} criada via serviço`);
       }
     } catch (error: any) {
       logger.error(
@@ -283,4 +331,19 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
   logger.info(
     `[inFrame Extension] ✅ Configuração concluída! Criadas: ${collectionsCreated} coleção(ões), ${fieldsCreated} campo(s), ${relationsCreated} relação(ões)`,
   );
+
+  // Forçar atualização do schema e limpar caches
+  try {
+    logger.info('[inFrame Extension] 🔄 Limpando cache e atualizando schema...');
+
+    // Forçar uma nova leitura do schema
+    await getSchema({ accountability: null, database });
+
+    // Aguardar um pouco para garantir que o schema foi atualizado
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    logger.info('[inFrame Extension] ✅ Cache limpo e schema atualizado');
+  } catch (cacheError: any) {
+    logger.warn(`[inFrame Extension] ⚠️  Erro ao limpar cache: ${cacheError.message}`);
+  }
 }

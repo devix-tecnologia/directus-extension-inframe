@@ -85,7 +85,7 @@
         "icon": "folder",
         "note": null,
         "display_template": null,
-        "hidden": true,
+        "hidden": false,
         "singleton": false,
         "translations": null,
         "archive_field": null,

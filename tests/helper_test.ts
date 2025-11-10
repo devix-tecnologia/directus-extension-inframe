@@ -152,7 +152,7 @@ export async function createTestCollection(testSuiteId?: string): Promise<string
 
   if (process.env.DEBUG_TESTS) {
     logger.info('[DEBUG] Collection created with fields:', createdCollectionName);
-    
+
     // Verificar se os campos foram realmente criados
     try {
       const fieldsCheck = await dockerHttpRequest(

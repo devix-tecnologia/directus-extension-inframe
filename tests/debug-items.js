@@ -5,10 +5,10 @@ const execAsync = promisify(exec);
 
 async function dockerHttpRequest(method, path, data) {
   const containerName = 'directus-inframe-9.23.1';
-  
+
   const headersJson = JSON.stringify({ 'Content-Type': 'application/json' }).replace(/"/g, '\\"');
   const dataJson = data ? JSON.stringify(data).replace(/"/g, '\\"') : '';
-  
+
   const nodeScript = `
 const http = require('http');
 const options = {
@@ -31,7 +31,7 @@ req.end();
 
   const escapedScript = nodeScript.replace(/\n/g, ' ').replace(/'/g, "'\\''");
   const fullCommand = `docker exec ${containerName} node -e '${escapedScript}'`;
-  
+
   try {
     const { stdout } = await execAsync(fullCommand);
 
@@ -54,15 +54,15 @@ async function test() {
       email: 'admin@example.com',
       password: 'admin123',
     });
-    
+
     const token = loginResponse.data?.access_token || loginResponse.access_token;
     console.log('   Token:', token ? 'OK' : 'FAILED');
-    
+
     console.log('\n2. Get collections...');
     const collectionsResponse = await dockerHttpRequest('GET', '/collections', null);
     console.log('   Response keys:', Object.keys(collectionsResponse));
     console.log('   Has data:', !!collectionsResponse.data);
-    
+
     console.log('\n3. Create test collection...');
 
     const collectionData = {
@@ -72,20 +72,19 @@ async function test() {
           field: 'id',
           type: 'integer',
           schema: { is_primary_key: true, has_auto_increment: true },
-          meta: { hidden: true }
+          meta: { hidden: true },
         },
         {
           field: 'title',
           type: 'string',
           schema: { is_nullable: false },
-          meta: { interface: 'input' }
-        }
-      ]
+          meta: { interface: 'input' },
+        },
+      ],
     };
-    
+
     // Note: This won't work without auth, but shows the structure
     console.log('   Collection structure:', JSON.stringify(collectionData, null, 2));
-    
   } catch (error) {
     console.error('Error:', error.message);
   }

@@ -28,20 +28,20 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
 
     // Navega para o login e faz autenticação
     await sharedPage.goto('/admin/login', { waitUntil: 'networkidle' });
-    
+
     // Aguardar um pouco para a página carregar completamente
     await sharedPage.waitForTimeout(1000);
-    
+
     // Verificar se há um botão "Continue" (sessão existente)
     // O Directus mostra esse botão quando já existe uma sessão autenticada
     const continueButton = sharedPage.locator('button:has-text("Continue")');
     const hasContinueButton = await continueButton.isVisible({ timeout: 3000 }).catch(() => false);
-    
+
     if (hasContinueButton) {
       // Se há botão Continue, clicar nele e aguardar redirecionamento
       await continueButton.click();
       await sharedPage.waitForURL('**/admin/**', { timeout: 20000 });
-      
+
       // Aguardar a página carregar completamente após o Continue
       await sharedPage.waitForLoadState('networkidle');
       await sharedPage.waitForTimeout(2000);
@@ -55,7 +55,9 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     }
 
     // Esperar elementos de navegação visíveis (com timeout maior)
-    await sharedPage.waitForSelector('#navigation, aside[role="navigation"], [data-test-id="navigation"]', { timeout: 30000 });
+    await sharedPage.waitForSelector('#navigation, aside[role="navigation"], [data-test-id="navigation"]', {
+      timeout: 30000,
+    });
   });
 
   test.afterAll(async () => {
@@ -63,7 +65,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     if (sharedContext) {
       await sharedContext.close();
     }
-    
+
     // Remover storage file (se existir)
     if (fs.existsSync(storageFile)) {
       try {
@@ -77,10 +79,10 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
   test('deve fazer login com sucesso e estabilizar o dashboard', async () => {
     // A página compartilhada já está autenticada e no dashboard
     // Apenas verificar que os elementos estão presentes
-    
+
     // Verificar URL e elementos do dashboard
     expect(sharedPage.url()).toContain('/admin');
-    
+
     // Aguardar navegação estar visível (já deve estar do beforeAll)
     const nav = await sharedPage.locator('#navigation, aside[role="navigation"], [data-test-id="navigation"]').first();
     await expect(nav).toBeVisible({ timeout: 5000 });
@@ -100,7 +102,9 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     }
 
     // Aguardar elementos da página de coleção (header, tabela, ou empty state)
-    await sharedPage.waitForSelector('header, .header-bar, table, [role="table"], .v-info, .empty-state', { timeout: 20000 });
+    await sharedPage.waitForSelector('header, .header-bar, table, [role="table"], .v-info, .empty-state', {
+      timeout: 20000,
+    });
 
     // Screenshot para debug
     await sharedPage.screenshot({ path: 'tests/e2e/screenshots/collections-page.png', fullPage: true });
@@ -115,7 +119,10 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     }
 
     // Aguardar elementos que indicam página carregada
-    await sharedPage.waitForSelector('table, [role="table"], .v-grid, .grid-container, .v-info, .empty-state, .v-notice, header', { timeout: 20000 });
+    await sharedPage.waitForSelector(
+      'table, [role="table"], .v-grid, .grid-container, .v-info, .empty-state, .v-notice, header',
+      { timeout: 20000 },
+    );
 
     // Fazer uma verificação leve no corpo para erros óbvios
     const bodyText = (await sharedPage.textContent('body')) || '';
@@ -129,8 +136,20 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     // Usar página compartilhada
     await sharedPage.goto('/admin', { waitUntil: 'networkidle' });
 
+    // Verificar se há botão Continue novamente (pode aparecer ao navegar)
+    const continueButton = sharedPage.locator('button:has-text("Continue")');
+    const hasContinueButton = await continueButton.isVisible({ timeout: 3000 }).catch(() => false);
+
+    if (hasContinueButton) {
+      await continueButton.click();
+      await sharedPage.waitForLoadState('networkidle');
+      await sharedPage.waitForTimeout(2000);
+    }
+
     // Aguardar navegação
-    const nav = await sharedPage.waitForSelector('#navigation, aside[role="navigation"], [data-test-id="navigation"]', { timeout: 20000 });
+    const nav = await sharedPage.waitForSelector('#navigation, aside[role="navigation"], [data-test-id="navigation"]', {
+      timeout: 20000,
+    });
     const navText = (await nav.textContent()) || '';
 
     const hasInframe = navText.toLowerCase().includes('inframe') || navText.toLowerCase().includes('relatórios');
