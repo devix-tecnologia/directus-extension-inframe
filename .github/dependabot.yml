@@ -6,27 +6,10 @@ updates:
     schedule:
       interval: 'weekly'
       day: 'monday'
-    open-pull-requests-limit: 10
     groups:
-      devix-dependencies:
+      dependencies:
         patterns:
-          - '@devix-tecnologia/*'
-      directus-dependencies:
-        patterns:
-          - '@directus/*'
-          - 'directus'
-      semantic-release:
-        patterns:
-          - '@semantic-release/*'
-          - 'semantic-release'
-      eslint-dependencies:
-        patterns:
-          - 'eslint*'
-          - '@eslint/*'
-      typescript-dependencies:
-        patterns:
-          - 'typescript*'
-          - '@types/*'
+          - '*'
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: 'github-actions'
@@ -34,4 +17,7 @@ updates:
     schedule:
       interval: 'weekly'
       day: 'monday'
-    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns:
+          - '*'

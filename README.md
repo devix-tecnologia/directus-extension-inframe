@@ -5,7 +5,7 @@
 
 View and manage external content through iframes directly in the Directus admin panel.
 
-![Extension preview](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/develop/docs/tela.jpg)
+![Extension preview](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/tela.jpg)
 
 ## 🎯 Why use it?
 
