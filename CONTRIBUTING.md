@@ -1,6 +1,7 @@
 # Contributing to Directus Extension inFrame
 
-Thank you for your interest in contributing! This guide will help you set up your development environment and understand our workflow.
+Thank you for your interest in contributing! This guide will help you set up your development environment and understand
+our workflow.
 
 ## 🛠️ Development Setup
 
@@ -94,7 +95,8 @@ Tests use:
 
 #### Communication via Docker Exec
 
-Tests use `docker exec` to make HTTP requests directly inside the container, eliminating the need for port mapping and allowing safe parallel execution of multiple versions simultaneously.
+Tests use `docker exec` to make HTTP requests directly inside the container, eliminating the need for port mapping and
+allowing safe parallel execution of multiple versions simultaneously.
 
 ## 🏗️ Project Structure
 
@@ -187,8 +189,7 @@ The provided `docker-compose.yml` is configured to allow iframes from any domain
 CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: '*'
 ```
 
-> [!WARNING]
-> In production, configure CSP to allow only trusted domains.
+> [!WARNING] In production, configure CSP to allow only trusted domains.
 
 3. **Build the extension in watch mode:**
 
@@ -217,11 +218,13 @@ This project uses **Renovate** for automated dependency updates with age filteri
 - Directus packages: 5 days minimum
 - Security patches: 0 days (immediate)
 
-> To enable Renovate: Install the [Renovate GitHub App](https://github.com/apps/renovate) on your repository. Configuration is already in `renovate.json`.
+> To enable Renovate: Install the [Renovate GitHub App](https://github.com/apps/renovate) on your repository.
+> Configuration is already in `renovate.json`.
 
 ### Directus Version Testing Strategy
 
-The project automatically tests against multiple Directus versions to ensure compatibility. To prevent issues with newly released versions, we implement a **version age filter**:
+The project automatically tests against multiple Directus versions to ensure compatibility. To prevent issues with newly
+released versions, we implement a **version age filter**:
 
 - **Default**: New Directus versions are only adopted after **5 days** from their release date
 - **Configurable**: Adjust via GitHub repository variable `DIRECTUS_VERSION_MIN_AGE_DAYS`
@@ -244,7 +247,8 @@ The project automatically tests against multiple Directus versions to ensure com
 
 To enable automated CI tests on version update PRs:
 
-1. Go to **GitHub.com** → Your profile **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+1. Go to **GitHub.com** → Your profile **Settings** → **Developer settings** → **Personal access tokens** → **Tokens
+   (classic)**
 2. Click **Generate new token** with permissions:
    - ✓ `repo` (all)
    - ✓ `workflow`
@@ -253,7 +257,8 @@ To enable automated CI tests on version update PRs:
    - Name: `PAT_TOKEN`
    - Value: paste your token
 
-> **Why?** GitHub's security prevents `GITHUB_TOKEN` from triggering workflows to avoid infinite loops. A PAT bypasses this limitation.
+> **Why?** GitHub's security prevents `GITHUB_TOKEN` from triggering workflows to avoid infinite loops. A PAT bypasses
+> this limitation.
 
 #### 2. Version Age Filter (Optional)
 
@@ -306,7 +311,8 @@ git push origin feature/amazing-feature
 
 ## 📝 Semantic Commits
 
-Use semantic commits with messages in **English**. Follow the [Conventional Commits](https://www.conventionalcommits.org/) standard:
+Use semantic commits with messages in **English**. Follow the
+[Conventional Commits](https://www.conventionalcommits.org/) standard:
 
 ### Format
 
@@ -384,8 +390,10 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 Feel free to open an issue or contact us:
 
-- **Sidarta Veloso** - [GitHub](https://github.com/sidartaveloso) | [LinkedIn](https://www.linkedin.com/in/sidartaveloso)
-- **Fernando Gatti** - [GitHub](https://github.com/gattifernando) | [LinkedIn](https://www.linkedin.com/in/gattifernando/)
+- **Sidarta Veloso** - [GitHub](https://github.com/sidartaveloso) |
+  [LinkedIn](https://www.linkedin.com/in/sidartaveloso)
+- **Fernando Gatti** - [GitHub](https://github.com/gattifernando) |
+  [LinkedIn](https://www.linkedin.com/in/gattifernando/)
 
 ---
 

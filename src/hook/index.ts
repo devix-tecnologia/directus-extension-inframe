@@ -72,9 +72,7 @@ async function verifyCollections({ logger, services, getSchema }: any) {
     if (existingCount === totalCount) {
       logger.info(`[inFrame Extension] All ${totalCount} collections are configured correctly ✓`);
     } else {
-      logger.warn(
-        `[inFrame Extension] ${existingCount}/${totalCount} collections found. Run setup if needed.`,
-      );
+      logger.warn(`[inFrame Extension] ${existingCount}/${totalCount} collections found. Run setup if needed.`);
     }
   } catch (error: any) {
     logger.warn(`[inFrame Extension] Error verifying collections: ${error.message}`);
@@ -213,7 +211,9 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
           logger.info(`[inFrame Extension] ✅ Field ${field.collection}.${field.field} created`);
         }
       } catch (error: any) {
-        logger.error(`[inFrame Extension] ❌ Error creating field ${field.collection}.${field.field}: ${error.message}`);
+        logger.error(
+          `[inFrame Extension] ❌ Error creating field ${field.collection}.${field.field}: ${error.message}`,
+        );
       }
     }
 

@@ -22,6 +22,7 @@ View and manage external content through iframes directly in the Directus admin 
 The extension **automatically** creates all necessary collections, fields and relations upon installation!
 
 **No manual configuration required:**
+
 - ✅ `inframe` collection to manage content
 - ✅ `languages` collection for languages
 - ✅ `inframe_translations` collection for translations
@@ -29,6 +30,7 @@ The extension **automatically** creates all necessary collections, fields and re
 - ✅ All fields and relations configured
 
 **How it works:**
+
 1. Install the extension
 2. Restart Directus
 3. Done! Start using immediately
@@ -36,6 +38,7 @@ The extension **automatically** creates all necessary collections, fields and re
 ### 🔄 Navigation Persistence
 
 Resume exactly where you left off:
+
 - 💾 Automatically saves your last view
 - 🔖 Restores state when returning to the module
 - 🚀 Works even after closing/reopening browser
@@ -91,8 +94,7 @@ environment:
   CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "'self' https://your-domain.com"
 ```
 
-> [!WARNING]
-> Avoid using `'*'` in production. Specify only trusted domains.
+> [!WARNING] Avoid using `'*'` in production. Specify only trusted domains.
 
 ## 🔒 Security
 
@@ -104,6 +106,7 @@ environment:
 ## 🌍 Compatibility
 
 Tested and compatible with:
+
 - **Directus 9.x**: 9.22.4, 9.23.1, 9.24.0
 - **Directus 10.x**: 10.8.3
 - **Directus 11.x**: 11.13.1 and newer versions
@@ -128,10 +131,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- **Sidarta Veloso** - [GitHub](https://github.com/sidartaveloso) | [LinkedIn](https://www.linkedin.com/in/sidartaveloso)
-- **Fernando Gatti** - [GitHub](https://github.com/gattifernando) | [LinkedIn](https://www.linkedin.com/in/gattifernando/)
+- **Sidarta Veloso** - [GitHub](https://github.com/sidartaveloso) |
+  [LinkedIn](https://www.linkedin.com/in/sidartaveloso)
+- **Fernando Gatti** - [GitHub](https://github.com/gattifernando) |
+  [LinkedIn](https://www.linkedin.com/in/gattifernando/)
 
 ## 🏢 Organization
 
 [Devix Tecnologia Ltda.](https://github.com/devix-tecnologia)
-
