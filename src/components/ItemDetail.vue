@@ -1,10 +1,10 @@
 <template>
-  <private-view v-if="item" :title>
+  <private-view v-if="item" :title="title">
     <template v-if="breadcrumb.length > 0" #headline>
       <v-breadcrumb :items="breadcrumb" />
     </template>
     <template #navigation>
-      <NavMenu :items />
+      <NavMenu :items="items" />
     </template>
 
     <div class="main">

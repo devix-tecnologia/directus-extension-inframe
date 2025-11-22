@@ -2,56 +2,56 @@ import { defineHook } from '@directus/extensions-sdk';
 import schema from '../../schema.json';
 
 export default defineHook(({ action, init }, { services, logger, database, getSchema }) => {
-  logger.info('[inFrame Extension] 🔌 Hook registrado, aguardando eventos...');
+  logger.info('[inFrame Extension] 🔌 Hook registered, waiting for events...');
 
-  // Hook no evento de inicialização - executa após as rotas serem registradas
+  // Hook on initialization event - runs after routes are registered
   init('routes.after', async () => {
-    logger.info('[inFrame Extension] 🚀 Evento routes.after disparado, executando setup...');
+    logger.info('[inFrame Extension] 🚀 routes.after event triggered, running setup...');
 
     try {
       await setupCollections({ services, logger, database, getSchema });
     } catch (error: any) {
-      logger.error(`[inFrame Extension] Erro durante setup inicial: ${error.message}`);
+      logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
     }
   });
 
-  // Hook no evento de start do servidor (action)
+  // Hook on server start event (action)
   action('server.start', async () => {
-    logger.info('[inFrame Extension] 🚀 Evento server.start disparado, executando setup...');
+    logger.info('[inFrame Extension] 🚀 server.start event triggered, running setup...');
 
     try {
       await setupCollections({ services, logger, database, getSchema });
     } catch (error: any) {
-      logger.error(`[inFrame Extension] Erro durante setup inicial: ${error.message}`);
+      logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
     }
   });
 
-  // Hook para quando a extensão for instalada/atualizada
+  // Hook for when extension is installed/updated
   action('extensions.install', async ({ extension }: any) => {
     if (extension?.includes('inframe') || extension?.includes('@devix-tecnologia/directus-extension-inframe')) {
-      logger.info('[inFrame Extension] Extensão instalada, configurando coleções...');
+      logger.info('[inFrame Extension] Extension installed, configuring collections...');
 
       try {
         await setupCollections({ services, logger, database, getSchema });
       } catch (error: any) {
-        logger.error(`[inFrame Extension] Erro durante instalação: ${error.message}`);
+        logger.error(`[inFrame Extension] Error during installation: ${error.message}`);
       }
     }
   });
 
-  // Hook para quando as extensões forem recarregadas
+  // Hook for when extensions are reloaded
   action('extensions.reload', async () => {
-    logger.info('[inFrame Extension] Verificando configuração das coleções...');
+    logger.info('[inFrame Extension] Verifying collections configuration...');
 
     try {
       await verifyCollections({ logger, services, getSchema });
     } catch (error: any) {
-      logger.warn(`[inFrame Extension] Erro ao verificar coleções: ${error.message}`);
+      logger.warn(`[inFrame Extension] Error verifying collections: ${error.message}`);
     }
   });
 });
 
-// Função para verificar se as coleções existem
+// Function to verify if collections exist
 async function verifyCollections({ logger, services, getSchema }: any) {
   const { CollectionsService } = services;
   const currentSchema = await getSchema();
@@ -70,39 +70,39 @@ async function verifyCollections({ logger, services, getSchema }: any) {
     const totalCount = ourCollections.length;
 
     if (existingCount === totalCount) {
-      logger.info(`[inFrame Extension] Todas as ${totalCount} coleções estão configuradas corretamente ✓`);
+      logger.info(`[inFrame Extension] All ${totalCount} collections are configured correctly ✓`);
     } else {
       logger.warn(
-        `[inFrame Extension] ${existingCount}/${totalCount} coleções encontradas. Execute setup se necessário.`,
+        `[inFrame Extension] ${existingCount}/${totalCount} collections found. Run setup if needed.`,
       );
     }
   } catch (error: any) {
-    logger.warn(`[inFrame Extension] Erro ao verificar coleções: ${error.message}`);
+    logger.warn(`[inFrame Extension] Error verifying collections: ${error.message}`);
   }
 }
 
-// Função principal para criar as coleções
+// Main function to create collections
 async function setupCollections({ services, logger, database, getSchema }: any) {
   const { CollectionsService, RelationsService, FieldsService } = services;
 
-  logger.info('[inFrame Extension] Iniciando configuração de coleções...');
+  logger.info('[inFrame Extension] Starting collections configuration...');
 
-  // Obter o schema atual
+  // Get current schema
   const currentSchema = await getSchema();
 
-  // Criar serviço de coleções
+  // Create collections service
   const collectionsService = new CollectionsService({
     schema: currentSchema,
     knex: database,
   });
 
-  // Verificar se as coleções já existem usando o serviço
+  // Check if collections already exist using the service
   let allCollections: any[] = [];
 
   try {
     allCollections = await collectionsService.readByQuery();
   } catch (error: any) {
-    logger.warn(`[inFrame Extension] Erro ao listar coleções: ${error.message}`);
+    logger.warn(`[inFrame Extension] Error listing collections: ${error.message}`);
     allCollections = [];
   }
 
@@ -112,9 +112,9 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
   let fieldsCreated = 0;
   let relationsCreated = 0;
 
-  // Ordenar coleções por dependências (folders primeiro, depois as que dependem deles)
+  // Order collections by dependencies (folders first, then those that depend on them)
   const orderedCollections = [...schema.collections].sort((a: any, b: any) => {
-    const aIsFolder = !a.meta?.group; // Coleções sem grupo (folders) vêm primeiro
+    const aIsFolder = !a.meta?.group; // Collections without group (folders) come first
     const bIsFolder = !b.meta?.group;
 
     if (aIsFolder && !bIsFolder) return -1;
@@ -125,18 +125,18 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
   const collectionNames = orderedCollections.map((c: any) => c.collection);
 
-  logger.info(`[inFrame Extension] 📋 Coleções a serem criadas (se não existirem): ${collectionNames.join(', ')}`);
+  logger.info(`[inFrame Extension] 📋 Collections to be created (if they don't exist): ${collectionNames.join(', ')}`);
 
-  // Criar coleções com campos incluídos (conforme documentação oficial)
+  // Create collections with included fields (as per official documentation)
   for (const collection of orderedCollections) {
     if (!existingCollectionNames.has(collection.collection)) {
       try {
-        logger.info(`[inFrame Extension] 🔨 Criando coleção: ${collection.collection}`);
+        logger.info(`[inFrame Extension] 🔨 Creating collection: ${collection.collection}`);
 
-        // Buscar campos que pertencem a esta coleção
+        // Find fields that belong to this collection
         const collectionFields = schema.fields.filter((f: any) => f.collection === collection.collection);
 
-        // Criar apenas a coleção primeiro (SEM campos)
+        // Create only the collection first (WITHOUT fields)
         await collectionsService.createOne({
           collection: collection.collection,
           meta: collection.meta,
@@ -146,34 +146,34 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
         collectionsCreated++;
 
         logger.info(
-          `[inFrame Extension] ✅ Coleção ${collection.collection} criada (${collectionFields.length} campo(s) serão criados depois)`,
+          `[inFrame Extension] ✅ Collection ${collection.collection} created (${collectionFields.length} field(s) will be created later)`,
         );
       } catch (error: any) {
-        logger.error(`[inFrame Extension] ❌ Erro ao criar coleção ${collection.collection}: ${error.message}`);
+        logger.error(`[inFrame Extension] ❌ Error creating collection ${collection.collection}: ${error.message}`);
       }
     } else {
-      logger.info(`[inFrame Extension] ⏭️  Coleção ${collection.collection} já existe, verificando campos...`);
+      logger.info(`[inFrame Extension] ⏭️  Collection ${collection.collection} already exists, checking fields...`);
     }
   }
 
-  // Se criamos novas coleções, limpar cache e forçar reload do schema
+  // If we created new collections, clear cache and force schema reload
   if (collectionsCreated > 0) {
-    logger.info(`[inFrame Extension] ${collectionsCreated} coleção(ões) criada(s)`);
-    logger.info('[inFrame Extension] 🧹 Aguardando propagação do schema no Directus...');
+    logger.info(`[inFrame Extension] ${collectionsCreated} collection(s) created`);
+    logger.info('[inFrame Extension] 🧹 Waiting for schema propagation in Directus...');
 
-    // Aguardar para o schema ser atualizado no banco
+    // Wait for schema to be updated in database
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // Forçar atualização do schema chamando getSchema várias vezes
+    // Force schema update by calling getSchema multiple times
     for (let i = 0; i < 3; i++) {
       await getSchema({ accountability: null, database });
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
-    logger.info('[inFrame Extension] ✅ Schema sincronizado (aguardou 9 segundos)');
-    logger.info('[inFrame Extension] 🔨 Criando campos...');
+    logger.info('[inFrame Extension] ✅ Schema synchronized (waited 9 seconds)');
+    logger.info('[inFrame Extension] 🔨 Creating fields...');
 
-    // Criar FieldsService com schema atualizado
+    // Create FieldsService with updated schema
     const updatedSchemaForFields = await getSchema({ accountability: null, database });
 
     const fieldsService = new FieldsService({
@@ -181,10 +181,10 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
       knex: database,
     });
 
-    // Criar campos
+    // Create fields
     for (const field of schema.fields) {
       try {
-        // Verificar se o campo já existe
+        // Check if field already exists
         const existingField = await database
           .select('*')
           .from('directus_fields')
@@ -193,16 +193,16 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
           .first();
 
         if (!existingField) {
-          logger.info(`[inFrame Extension] 🔨 Criando campo: ${field.collection}.${field.field}`);
+          logger.info(`[inFrame Extension] 🔨 Creating field: ${field.collection}.${field.field}`);
 
-          // Para campos alias, não devemos passar a propriedade schema
+          // For alias fields, we shouldn't pass the schema property
           const fieldData: any = {
             field: field.field,
             type: field.type,
             meta: field.meta,
           };
 
-          // Apenas adicionar schema se não for null (campos alias não têm schema)
+          // Only add schema if not null (alias fields don't have schema)
           if (field.schema !== null) {
             fieldData.schema = field.schema;
           }
@@ -210,40 +210,40 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
           await fieldsService.createField(field.collection, fieldData);
 
           fieldsCreated++;
-          logger.info(`[inFrame Extension] ✅ Campo ${field.collection}.${field.field} criado`);
+          logger.info(`[inFrame Extension] ✅ Field ${field.collection}.${field.field} created`);
         }
       } catch (error: any) {
-        logger.error(`[inFrame Extension] ❌ Erro ao criar campo ${field.collection}.${field.field}: ${error.message}`);
+        logger.error(`[inFrame Extension] ❌ Error creating field ${field.collection}.${field.field}: ${error.message}`);
       }
     }
 
-    logger.info(`[inFrame Extension] ✅ ${fieldsCreated} campo(s) criado(s)`);
+    logger.info(`[inFrame Extension] ✅ ${fieldsCreated} field(s) created`);
   }
 
-  // Atualizar schema para criação de relações (forçar reload completo)
+  // Update schema for relations creation (force complete reload)
   const updatedSchema = await getSchema({ accountability: null, database });
 
-  logger.info('[inFrame Extension] 📋 Verificando relações...');
+  logger.info('[inFrame Extension] 📋 Verifying relations...');
 
-  // Debug: listar todas as coleções disponíveis no schema
+  // Debug: list all collections available in schema
   const availableCollections = Object.keys(updatedSchema.collections || {});
 
   const ourCollections = availableCollections.filter((c) => c.startsWith('inframe') || c === 'languages');
 
-  logger.info(`[inFrame Extension] 🔍 Coleções encontradas no schema: ${ourCollections.join(', ') || 'nenhuma'}`);
-  logger.info(`[inFrame Extension] 📊 Total de coleções no schema: ${availableCollections.length}`);
+  logger.info(`[inFrame Extension] 🔍 Collections found in schema: ${ourCollections.join(', ') || 'none'}`);
+  logger.info(`[inFrame Extension] 📊 Total collections in schema: ${availableCollections.length}`);
 
-  // Recriar RelationsService com schema atualizado
+  // Recreate RelationsService with updated schema
   const updatedRelationsService = new RelationsService({
     schema: updatedSchema,
     knex: database,
   });
 
-  // Criar relações
+  // Create relations
   for (const relation of schema.relations) {
     try {
-      // Verificar se as coleções envolvidas existem diretamente no banco
-      // EXCETO coleções do sistema (directus_*)
+      // Check if involved collections exist directly in database
+      // EXCEPT system collections (directus_*)
       if (!relation.collection.startsWith('directus_')) {
         const collectionExists = await database
           .select('collection')
@@ -253,7 +253,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
         if (!collectionExists) {
           logger.warn(
-            `[inFrame Extension] ⚠️  Coleção ${relation.collection} não encontrada no banco, pulando relação`,
+            `[inFrame Extension] ⚠️  Collection ${relation.collection} not found in database, skipping relation`,
           );
 
           continue;
@@ -269,14 +269,14 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
         if (!relatedExists) {
           logger.warn(
-            `[inFrame Extension] ⚠️  Coleção relacionada ${relation.related_collection} não encontrada no banco, pulando relação`,
+            `[inFrame Extension] ⚠️  Related collection ${relation.related_collection} not found in database, skipping relation`,
           );
 
           continue;
         }
       }
 
-      // Verificar se a relação já existe
+      // Check if relation already exists
       const existingRelationCheck = await database
         .select('*')
         .from('directus_relations')
@@ -285,13 +285,13 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
         .first();
 
       if (existingRelationCheck) {
-        logger.info(`[inFrame Extension] ⏭️  Relação ${relation.collection}.${relation.field} já existe`);
+        logger.info(`[inFrame Extension] ⏭️  Relation ${relation.collection}.${relation.field} already exists`);
         continue;
       }
 
-      logger.info(`[inFrame Extension] 🔗 Criando relação: ${relation.collection}.${relation.field}`);
+      logger.info(`[inFrame Extension] 🔗 Creating relation: ${relation.collection}.${relation.field}`);
 
-      // Como o schema não é atualizado a tempo, vamos criar a relação diretamente no banco
+      // Since schema is not updated in time, let's create the relation directly in database
       try {
         await database('directus_relations').insert({
           many_collection: relation.meta.many_collection,
@@ -310,11 +310,11 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
         relationsCreated++;
 
         logger.info(
-          `[inFrame Extension] ✅ Relação ${relation.collection}.${relation.field} criada diretamente no banco`,
+          `[inFrame Extension] ✅ Relation ${relation.collection}.${relation.field} created directly in database`,
         );
       } catch (dbError: any) {
-        // Se der erro (ex: já existe), tentar com o serviço
-        logger.warn(`[inFrame Extension] Tentativa direta falhou: ${dbError.message}, tentando com serviço...`);
+        // If error occurs (e.g.: already exists), try with service
+        logger.warn(`[inFrame Extension] Direct attempt failed: ${dbError.message}, trying with service...`);
 
         await updatedRelationsService.createOne({
           collection: relation.collection,
@@ -326,31 +326,31 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
         relationsCreated++;
 
-        logger.info(`[inFrame Extension] ✅ Relação ${relation.collection}.${relation.field} criada via serviço`);
+        logger.info(`[inFrame Extension] ✅ Relation ${relation.collection}.${relation.field} created via service`);
       }
     } catch (error: any) {
       logger.error(
-        `[inFrame Extension] ❌ Erro ao criar relação ${relation.collection}.${relation.field}: ${error.message}`,
+        `[inFrame Extension] ❌ Error creating relation ${relation.collection}.${relation.field}: ${error.message}`,
       );
     }
   }
 
   logger.info(
-    `[inFrame Extension] ✅ Configuração concluída! Criadas: ${collectionsCreated} coleção(ões), ${fieldsCreated} campo(s), ${relationsCreated} relação(ões)`,
+    `[inFrame Extension] ✅ Configuration complete! Created: ${collectionsCreated} collection(s), ${fieldsCreated} field(s), ${relationsCreated} relation(s)`,
   );
 
-  // Forçar atualização do schema e limpar caches
+  // Force schema update and clear caches
   try {
-    logger.info('[inFrame Extension] 🔄 Limpando cache e atualizando schema...');
+    logger.info('[inFrame Extension] 🔄 Clearing cache and updating schema...');
 
-    // Forçar uma nova leitura do schema
+    // Force a new schema read
     await getSchema({ accountability: null, database });
 
-    // Aguardar um pouco para garantir que o schema foi atualizado
+    // Wait a bit to ensure schema was updated
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    logger.info('[inFrame Extension] ✅ Cache limpo e schema atualizado');
+    logger.info('[inFrame Extension] ✅ Cache cleared and schema updated');
   } catch (cacheError: any) {
-    logger.warn(`[inFrame Extension] ⚠️  Erro ao limpar cache: ${cacheError.message}`);
+    logger.warn(`[inFrame Extension] ⚠️  Error clearing cache: ${cacheError.message}`);
   }
 }

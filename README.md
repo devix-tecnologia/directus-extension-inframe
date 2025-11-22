@@ -1,193 +1,137 @@
-# Directus - Extensão Module inFrame
+# Directus Extension - inFrame Module
 
-Este projeto é uma extensão do tipo Module para o Directus voltada para visualização de conteúdo em iframes.
+[![npm version](https://badge.fury.io/js/%40devix-tecnologia%2Fdirectus-extension-inframe.svg)](https://badge.fury.io/js/%40devix-tecnologia%2Fdirectus-extension-inframe)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## ✨ Funcionalidades
+View and manage external content through iframes directly in the Directus admin panel.
 
-### � Setup Automático de Coleções (Novo!)
+![Extension preview](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/develop/docs/tela.jpg)
 
-A extensão agora cria **automaticamente** todas as coleções, campos e relações necessárias quando instalada!
+## 🎯 Why use it?
 
-**Você não precisa mais:**
+- **📊 External dashboards**: Integrate Power BI, Tableau, Metabase or any BI tool
+- **📈 Real-time reports**: View updated data without leaving Directus
+- **🔗 Organized links**: Centralize access to external tools in one place
+- **🌍 Multilingual support**: Automatic translations for multiple languages
+- **⚡ Zero configuration**: Plug-and-play installation with automatic setup
 
-- Criar manualmente a coleção `inframe`
-- Configurar campos um por um
-- Criar relações de tradução
-- Seguir tutoriais complexos de setup
+## ✨ Features
 
-**O que acontece automaticamente:**
+### 🚀 Automatic Setup
 
-- ✅ Criação da coleção `inframe` (relatórios)
-- ✅ Criação da coleção `languages` (idiomas)
-- ✅ Criação da coleção `inframe_translations` (traduções)
-- ✅ Criação da coleção `inframe_pasta` (organização em pastas)
-- ✅ Configuração de todos os campos necessários
-- ✅ Criação de relações entre coleções
+The extension **automatically** creates all necessary collections, fields and relations upon installation!
 
-**Como funciona:**
+**No manual configuration required:**
+- ✅ `inframe` collection to manage content
+- ✅ `languages` collection for languages
+- ✅ `inframe_translations` collection for translations
+- ✅ Folder system for organization
+- ✅ All fields and relations configured
 
-1. Instale a extensão normalmente (`npm install` ou através da UI do Directus)
-2. Reinicie o servidor Directus
-3. Pronto! As coleções estarão criadas e prontas para uso
+**How it works:**
+1. Install the extension
+2. Restart Directus
+3. Done! Start using immediately
 
-O hook de setup roda automaticamente quando:
+### 🔄 Navigation Persistence
 
-- O servidor Directus é iniciado
-- A extensão é instalada
-- As extensões são recarregadas
+Resume exactly where you left off:
+- 💾 Automatically saves your last view
+- 🔖 Restores state when returning to the module
+- 🚀 Works even after closing/reopening browser
+- ⚡ Zero performance impact
 
-📖 [Veja mais detalhes técnicos sobre o setup automático](./docs/AUTO_SETUP.md)
+## 📦 Installation
 
-### 🔄 Persistência de Navegação
-
-A extensão agora inclui um sistema avançado de persistência de navegação que permite que você continue exatamente de
-onde parou em sua última sessão.
-
-**Principais benefícios:**
-
-- **Continuidade de trabalho:** retome instantaneamente suas atividades sem perder o contexto
-- **Navegação simplificada:** economize tempo ao evitar repetir passos de navegação
-- **Experiência personalizada:** o sistema se adapta ao seu fluxo de trabalho individual
-- **Múltiplas estratégias:** utiliza localStorage e parâmetros de URL para máxima confiabilidade
-
-**Como funciona:**
-
-- Salva automaticamente a rota atual sempre que você navega para uma nova página
-- Restaura sua última visualização quando você retorna à aplicação
-- Funciona mesmo após recarregar a página ou fechar/abrir o navegador
-- Integrado nativamente com o sistema de roteamento do Directus
-
-A Persistência de Navegação funciona discretamente em segundo plano, sem comprometer o desempenho ou exigir
-configurações adicionais.
-
-## 🧪 Testes
-
-Esta extensão inclui testes automatizados que verificam a compatibilidade com diferentes versões do Directus.
-
-### Estrutura de Testes
-
-```
-tests/
-├── index.spec.ts          # Testes principais
-├── setup.ts              # Configuração do ambiente
-├── helper_test.ts        # Funções auxiliares
-├── test-env.ts           # Variáveis de ambiente
-├── test-logger.ts        # Sistema de logs
-└── directus-versions.js  # Versões testadas
-```
-
-### Executando os testes
+### Via NPM
 
 ```bash
-# Instalar dependências
-pnpm install
-
-# Executar todos os testes
-pnpm test
-
-# Executar testes em modo watch
-pnpm test:watch
-
-# Executar testes com coverage
-pnpm test:coverage
+npm install @devix-tecnologia/directus-extension-inframe
 ```
 
-### Testando com diferentes versões do Directus
-
-Os testes são executados automaticamente com múltiplas versões do Directus usando Docker.
-
-**Testar com todas as versões configuradas:**
+### Via PNPM
 
 ```bash
-pnpm test
+pnpm add @devix-tecnologia/directus-extension-inframe
 ```
 
-**Testar com uma versão específica do Directus:**
+### After installation
 
-```bash
-# Usando a variável de ambiente
-DIRECTUS_TEST_VERSION=10.8.3 pnpm test:version
+1. Restart the Directus server
+2. Access the admin panel
+3. The "Reports" module will be available in the sidebar
 
-# Ou definir ambas as variáveis para controle completo
-DIRECTUS_TEST_VERSION=11.10.2 DIRECTUS_VERSION=11.10.2 pnpm test:version
-```
+## 💡 How to Use
 
-**Gerenciar container de teste manualmente:**
+### 1. Access the module
 
-```bash
-# Iniciar container com versão específica
-DIRECTUS_VERSION=10.8.3 docker compose -f docker-compose.test.yml up -d
+In the Directus sidebar, click "Reports" (document icon).
 
-# Parar container de teste
-docker compose -f docker-compose.test.yml down
+### 2. Create a new item
 
-# Ver logs do container
-docker compose -f docker-compose.test.yml logs -f
-```
+1. Click "Create new"
+2. Fill in the fields:
+   - **URL**: Link to the content to be displayed in the iframe
+   - **Status**: Published, Draft or Archived
+   - **Icon**: Choose a Material Design icon
+   - **Thumbnail**: Preview image (optional)
+3. Add translations for different languages (optional)
+4. Save
 
-### Versões do Directus testadas
+### 3. View
 
-Os testes são executados nas seguintes versões:
+The content will be displayed in the iframe within the Directus panel, allowing direct interaction.
 
-- Directus 9.x (últimas versões estáveis)
-- Directus 10.x (últimas versões estáveis)
-- Directus 11.x (últimas versões estáveis)
-- Directus latest
+## ⚙️ Docker Configuration (Optional)
 
-## 💎 Usando a extensão
-
-**Setup é automático!** As coleções necessárias são criadas automaticamente quando você:
-
-1. Instala a extensão no Directus
-2. Inicia/reinicia o servidor
-
-**Não é necessário criar manualmente nenhuma coleção.** ✨
-
-Após a instalação, você verá:
-
-- ✅ Coleção `inframe` para gerenciar relatórios
-- ✅ Coleção `languages` para idiomas
-- ✅ Coleção `inframe_translations` para traduções
-- ✅ Novo módulo "Relatórios" no menu do Directus
-
-### Adicionando Relatórios
-
-1. Acesse o módulo "Relatórios" no menu lateral
-2. Clique em "Criar novo"
-3. Preencha os campos:
-   - **Título**: Nome do relatório
-   - **URL**: Link do iframe a ser exibido
-   - **Status**: Publicado/Rascunho
-   - **Ícone**: Ícone do Material Design
-   - **Traduções**: Traduções para outros idiomas
-
-### Configuração Manual (Legado)
-
-<details>
-<summary>Se por algum motivo o setup automático falhar, você ainda pode criar manualmente:</summary>
-
-- Ative o novo módulo na página de configurações do Directus;
-- Crie uma nova Coleção com nome de `inframe` e adicione os seguintes campos:
-  ` "id", "sort", "status", "icon", "url", "thumbnail", "translations.languages_code", "translations.title"`;
-
-- [Veja mais sobre traduções aqui](https://docs.directus.io/guides/headless-cms/content-translations.html)
-
-</details>
-
-![Tela de visualização da extensão](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/develop/docs/tela.jpg)
-
-## 🚀 Levantando um Directus a partir de docker-compose
-
-- Baixe este projeto ou copie o arquivo `docker-compose.yml` e inicie uma instalação do zero;
-- Com o docker instalado na máquina ([saiba mais](https://docs.docker.com/get-docker/)), rode o comando:
-
-```
- docker compose up
-```
-
-> [!IMPORTANT] _O docker-compose usado neste projeto está configurado para permitir iframe de qualquer domínio. Em
-> produção você deve liberar apenas domínios confiáveis."_
+If you use Docker, configure CSP to allow iframes:
 
 ```yaml
-CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: '*' # permite iframe de qualquer domínio
+environment:
+  CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "'self' https://your-domain.com"
 ```
+
+> [!WARNING]
+> Avoid using `'*'` in production. Specify only trusted domains.
+
+## 🔒 Security
+
+- Configure CSP (Content Security Policy) properly
+- List only trusted domains for iframes
+- Use HTTPS in production
+- Review user permissions in Directus
+
+## 🌍 Compatibility
+
+Tested and compatible with:
+- **Directus 9.x**: 9.22.4, 9.23.1, 9.24.0
+- **Directus 10.x**: 10.8.3
+- **Directus 11.x**: 11.13.1 and newer versions
+
+## 🐛 Known Issues
+
+- Some websites block iframe display by policy (X-Frame-Options)
+- HTTPS content cannot be displayed in HTTP Directus
+
+## 🤝 Contributing
+
+Contributions are welcome! See our [Contributing Guide](CONTRIBUTING.md) for details about:
+
+- How to set up the development environment
+- Running tests
+- Submitting Pull Requests
+- Code standards
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Authors
+
+- **Sidarta Veloso** - [GitHub](https://github.com/sidartaveloso) | [LinkedIn](https://www.linkedin.com/in/sidartaveloso)
+- **Fernando Gatti** - [GitHub](https://github.com/gattifernando) | [LinkedIn](https://www.linkedin.com/in/gattifernando/)
+
+## 🏢 Organization
+
+[Devix Tecnologia Ltda.](https://github.com/devix-tecnologia)
+
