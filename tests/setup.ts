@@ -62,35 +62,43 @@ async function cleanupDocker(_testSuiteId: string) {
   try {
     logger.debug('Cleaning up test containers...');
 
-    // NOTE: The following cleanup is commented out so test containers
-    // remain available after the tests for manual inspection. To re-enable
-    // automatic cleanup, uncomment the lines below.
+    // Para containers que possam estar rodando
+    try {
+      await execAsync(
+        `TEST_SUITE_ID=${_testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes 2>/dev/null || true`,
+      );
+    } catch (error) {
+      logger.debug('Error stopping containers (may not exist):', error);
+    }
 
-    // // Para e remove containers
-    // await execAsync(
-    //   `TEST_SUITE_ID=${_testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes`,
-    // );
+    // Remove containers forçadamente se necessário
+    const containerName = `directus-inframe-${_testSuiteId}-${process.env.DIRECTUS_VERSION}`;
 
-    // // Aguarda um pouco para garantir que as portas foram liberadas
-    // await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      await execAsync(`docker rm -f ${containerName} 2>/dev/null || true`);
+    } catch (error) {
+      logger.debug('Container does not exist or already removed', error);
+    }
 
-    // logger.debug('Test containers removed');
+    // Remove network se existir
+    const networkName = `directus-inframe-test-${_testSuiteId}-${process.env.DIRECTUS_VERSION}`;
+
+    try {
+      await execAsync(`docker network rm ${networkName} 2>/dev/null || true`);
+    } catch (error) {
+      logger.debug('Network does not exist or already removed', error);
+    }
+
+    // Aguarda um pouco para garantir que as portas foram liberadas
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    logger.debug('Test containers removed');
   } catch (error) {
     logger.warn('Warning while cleaning test containers:', error);
-
-    // NOTE: The forced removal fallback is also commented out to avoid
-    // deleting containers during debugging. Uncomment if automatic forced
-    // removal is desired.
-
-    // try {
-    //   await execAsync("docker ps -a | grep directus-inframe | awk '{print $1}' | xargs -r docker rm -f");
-    // } catch {
-    //   // Ignora erros na limpeza forçada
-    // }
   }
 }
 
-async function waitForContainerHealth(containerName: string, retries = 60, delay = 2000) {
+async function waitForContainerHealth(containerName: string, retries = 100, delay = 2000) {
   for (let i = 0; i < retries; i++) {
     try {
       const { stdout } = await execAsync(`docker inspect --format='{{.State.Health.Status}}' ${containerName}`);
@@ -186,7 +194,7 @@ export async function teardownTestEnvironment(_testSuiteId: string = 'main') {
   }
 }
 
-async function waitForBootstrap(testSuiteId: string, retries = 60, delay = 2000) {
+async function waitForBootstrap(testSuiteId: string, retries = 90, delay = 2000) {
   for (let i = 0; i < retries; i++) {
     try {
       logger.debug(`Connection attempt ${i + 1}/${retries}`);

@@ -195,12 +195,19 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
         if (!existingField) {
           logger.info(`[inFrame Extension] 🔨 Criando campo: ${field.collection}.${field.field}`);
 
-          await fieldsService.createField(field.collection, {
+          // Para campos alias, não devemos passar a propriedade schema
+          const fieldData: any = {
             field: field.field,
             type: field.type,
-            schema: field.schema,
             meta: field.meta,
-          });
+          };
+
+          // Apenas adicionar schema se não for null (campos alias não têm schema)
+          if (field.schema !== null) {
+            fieldData.schema = field.schema;
+          }
+
+          await fieldsService.createField(field.collection, fieldData);
 
           fieldsCreated++;
           logger.info(`[inFrame Extension] ✅ Campo ${field.collection}.${field.field} criado`);

@@ -21,3 +21,4 @@ uploads/
 playwright-report
 test-output.log
 test-run-keep-containers.log
+test-single.log

@@ -4,10 +4,11 @@ import { logger } from './test-logger.js';
 import schema from '../schema.json';
 
 describe('Auto Setup Hook - Collection Creation', () => {
-  const testSuiteId = 'hook';
+  const version = process.env.DIRECTUS_TEST_VERSION || '10.8.3';
+  const testSuiteId = `hook-${version.replace(/\./g, '-')}`;
 
   beforeAll(async () => {
-    process.env.DIRECTUS_VERSION = process.env.DIRECTUS_TEST_VERSION || '10.8.3';
+    process.env.DIRECTUS_VERSION = version;
     logger.setCurrentTest(`Auto Setup Test - Directus ${process.env.DIRECTUS_VERSION}`);
     await setupTestEnvironment(testSuiteId);
   }, 300000); // 5 minutos de timeout

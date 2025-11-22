@@ -132,22 +132,29 @@ export async function createTestCollection(testSuiteId?: string): Promise<string
 
     // Criar permissões para cada action
     for (const action of ['create', 'read', 'update', 'delete']) {
-      await dockerHttpRequest(
-        'POST',
-        '/permissions',
-        { ...permissionData, action },
-        {
-          Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
-        },
-        testSuiteId,
-      );
+      try {
+        const permResponse = await dockerHttpRequest(
+          'POST',
+          '/permissions',
+          { ...permissionData, action },
+          {
+            Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+          },
+          testSuiteId,
+        );
 
-      if (process.env.DEBUG_TESTS) {
-        logger.info(`[DEBUG] Created ${action} permission for ${collectionName}`);
+        logger.info(
+          `[DEBUG] Created ${action} permission for ${collectionName}:`,
+          JSON.stringify(permResponse, null, 2),
+        );
+      } catch (permError: any) {
+        logger.error(`[ERROR] Failed to create ${action} permission:`, permError.message);
+        throw permError;
       }
     }
   } catch (error: any) {
-    logger.warn('[WARN] Could not create permissions:', error.message);
+    logger.error('[ERROR] Permission creation failed:', error.message);
+    throw error;
   }
 
   if (process.env.DEBUG_TESTS) {
@@ -176,7 +183,6 @@ export async function createTestCollection(testSuiteId?: string): Promise<string
 
 export async function createTestItem(title: string, url: string, status = 'published', testSuiteId?: string) {
   const itemData = {
-    title,
     url,
     status,
   };
@@ -184,7 +190,7 @@ export async function createTestItem(title: string, url: string, status = 'publi
   try {
     const response = await dockerHttpRequest(
       'POST',
-      '/items/test_inframe_items',
+      '/items/inframe',
       itemData,
       {
         Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
@@ -192,11 +198,15 @@ export async function createTestItem(title: string, url: string, status = 'publi
       testSuiteId,
     );
 
+    // Verificar se há erro na resposta
+    if (response.errors && response.errors.length > 0) {
+      logger.error('[ERROR] API returned errors when creating item:', JSON.stringify(response.errors, null, 2));
+      throw new Error(`Failed to create item: ${response.errors[0].message}`);
+    }
+
     const item = response.data?.data || response.data || response;
 
-    if (process.env.DEBUG_TESTS) {
-      logger.info('[DEBUG] Created item:', item);
-    }
+    logger.info('[DEBUG] Created item:', item);
 
     return item;
   } catch (error: any) {
@@ -214,7 +224,7 @@ export async function getTestItems(testSuiteId?: string) {
   try {
     const response = await dockerHttpRequest(
       'GET',
-      '/items/test_inframe_items',
+      '/items/inframe',
       undefined,
       {
         Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
@@ -222,25 +232,92 @@ export async function getTestItems(testSuiteId?: string) {
       testSuiteId,
     );
 
+    logger.info('[DEBUG] getTestItems full response:', JSON.stringify(response, null, 2));
+
     // A resposta do Directus pode estar em response.data.data ou response.data
     const items = response.data?.data || response.data || response;
 
-    if (process.env.DEBUG_TESTS) {
-      logger.info('[DEBUG] getTestItems response:', JSON.stringify(response, null, 2));
-      logger.info('[DEBUG] Extracted items:', items);
-      logger.info('[DEBUG] Is array:', Array.isArray(items));
-    }
+    logger.info('[DEBUG] Extracted items:', JSON.stringify(items, null, 2));
+    logger.info('[DEBUG] Is array:', Array.isArray(items));
+    logger.info('[DEBUG] Items length:', Array.isArray(items) ? items.length : 'not an array');
 
     // Se items não for um array, retornar array vazio
     return Array.isArray(items) ? items : [];
   } catch (error: any) {
     logger.error('[ERROR] Failed to get test items:', error.message);
+    logger.error('[ERROR] Error details:', JSON.stringify(error, null, 2));
 
     if (error.response?.status === 403) {
       logger.warn('[WARN] 403 error when getting test items - this is a known permissions issue');
     }
 
     return [];
+  }
+}
+
+export async function deleteTestItems(testSuiteId?: string) {
+  try {
+    // Buscar todos os itens
+    const items = await getTestItems(testSuiteId);
+
+    // Deletar cada item
+    for (const item of items) {
+      try {
+        await dockerHttpRequest(
+          'DELETE',
+          `/items/inframe/${item.id}`,
+          undefined,
+          {
+            Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+          },
+          testSuiteId,
+        );
+      } catch {
+        // Ignorar erros ao deletar itens
+      }
+    }
+  } catch {
+    // Collection might not exist or be empty, ignore error
+  }
+}
+
+export async function createLanguage(code: string, name: string, testSuiteId?: string) {
+  const languageData = {
+    code,
+    name,
+  };
+
+  try {
+    const response = await dockerHttpRequest(
+      'POST',
+      '/items/languages',
+      languageData,
+      {
+        Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
+      },
+      testSuiteId,
+    );
+
+    // Verificar se há erro na resposta
+    if (response.errors && response.errors.length > 0) {
+      logger.error('[ERROR] API returned errors when creating language:', JSON.stringify(response.errors, null, 2));
+      throw new Error(`Failed to create language: ${response.errors[0].message}`);
+    }
+
+    const language = response.data?.data || response.data || response;
+
+    logger.info('[DEBUG] Created language:', language);
+
+    return language;
+  } catch (error: any) {
+    // Se o idioma já existe, ignorar erro
+    if (error.message?.includes('already exists') || error.message?.includes('UNIQUE constraint')) {
+      logger.info(`[INFO] Language ${code} already exists, skipping creation`);
+      return { code, name };
+    }
+
+    logger.error('[ERROR] Failed to create language:', error.message);
+    throw error;
   }
 }
 

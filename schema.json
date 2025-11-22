@@ -570,38 +570,6 @@
       }
     },
     {
-      "collection": "inframe",
-      "field": "translations",
-      "type": "alias",
-      "schema": null,
-      "meta": {
-        "collection": "inframe",
-        "field": "translations",
-        "special": ["translations"],
-        "interface": "translations",
-        "options": {
-          "languageField": "name",
-          "userLanguage": true,
-          "defaultLanguage": "en-US"
-        },
-        "display": "related-values",
-        "display_options": {
-          "template": "{{title}}"
-        },
-        "readonly": false,
-        "hidden": false,
-        "sort": 7,
-        "width": "full",
-        "translations": null,
-        "note": null,
-        "conditions": null,
-        "required": false,
-        "group": null,
-        "validation": null,
-        "validation_message": null
-      }
-    },
-    {
       "collection": "inframe_translations",
       "field": "id",
       "type": "integer",
