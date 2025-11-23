@@ -5,6 +5,33 @@ import { logger } from './test-logger.js';
 
 const execAsync = promisify(exec);
 
+// Detecta qual comando docker compose usar (docker-compose ou docker compose)
+let dockerComposeCommand: string | null = null;
+
+async function getDockerComposeCommand(): Promise<string> {
+  if (dockerComposeCommand) {
+    return dockerComposeCommand;
+  }
+
+  // Tenta docker compose primeiro (novo padrão)
+  try {
+    await execAsync('docker compose version');
+    dockerComposeCommand = 'docker compose';
+    logger.debug('Using: docker compose');
+    return dockerComposeCommand;
+  } catch {
+    // Fallback para docker-compose (versão antiga)
+    try {
+      await execAsync('docker-compose version');
+      dockerComposeCommand = 'docker-compose';
+      logger.debug('Using: docker-compose');
+      return dockerComposeCommand;
+    } catch {
+      throw new Error('Neither "docker compose" nor "docker-compose" found');
+    }
+  }
+}
+
 // Função para fazer requisições HTTP via Node.js dentro do container
 export async function dockerHttpRequest(
   method: string,
@@ -64,8 +91,10 @@ async function cleanupDocker(_testSuiteId: string) {
 
     // Para containers que possam estar rodando
     try {
+      const composeCmd = await getDockerComposeCommand();
+
       await execAsync(
-        `TEST_SUITE_ID=${_testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml down --remove-orphans --volumes 2>/dev/null || true`,
+        `TEST_SUITE_ID=${_testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} ${composeCmd} -f docker-compose.test.yml down --remove-orphans --volumes 2>/dev/null || true`,
       );
     } catch (error) {
       logger.debug('Error stopping containers (may not exist):', error);
@@ -131,8 +160,10 @@ export async function setupTestEnvironment(testSuiteId: string = 'main') {
     // Start Docker containers
     logger.info('Starting test environment...');
 
+    const composeCmd = await getDockerComposeCommand();
+
     const { stdout, stderr } = await execAsync(
-      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} docker-compose -f docker-compose.test.yml up -d`,
+      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} ${composeCmd} -f docker-compose.test.yml up -d`,
     );
 
     // Docker Compose uses stderr for progress messages

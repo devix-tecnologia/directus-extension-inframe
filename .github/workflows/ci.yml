@@ -37,6 +37,10 @@ jobs:
           node-version: 22.17.0
       - uses: pnpm/action-setup@v4
       - run: pnpm install
+      - name: Build extension
+        run: pnpm build
+      - name: List dist directory
+        run: ls -la dist/
       - name: Start Docker Compose
         run: docker compose -f docker-compose.test.yml up -d
       - name: Run tests
