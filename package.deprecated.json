@@ -1,0 +1,13 @@
+{
+  "name": "@devix-tecnologia/directus-extension-inframe",
+  "version": "2.0.0",
+  "description": "DEPRECATED: Use 'directus-extension-inframe' instead. This package is no longer maintained.",
+  "deprecated": "This package is deprecated. Please use 'directus-extension-inframe'.",
+  "homepage": "https://github.com/devix-tecnologia/directus-extension-inframe#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devix-tecnologia/directus-extension-inframe.git"
+  },
+  "author": "Devix Tecnologia",
+  "license": "GPL-3.0"
+}
