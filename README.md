@@ -49,13 +49,13 @@ Resume exactly where you left off:
 ### Via NPM
 
 ```bash
-npm install @devix-tecnologia/directus-extension-inframe
+npm install directus-extension-inframe
 ```
 
 ### Via PNPM
 
 ```bash
-pnpm add @devix-tecnologia/directus-extension-inframe
+pnpm add directus-extension-inframe
 ```
 
 ### After installation
