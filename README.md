@@ -1,7 +1,7 @@
 # Directus Extension - inFrame Module
 
-[![npm version](https://badge.fury.io/js/%40devix-tecnologia%2Fdirectus-extension-inframe.svg)](https://badge.fury.io/js/%40devix-tecnologia%2Fdirectus-extension-inframe)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-v2-0-5.svg)](https://www.npmjs.com/package/directus-extension-inframe)
+[![License](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-license-gpl-3-0.svg)](https://github.com/devix-tecnologia/directus-extension-inframe/blob/main/LICENSE)
 
 View and manage external content through iframes directly in the Directus admin panel.
 
