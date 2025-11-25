@@ -155,7 +155,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -200,7 +201,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -256,7 +258,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -301,7 +304,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -346,7 +350,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -434,7 +439,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -479,7 +485,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -526,7 +533,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -573,7 +581,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -587,9 +596,9 @@
         "special": ["translations"],
         "interface": "translations",
         "options": {
-          "languageIndicatorField": "name",
-          "defaultLanguage": true,
-          "userLanguage": true
+          "languageField": "name",
+          "userLanguage": true,
+          "defaultLanguage": "en-US"
         },
         "display": "translations",
         "display_options": {
@@ -606,7 +615,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -651,7 +661,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -696,7 +707,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -741,7 +753,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     },
     {
@@ -786,7 +799,8 @@
         "required": false,
         "group": null,
         "validation": null,
-        "validation_message": null
+        "validation_message": null,
+        "searchable": true
       }
     }
   ],
