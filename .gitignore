@@ -22,3 +22,6 @@ playwright-report
 test-output.log
 test-run-keep-containers.log
 test-single.log
+schema.json.backup
+.gitignore
+schema.json.backup-before-singular

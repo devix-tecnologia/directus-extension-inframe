@@ -35,7 +35,7 @@
       {
         "type": "hook",
         "name": "inframe-setup",
-        "source": "src/hook/index.ts"
+        "source": "src/hooks/inframe-setup/index.ts"
       }
     ],
     "host": "^10.10.0"
@@ -57,8 +57,8 @@
     "lint:fix": "eslint . --ext .ts,.vue --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run",
-    "test:version": "vitest run",
+    "test": "pnpm test:e2e",
+    "test:integration": "vitest run tests/*.spec.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",

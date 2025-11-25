@@ -38,13 +38,13 @@ export const useFetchItems = () => {
             'icon',
             'url',
             'thumbnail',
-            'translations.languages_code',
+            'translations.language',
             'translations.title',
           ],
           deep: {
             translations: {
               _filter: {
-                languages_code: { _eq: languageCode }, // Filtro pelo idioma configurado no Directus
+                language: { _eq: languageCode }, // Filtro pelo idioma configurado no Directus
               },
             },
           },
@@ -89,13 +89,13 @@ export const useFetchItem = () => {
             'icon',
             'url',
             'thumbnail',
-            'translations.languages_code',
+            'translations.language',
             'translations.title',
           ],
           deep: {
             translations: {
               _filter: {
-                languages_code: { _eq: languageCode }, // Filtro pelo idioma configurado no Directus
+                language: { _eq: languageCode }, // Filtro pelo idioma configurado no Directus
               },
             },
           },

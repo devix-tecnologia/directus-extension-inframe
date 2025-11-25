@@ -14,13 +14,30 @@ export const useNavigationPersistence = () => {
   const route = useRoute();
   const isRestoringRoute = ref(false);
 
+  // Limpa valores inválidos do localStorage ao inicializar
+  const cleanInvalidStorage = () => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+
+      if (stored === 'undefined' || stored === 'null' || stored === '') {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // Silently handle errors
+    }
+  };
+
+  // Executa limpeza ao criar o composable
+  cleanInvalidStorage();
+
   /**
    * Salva a rota atual no localStorage e URL
    */
   const saveCurrentRoute = (routeId?: string) => {
     const currentId = routeId || (route.params.id as string);
 
-    if (!currentId) return;
+    // Não salva se o ID for undefined, null, vazio ou 'undefined' (string)
+    if (!currentId || currentId === 'undefined') return;
 
     try {
       // Estratégia 1: localStorage
@@ -53,15 +70,20 @@ export const useNavigationPersistence = () => {
       // Estratégia 1: Verifica query parameter da URL
       const urlParam = route.query[URL_PARAM_KEY] as string;
 
-      if (urlParam) {
+      if (urlParam && urlParam !== 'undefined') {
         return urlParam;
       }
 
       // Estratégia 2: Verifica localStorage
       const storedRoute = localStorage.getItem(STORAGE_KEY);
 
-      if (storedRoute) {
+      if (storedRoute && storedRoute !== 'undefined') {
         return storedRoute;
+      }
+
+      // Se encontrou 'undefined', limpa o storage
+      if (storedRoute === 'undefined') {
+        localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
       // Silently handle errors - could be logged to external service in production
@@ -77,7 +99,8 @@ export const useNavigationPersistence = () => {
   const restoreLastRoute = async (): Promise<boolean> => {
     const lastRoute = getLastRoute();
 
-    if (!lastRoute) {
+    // Não restaura se a rota for undefined, null, vazia ou 'undefined' (string)
+    if (!lastRoute || lastRoute === 'undefined') {
       return false;
     }
 

@@ -4,8 +4,8 @@ import ItemDetailRoute from './ItemDetailRoute.vue';
 
 export default defineModule({
   id: 'inframe',
-  name: 'Relatórios',
-  icon: 'document_scanner',
+  name: 'Extra',
+  icon: 'tv_signin',
   routes: [
     {
       path: '',

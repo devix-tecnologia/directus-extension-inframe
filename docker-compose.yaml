@@ -1,76 +1,50 @@
 services:
-  database:
-    image: postgis/postgis:15-3.3-alpine
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=directus
-      - POSTGRES_USER=directus
-      - POSTGRES_PASSWORD=directus
-    ports:
-      - 5432:5432
-    networks:
-      - directus-network
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    volumes:
-      - pgadmin4_data:/var/lib/pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=dev@devix.co
-      - PGADMIN_DEFAULT_PASSWORD=directus
-    restart: unless-stopped
-    depends_on:
-      - database
-    ports:
-      - 16543:80
-    networks:
-      - directus-network
-
   directus:
-    image: directus/directus:11.3.4
+    image: directus/directus:11.13.1
+    container_name: directus-inframe-e2e
     environment:
-      KEY: '255d861b-5ea1-5996-9aa3-922530ec40b1'
-      SECRET: '6116487b-cda1-52c2-b5b5-c8022c45e263'
-
-      EXTENSIONS_AUTO_RELOAD: 'true'
-
-      DB_CLIENT: 'pg'
-      DB_HOST: 'database'
-      DB_PORT: '5432'
-      DB_DATABASE: 'directus'
-      DB_USER: 'directus'
-      DB_PASSWORD: 'directus'
-
-      CORS_ENABLED: 'true'
-      CORS_ORIGIN: 'true'
-      CORS_CREDENTIALS: 'true'
-
-      ADMIN_EMAIL: 'dev@devix.co'
-      ADMIN_PASSWORD: 'directus'
-
+      # SQLite em memória para testes rápidos
+      DB_CLIENT: 'sqlite3'
+      DB_FILENAME: '/tmp/data/directus.db'
+      
+      KEY: 'test-key'
+      SECRET: 'test-secret'
+      
+      ADMIN_EMAIL: 'admin@example.com'
+      ADMIN_PASSWORD: 'admin123'
+      
       PUBLIC_URL: 'http://localhost:8055'
-      CACHE_ENABLED: 'false' # Cache desabilitado
-      ASSETS_CONTENT_SECURITY_POLICY_DIRECTIVES__MEDIA_SRC: array:'self',http://localhost:3000/
-      CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: '*' # usar isso apenas em desenvolvimento.
+      
+      STORAGE_LOCAL_ROOT: '/directus/uploads'
+      EXTENSIONS_PATH: './extensions'
+      EXTENSIONS_AUTO_RELOAD: 'true'
+      
+      PERMISSIONS_CACHE_TTL: '0'
+      CACHE_ENABLED: 'false'
+      
+      ACCEPT_TERMS: 'true'
+      PROJECT_OWNER: 'admin@example.com'
+      
+      # CSP para permitir iframes (desenvolvimento)
+      CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: '*'
+    
     ports:
       - 8055:8055
+    
     volumes:
-      # - ./uploads:/directus/uploads
-      - .:/directus/extensions/directus-extension-dashboard-iframe
-      # - ./templates:/directus/templates
-    depends_on:
-      - database
-
-    networks:
-      - directus-network
+      - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
+      - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro
+      - ./package.json:/directus/extensions/directus-extension-inframe/package.json:ro
+    
+    tmpfs:
+      - /directus/uploads:rw,noexec,nosuid,size=64M,mode=777
+      - /tmp/data:rw,size=64M,mode=777
+    
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/health']
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 60s
+    
     restart: unless-stopped
-
-volumes:
-  db_data:
-  pgadmin4_data:
-
-networks:
-  directus-network:
-    driver: bridge

@@ -1,9 +1,9 @@
 {
   "collections": [
     {
-      "collection": "languages",
+      "collection": "language",
       "meta": {
-        "collection": "languages",
+        "collection": "language",
         "icon": null,
         "note": null,
         "display_template": null,
@@ -35,7 +35,14 @@
         "display_template": null,
         "hidden": false,
         "singleton": false,
-        "translations": null,
+        "translations": [
+          {
+            "language": "en-US",
+            "translation": "Inframe",
+            "singular": "Inframe",
+            "plural": "Inframes"
+          }
+        ],
         "archive_field": "status",
         "archive_app_filter": true,
         "archive_value": "archived",
@@ -53,9 +60,9 @@
       "schema": {}
     },
     {
-      "collection": "inframe_translations",
+      "collection": "inframe_translation",
       "meta": {
-        "collection": "inframe_translations",
+        "collection": "inframe_translation",
         "icon": "import_export",
         "note": null,
         "display_template": null,
@@ -107,12 +114,12 @@
   ],
   "fields": [
     {
-      "collection": "languages",
+      "collection": "language",
       "field": "code",
       "type": "string",
       "schema": {
         "name": "code",
-        "table": "languages",
+        "table": "language",
         "data_type": "character varying",
         "default_value": null,
         "generation_expression": null,
@@ -131,7 +138,7 @@
         "comment": null
       },
       "meta": {
-        "collection": "languages",
+        "collection": "language",
         "field": "code",
         "special": null,
         "interface": "input",
@@ -152,12 +159,12 @@
       }
     },
     {
-      "collection": "languages",
+      "collection": "language",
       "field": "name",
       "type": "string",
       "schema": {
         "name": "name",
-        "table": "languages",
+        "table": "language",
         "data_type": "character varying",
         "default_value": null,
         "generation_expression": null,
@@ -165,9 +172,9 @@
         "numeric_precision": null,
         "numeric_scale": null,
         "is_generated": false,
-        "is_nullable": true,
-        "is_unique": false,
-        "is_indexed": false,
+        "is_nullable": false,
+        "is_unique": true,
+        "is_indexed": true,
         "is_primary_key": false,
         "has_auto_increment": false,
         "foreign_key_schema": null,
@@ -176,7 +183,7 @@
         "comment": null
       },
       "meta": {
-        "collection": "languages",
+        "collection": "language",
         "field": "name",
         "special": null,
         "interface": "input",
@@ -197,12 +204,12 @@
       }
     },
     {
-      "collection": "languages",
+      "collection": "language",
       "field": "direction",
       "type": "string",
       "schema": {
         "name": "direction",
-        "table": "languages",
+        "table": "language",
         "data_type": "character varying",
         "default_value": null,
         "generation_expression": null,
@@ -221,7 +228,7 @@
         "comment": null
       },
       "meta": {
-        "collection": "languages",
+        "collection": "language",
         "field": "direction",
         "special": null,
         "interface": "select-dropdown",
@@ -570,14 +577,47 @@
       }
     },
     {
-      "collection": "inframe_translations",
+      "collection": "inframe",
+      "field": "translations",
+      "type": "alias",
+      "schema": null,
+      "meta": {
+        "collection": "inframe",
+        "field": "translations",
+        "special": ["translations"],
+        "interface": "translations",
+        "options": {
+          "languageIndicatorField": "name",
+          "defaultLanguage": true,
+          "userLanguage": true
+        },
+        "display": "translations",
+        "display_options": {
+          "template": "{{title}}",
+          "languageIndicatorField": "name"
+        },
+        "readonly": false,
+        "hidden": false,
+        "sort": 7,
+        "width": "full",
+        "translations": null,
+        "note": null,
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "inframe_translation",
       "field": "id",
       "type": "integer",
       "schema": {
         "name": "id",
-        "table": "inframe_translations",
+        "table": "inframe_translation",
         "data_type": "integer",
-        "default_value": "nextval('inframe_translations_id_seq'::regclass)",
+        "default_value": "nextval('inframe_translation_id_seq'::regclass)",
         "generation_expression": null,
         "max_length": null,
         "numeric_precision": 32,
@@ -594,7 +634,7 @@
         "comment": null
       },
       "meta": {
-        "collection": "inframe_translations",
+        "collection": "inframe_translation",
         "field": "id",
         "special": null,
         "interface": null,
@@ -615,12 +655,12 @@
       }
     },
     {
-      "collection": "inframe_translations",
-      "field": "inframe_id",
+      "collection": "inframe_translation",
+      "field": "inframe",
       "type": "uuid",
       "schema": {
-        "name": "inframe_id",
-        "table": "inframe_translations",
+        "name": "inframe",
+        "table": "inframe_translation",
         "data_type": "uuid",
         "default_value": null,
         "generation_expression": null,
@@ -639,8 +679,8 @@
         "comment": null
       },
       "meta": {
-        "collection": "inframe_translations",
-        "field": "inframe_id",
+        "collection": "inframe_translation",
+        "field": "inframe",
         "special": null,
         "interface": null,
         "options": null,
@@ -660,12 +700,12 @@
       }
     },
     {
-      "collection": "inframe_translations",
-      "field": "languages_code",
+      "collection": "inframe_translation",
+      "field": "language",
       "type": "string",
       "schema": {
-        "name": "languages_code",
-        "table": "inframe_translations",
+        "name": "language",
+        "table": "inframe_translation",
         "data_type": "character varying",
         "default_value": null,
         "generation_expression": null,
@@ -679,13 +719,13 @@
         "is_primary_key": false,
         "has_auto_increment": false,
         "foreign_key_schema": "public",
-        "foreign_key_table": "languages",
+        "foreign_key_table": "language",
         "foreign_key_column": "code",
         "comment": null
       },
       "meta": {
-        "collection": "inframe_translations",
-        "field": "languages_code",
+        "collection": "inframe_translation",
+        "field": "language",
         "special": null,
         "interface": null,
         "options": null,
@@ -705,12 +745,12 @@
       }
     },
     {
-      "collection": "inframe_translations",
+      "collection": "inframe_translation",
       "field": "title",
       "type": "string",
       "schema": {
         "name": "title",
-        "table": "inframe_translations",
+        "table": "inframe_translation",
         "data_type": "character varying",
         "default_value": null,
         "generation_expression": null,
@@ -729,7 +769,7 @@
         "comment": null
       },
       "meta": {
-        "collection": "inframe_translations",
+        "collection": "inframe_translation",
         "field": "title",
         "special": null,
         "interface": "input",
@@ -778,39 +818,39 @@
       }
     },
     {
-      "collection": "inframe_translations",
-      "field": "languages_code",
-      "related_collection": "languages",
+      "collection": "inframe_translation",
+      "field": "language",
+      "related_collection": "language",
       "schema": {
-        "constraint_name": "inframe_translations_languages_code_foreign",
-        "table": "inframe_translations",
-        "column": "languages_code",
+        "constraint_name": "inframe_translation_language_foreign",
+        "table": "inframe_translation",
+        "column": "language",
         "foreign_key_schema": "public",
-        "foreign_key_table": "languages",
+        "foreign_key_table": "language",
         "foreign_key_column": "code",
         "on_update": "NO ACTION",
         "on_delete": "SET NULL"
       },
       "meta": {
-        "many_collection": "inframe_translations",
-        "many_field": "languages_code",
-        "one_collection": "languages",
+        "many_collection": "inframe_translation",
+        "many_field": "language",
+        "one_collection": "language",
         "one_field": null,
         "one_collection_field": null,
         "one_allowed_collections": null,
-        "junction_field": "inframe_id",
+        "junction_field": "inframe",
         "sort_field": null,
         "one_deselect_action": "nullify"
       }
     },
     {
-      "collection": "inframe_translations",
-      "field": "inframe_id",
+      "collection": "inframe_translation",
+      "field": "inframe",
       "related_collection": "inframe",
       "schema": {
-        "constraint_name": "inframe_translations_inframe_id_foreign",
-        "table": "inframe_translations",
-        "column": "inframe_id",
+        "constraint_name": "inframe_translation_inframe_foreign",
+        "table": "inframe_translation",
+        "column": "inframe",
         "foreign_key_schema": "public",
         "foreign_key_table": "inframe",
         "foreign_key_column": "id",
@@ -818,13 +858,13 @@
         "on_delete": "SET NULL"
       },
       "meta": {
-        "many_collection": "inframe_translations",
-        "many_field": "inframe_id",
+        "many_collection": "inframe_translation",
+        "many_field": "inframe",
         "one_collection": "inframe",
         "one_field": "translations",
         "one_collection_field": null,
         "one_allowed_collections": null,
-        "junction_field": "languages_code",
+        "junction_field": "language",
         "sort_field": null,
         "one_deselect_action": "nullify"
       }
