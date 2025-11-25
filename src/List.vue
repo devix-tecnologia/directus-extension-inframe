@@ -5,8 +5,13 @@
     </template>
 
     <div class="container">
-      <!-- Mensagem quando não há itens -->
-      <div v-if="items.length === 0" class="empty-state">
+      <!-- Loading state -->
+      <div v-if="loading" class="loading-state">
+        <p>Carregando...</p>
+      </div>
+
+      <!-- Mensagem quando não há itens (após carregar) -->
+      <div v-else-if="items.length === 0" class="empty-state">
         <v-icon name="inbox" large />
         <h2>Nenhum item cadastrado</h2>
         <p>Crie um novo item na coleção inframe para começar.</p>
@@ -44,7 +49,7 @@ export default defineComponent({
   components: { NavMenu },
   setup() {
     const page_title = 'Extra';
-    const { items, fetchItems, getTitle } = useFetchItems();
+    const { items, loading, fetchItems, getTitle } = useFetchItems();
     const router = useRouter();
     const route = useRoute();
     const { startAutoSave } = useNavigationPersistence();
@@ -66,6 +71,7 @@ export default defineComponent({
 
     return {
       items,
+      loading,
       page_title,
       getTitle,
       currentItemId,
@@ -174,6 +180,22 @@ export default defineComponent({
 .empty-state p {
   margin: 0;
   font-size: 1rem;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 400px;
+  color: var(--theme--foreground-subdued);
+  text-align: center;
+}
+
+.loading-state p {
+  margin: 0;
+  font-size: 1.125rem;
 }
 
 .card-container {

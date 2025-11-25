@@ -41,8 +41,11 @@ export const useFetchItems = () => {
         },
       });
 
+      // A resposta da API vem como { data: [...] }
+      const data = Array.isArray(response.data) ? response.data : (response.data as any).data || [];
+
       // Filtrar traduções do lado do cliente para priorizar o idioma do usuário
-      items.value = response.data.map((item: Item) => {
+      items.value = data.map((item: Item) => {
         if (item.translations && item.translations.length > 0) {
           // Tentar encontrar tradução no idioma do usuário
           const userLangTranslation = item.translations.find((t) => t.language === languageCode);
@@ -82,20 +85,30 @@ export const useFetchItem = () => {
       const response = await api.get<Item>(`/items/inframe/${id}`, {
         params: {
           fields: ['id', 'status', 'sort', 'icon', 'url', 'thumbnail', 'translations.language', 'translations.title'],
-          deep: {
-            translations: {
-              _filter: {
-                language: { _eq: languageCode }, // Filtro pelo idioma configurado no Directus
-              },
-            },
-          },
-          filter: {
-            status: { _eq: 'published' }, // Filtra apenas itens publicados
-          },
+          // Removido o filtro deep para buscar TODAS as traduções
         },
       });
 
-      item.value = response.data;
+      // A resposta pode vir como { data: {...} } ou diretamente o objeto
+      const data = (response.data as any).data || response.data;
+
+      console.log('[useFetchItem] Response:', response.data);
+      console.log('[useFetchItem] Parsed data:', data);
+
+      // Filtrar traduções do lado do cliente para priorizar o idioma do usuário
+      if (data.translations && data.translations.length > 0) {
+        const userLangTranslation = data.translations.find((t: any) => t.language === languageCode);
+
+        if (userLangTranslation) {
+          data.translations = [
+            userLangTranslation,
+            ...data.translations.filter((t: any) => t.language !== languageCode),
+          ];
+        }
+      }
+
+      item.value = data;
+      console.log('[useFetchItem] Final item:', item.value);
     } finally {
       loading.value = false;
     }

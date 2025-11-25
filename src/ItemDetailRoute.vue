@@ -1,5 +1,11 @@
 <template>
-  <ItemDetail :item="item" :items="items" :loading="loading" :title="getTitle(item?.translations || [])" />
+  <ItemDetail v-if="item" :item="item" :items="items" :loading="loading" :title="getTitle(item?.translations || [])" />
+  <div v-else-if="loading" class="loading-state">
+    <p>Carregando item...</p>
+  </div>
+  <div v-else class="error-state">
+    <p>Item não encontrado ou erro ao carregar.</p>
+  </div>
 </template>
 
 <script lang="ts">

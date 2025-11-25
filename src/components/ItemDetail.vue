@@ -1,5 +1,5 @@
 <template>
-  <private-view v-if="item" :title="title">
+  <private-view :title="title">
     <template v-if="breadcrumb.length > 0" #headline>
       <v-breadcrumb :items="breadcrumb" />
     </template>
@@ -12,9 +12,19 @@
         <p>Carregando...</p>
       </div>
 
+      <div v-else-if="!item">
+        <p>Nenhum item encontrado. Verifique se o item existe e está publicado.</p>
+      </div>
+
       <div v-else-if="item">
         <div class="iframe-area">
-          <iframe :src="item.url" frameborder="0" sandbox="allow-scripts allow-same-origin"></iframe>
+          <iframe
+            :src="normalizeUrl(item.url)"
+            frameborder="0"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
         </div>
       </div>
 
@@ -54,9 +64,23 @@ export default defineComponent({
   setup(props) {
     const breadcrumb = [{ name: 'Home', to: `/inframe` }];
 
+    // Normaliza a URL adicionando https:// se não tiver protocolo
+    const normalizeUrl = (url: string) => {
+      if (!url) return '';
+
+      // Se já tem protocolo (http:// ou https://), retorna como está
+      if (url.match(/^https?:\/\//i)) {
+        return url;
+      }
+
+      // Caso contrário, adiciona https://
+      return `https://${url}`;
+    };
+
     return {
       ...props,
       breadcrumb,
+      normalizeUrl,
     };
   },
 });
