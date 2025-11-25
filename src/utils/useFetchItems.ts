@@ -31,23 +31,9 @@ export const useFetchItems = () => {
 
       const response = await api.get<Item[]>('/items/inframe', {
         params: {
-          fields: [
-            'id',
-            'sort',
-            'status',
-            'icon',
-            'url',
-            'thumbnail',
-            'translations.language',
-            'translations.title',
-          ],
-          deep: {
-            translations: {
-              _filter: {
-                language: { _eq: languageCode }, // Filtro pelo idioma configurado no Directus
-              },
-            },
-          },
+          fields: ['id', 'sort', 'status', 'icon', 'url', 'thumbnail', 'translations.language', 'translations.title'],
+          // Removido o filtro deep para buscar TODAS as traduções
+          // O getTitle() vai usar a primeira disponível
           filter: {
             status: { _eq: 'published' }, // Filtra apenas itens publicados
           },
@@ -55,7 +41,20 @@ export const useFetchItems = () => {
         },
       });
 
-      items.value = response.data;
+      // Filtrar traduções do lado do cliente para priorizar o idioma do usuário
+      items.value = response.data.map((item: Item) => {
+        if (item.translations && item.translations.length > 0) {
+          // Tentar encontrar tradução no idioma do usuário
+          const userLangTranslation = item.translations.find((t) => t.language === languageCode);
+
+          // Se encontrou, colocar como primeira
+          if (userLangTranslation) {
+            item.translations = [userLangTranslation, ...item.translations.filter((t) => t.language !== languageCode)];
+          }
+        }
+
+        return item;
+      });
     } finally {
       loading.value = false;
     }
@@ -82,16 +81,7 @@ export const useFetchItem = () => {
 
       const response = await api.get<Item>(`/items/inframe/${id}`, {
         params: {
-          fields: [
-            'id',
-            'status',
-            'sort',
-            'icon',
-            'url',
-            'thumbnail',
-            'translations.language',
-            'translations.title',
-          ],
+          fields: ['id', 'status', 'sort', 'icon', 'url', 'thumbnail', 'translations.language', 'translations.title'],
           deep: {
             translations: {
               _filter: {

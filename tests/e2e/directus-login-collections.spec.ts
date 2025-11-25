@@ -253,12 +253,14 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     await sharedPage.screenshot({ path: 'tests/e2e/screenshots/settings-project-page.png', fullPage: true });
 
     // 2. Clicar no checkbox para habilitar o módulo Extra (8º item da lista)
-    const extraCheckbox = sharedPage.locator('#main-content > div > main > div.settings > div > div:nth-child(7) > div.interface > div > ul > li:nth-child(8) > button');
+    const extraCheckbox = sharedPage.locator(
+      '#main-content > div > main > div.settings > div > div:nth-child(7) > div.interface > div > ul > li:nth-child(8) > button',
+    );
     await expect(extraCheckbox).toBeVisible({ timeout: 10000 });
-    
+
     // Verificar se já está ativo
     const isActive = await extraCheckbox.evaluate((el) => el.classList.contains('active')).catch(() => false);
-    
+
     if (!isActive) {
       await extraCheckbox.click();
       await sharedPage.waitForTimeout(1000);
@@ -268,7 +270,9 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     await sharedPage.screenshot({ path: 'tests/e2e/screenshots/extra-checkbox-enabled.png', fullPage: true });
 
     // 3. Salvar as configurações - procurar pelo botão de check no header
-    const saveButton = sharedPage.locator('button[type="submit"], button:has-text("check"), header button, .header-bar button').first();
+    const saveButton = sharedPage
+      .locator('button[type="submit"], button:has-text("check"), header button, .header-bar button')
+      .first();
     await expect(saveButton).toBeVisible({ timeout: 10000 });
     await saveButton.click();
     await sharedPage.waitForTimeout(3000);
@@ -297,5 +301,50 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     // Verificar que há conteúdo no módulo
     const moduleContent = await sharedPage.locator('main, .module-content').first();
     await expect(moduleContent).toBeVisible({ timeout: 5000 });
+  });
+
+  test('deve exibir mensagem quando não há inframes cadastrados', async () => {
+    // 1. Verificar se há itens na coleção inframe e deletá-los
+    await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
+    await sharedPage.waitForTimeout(2000);
+
+    // Verificar se há itens e deletar todos
+    const hasItems = (await sharedPage.locator('table tbody tr').count()) > 0;
+
+    if (hasItems) {
+      // Selecionar todos os itens
+      const selectAllCheckbox = sharedPage.locator('table thead input[type="checkbox"]').first();
+      await selectAllCheckbox.click();
+      await sharedPage.waitForTimeout(500);
+
+      // Clicar no botão de deletar
+      const deleteButton = sharedPage.locator('button[data-tooltip="Delete"]').first();
+      await deleteButton.click();
+      await sharedPage.waitForTimeout(500);
+
+      // Confirmar deleção no modal
+      const confirmButton = sharedPage.locator('button:has-text("Delete")').last();
+      await confirmButton.click();
+      await sharedPage.waitForTimeout(2000);
+    }
+
+    // 2. Navegar para o módulo inframe
+    await sharedPage.goto('/admin/inframe', { waitUntil: 'networkidle' });
+    await sharedPage.waitForTimeout(2000);
+
+    // 3. Verificar que a mensagem de "Nenhum item cadastrado" é exibida
+    const emptyStateIcon = sharedPage.locator('.empty-state i.v-icon');
+    await expect(emptyStateIcon).toBeVisible({ timeout: 5000 });
+
+    const emptyStateHeading = sharedPage.locator('.empty-state h2:has-text("Nenhum item cadastrado")');
+    await expect(emptyStateHeading).toBeVisible({ timeout: 5000 });
+
+    const emptyStateText = sharedPage.locator(
+      '.empty-state p:has-text("Crie um novo item na coleção inframe para começar")',
+    );
+    await expect(emptyStateText).toBeVisible({ timeout: 5000 });
+
+    // Screenshot do estado vazio
+    await sharedPage.screenshot({ path: 'tests/e2e/screenshots/inframe-empty-state.png', fullPage: true });
   });
 });

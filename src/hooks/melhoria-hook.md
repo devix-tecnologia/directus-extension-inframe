@@ -8,7 +8,8 @@
 
 ### ✅ 1. Importação Recursiva de Coleções com Dependências de Grupos (Folders)
 
-**Problema anterior:** Se você tinha uma coleção dentro de um folder (group), e o folder não existia ainda, a criação falhava.
+**Problema anterior:** Se você tinha uma coleção dentro de um folder (group), e o folder não existia ainda, a criação
+falhava.
 
 **Solução:** Loop recursivo que espera o grupo ser criado primeiro.
 
@@ -24,13 +25,13 @@ while (importedCollections.length !== lastLength) {
     // Check if collection has a group (folder) dependency
     if (collection.meta?.group) {
       const { group } = collection.meta;
-      
+
       // Wait for group to be imported first
       if (!importedCollections.includes(group) && !existingCollectionNames.has(group)) {
         continue; // Skip this collection for now, try again in next iteration
       }
     }
-    
+
     // Import collection...
   }
 }
@@ -171,7 +172,7 @@ try {
 ❌ Coleções criadas sem campos, depois campos adicionados separadamente  
 ❌ Não respeitava ordem de dependências (folders)  
 ❌ Se coleção existia, campos não eram adicionados  
-❌ Muitos waits/sleeps desnecessários  
+❌ Muitos waits/sleeps desnecessários
 
 ### DEPOIS (Soluções)
 
@@ -179,7 +180,7 @@ try {
 ✅ Coleções criadas COM campos em uma operação  
 ✅ Importação recursiva respeita hierarquia de folders  
 ✅ Modo PATCH adiciona campos faltantes  
-✅ Refreshes de schema apenas quando necessário  
+✅ Refreshes de schema apenas quando necessário
 
 ---
 
@@ -209,6 +210,7 @@ directus start
 ```
 
 O hook irá:
+
 1. Detectar que as coleções não existem
 2. Importar na ordem correta
 3. Criar coleções COM campos
@@ -254,11 +256,13 @@ Para testar se está funcionando:
 A extensão `schema-management-module` **NÃO usa** o endpoint `/schema/apply` do Directus. Por quê?
 
 ### Endpoint `/schema/apply`
+
 - Aplica DIFF entre schemas
 - Mais complexo
 - Pode ter comportamentos inesperados com conflitos
 
 ### Abordagem da Extensão (que usamos)
+
 - Cria recursos individuais via API
 - Mais controle granular
 - Melhor tratamento de erros

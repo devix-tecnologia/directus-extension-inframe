@@ -6,45 +6,45 @@ services:
       # SQLite em memória para testes rápidos
       DB_CLIENT: 'sqlite3'
       DB_FILENAME: '/tmp/data/directus.db'
-      
+
       KEY: 'test-key'
       SECRET: 'test-secret'
-      
+
       ADMIN_EMAIL: 'admin@example.com'
       ADMIN_PASSWORD: 'admin123'
-      
+
       PUBLIC_URL: 'http://localhost:8055'
-      
+
       STORAGE_LOCAL_ROOT: '/directus/uploads'
       EXTENSIONS_PATH: './extensions'
       EXTENSIONS_AUTO_RELOAD: 'true'
-      
+
       PERMISSIONS_CACHE_TTL: '0'
       CACHE_ENABLED: 'false'
-      
+
       ACCEPT_TERMS: 'true'
       PROJECT_OWNER: 'admin@example.com'
-      
+
       # CSP para permitir iframes (desenvolvimento)
       CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: '*'
-    
+
     ports:
       - 8055:8055
-    
+
     volumes:
       - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
       - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro
       - ./package.json:/directus/extensions/directus-extension-inframe/package.json:ro
-    
+
     tmpfs:
       - /directus/uploads:rw,noexec,nosuid,size=64M,mode=777
       - /tmp/data:rw,size=64M,mode=777
-    
+
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/health']
       interval: 3s
       timeout: 3s
       retries: 40
       start_period: 60s
-    
+
     restart: unless-stopped

@@ -292,7 +292,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
           logger.info(
             `[inFrame Extension] ⏭️  Relation ${relation.collection}.${relation.field} -> ${relation.related_collection} already exists`,
           );
-          
+
           continue;
         }
 

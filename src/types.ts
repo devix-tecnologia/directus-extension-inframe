@@ -6,7 +6,7 @@ export type Item = {
   url: string;
   thumbnail: string;
   translations: {
-    languages_code: string;
+    language: string;
     title: string;
   }[];
 };
