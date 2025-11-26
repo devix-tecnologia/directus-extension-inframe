@@ -256,7 +256,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const extraCheckbox = sharedPage.locator(
       '#main-content > div > main > div.settings > div > div:nth-child(7) > div.interface > div > ul > li:nth-child(8) > button',
     );
-    
+
     await expect(extraCheckbox).toBeVisible({ timeout: 10000 });
 
     // Verificar se já está ativo
@@ -341,6 +341,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const emptyStateText = sharedPage.locator(
       '.empty-state p:has-text("Crie um novo item na coleção inframe para começar")',
     );
+    
     await expect(emptyStateText).toBeVisible({ timeout: 5000 });
 
     // Screenshot do estado vazio
