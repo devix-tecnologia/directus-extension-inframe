@@ -4,7 +4,7 @@
   "icon": "web_asset",
   "type": "module",
   "private": false,
-  "version": "2.0.6",
+  "version": "2.0.7",
   "keywords": [
     "directus",
     "directus-extension",
