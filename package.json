@@ -38,7 +38,7 @@
         "source": "src/hooks/inframe-setup/index.ts"
       }
     ],
-    "host": "^10.10.0"
+    "host": "^10.8.3"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
