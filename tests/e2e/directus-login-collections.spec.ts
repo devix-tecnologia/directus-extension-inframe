@@ -253,6 +253,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     await sharedPage.screenshot({ path: 'tests/e2e/screenshots/settings-project-page.png', fullPage: true });
 
     // 2. Clicar no checkbox para habilitar o módulo Extra (8º item da lista)
+    
     const extraCheckbox = sharedPage.locator(
       '#main-content > div > main > div.settings > div > div:nth-child(7) > div.interface > div > ul > li:nth-child(8) > button',
     );
@@ -271,7 +272,10 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     await sharedPage.screenshot({ path: 'tests/e2e/screenshots/extra-checkbox-enabled.png', fullPage: true });
 
     // 3. Salvar as configurações - botão de check no canto superior direito
-    const saveButton = sharedPage.locator('header button.icon, .header-bar-actions button, button[data-v-6f44c4ef]').last();
+    const saveButton = sharedPage
+      .locator('header button.icon, .header-bar-actions button, button[data-v-6f44c4ef]')
+      .last();
+    
     await expect(saveButton).toBeVisible({ timeout: 10000 });
     await saveButton.click();
     await sharedPage.waitForTimeout(3000);
@@ -341,7 +345,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const emptyStateText = sharedPage.locator(
       '.empty-state p:has-text("Crie um novo item na coleção inframe para começar")',
     );
-    
+
     await expect(emptyStateText).toBeVisible({ timeout: 5000 });
 
     // Screenshot do estado vazio

@@ -57,6 +57,7 @@
     "lint:fix": "eslint . --ext .ts,.vue --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
     "test": "pnpm test:e2e",
     "test:integration": "vitest run tests/*.spec.ts",
     "test:watch": "vitest",
