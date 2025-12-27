@@ -1,5 +1,3 @@
-// @ts-check
-
 import eslintJs from '@eslint/js';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import eslintPluginVue from 'eslint-plugin-vue';
@@ -7,7 +5,7 @@ import globals from 'globals';
 import process from 'node:process';
 import typescriptEslint from 'typescript-eslint';
 
-export default typescriptEslint.config(
+export default [
   // Global config
   {
     languageOptions: {
@@ -92,7 +90,6 @@ export default typescriptEslint.config(
     files: ['**/*.vue'],
     languageOptions: { parserOptions: { parser: typescriptEslint.parser } },
     // Apply recommended TypeScript rules to Vue files as well
-    // @ts-expect-error wrong type assertion
     rules: typescriptEslint.configs.recommended.reduce((rules, config) => ({ ...rules, ...config.rules }), {}),
   },
 
@@ -142,4 +139,4 @@ export default typescriptEslint.config(
   },
 
   eslintConfigPrettier,
-);
+];

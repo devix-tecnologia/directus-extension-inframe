@@ -1,58 +1,70 @@
 import { defineHook } from '@directus/extensions-sdk';
 import schema from '../../../schema.json';
 
-export default defineHook(({ action, init }, { services, logger, database, getSchema }) => {
-  logger.info('[inFrame Extension] 🔌 Hook registered, waiting for events...');
+interface SetupContext {
+  services: any;
+  logger: any;
+  database: any;
+  getSchema: any;
+}
 
-  // Hook on initialization event - runs after routes are registered
-  init('routes.after', async () => {
-    logger.info('[inFrame Extension] 🚀 routes.after event triggered, running setup...');
+export default defineHook(
+  (
+    { action, init }: { action: any; init: any },
+    { services, logger, database, getSchema }: { services: any; logger: any; database: any; getSchema: any },
+  ) => {
+    logger.info('[inFrame Extension] 🔌 Hook registered, waiting for events...');
 
-    try {
-      await setupCollections({ services, logger, database, getSchema });
-    } catch (error: any) {
-      logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
-    }
-  });
-
-  // Hook on server start event (action)
-  action('server.start', async () => {
-    logger.info('[inFrame Extension] 🚀 server.start event triggered, running setup...');
-
-    try {
-      await setupCollections({ services, logger, database, getSchema });
-    } catch (error: any) {
-      logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
-    }
-  });
-
-  // Hook for when extension is installed/updated
-  action('extensions.install', async ({ extension }: any) => {
-    if (extension?.includes('inframe') || extension?.includes('@devix-tecnologia/directus-extension-inframe')) {
-      logger.info('[inFrame Extension] Extension installed, configuring collections...');
+    // Hook on initialization event - runs after routes are registered
+    init('routes.after', async () => {
+      logger.info('[inFrame Extension] 🚀 routes.after event triggered, running setup...');
 
       try {
         await setupCollections({ services, logger, database, getSchema });
       } catch (error: any) {
-        logger.error(`[inFrame Extension] Error during installation: ${error.message}`);
+        logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
       }
-    }
-  });
+    });
 
-  // Hook for when extensions are reloaded
-  action('extensions.reload', async () => {
-    logger.info('[inFrame Extension] Verifying collections configuration...');
+    // Hook on server start event (action)
+    action('server.start', async () => {
+      logger.info('[inFrame Extension] 🚀 server.start event triggered, running setup...');
 
-    try {
-      await verifyCollections({ logger, services, getSchema });
-    } catch (error: any) {
-      logger.warn(`[inFrame Extension] Error verifying collections: ${error.message}`);
-    }
-  });
-});
+      try {
+        await setupCollections({ services, logger, database, getSchema });
+      } catch (error: any) {
+        logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
+      }
+    });
+
+    // Hook for when extension is installed/updated
+    action('extensions.install', async ({ extension }: any) => {
+      if (extension?.includes('inframe') || extension?.includes('@devix-tecnologia/directus-extension-inframe')) {
+        logger.info('[inFrame Extension] Extension installed, configuring collections...');
+
+        try {
+          await setupCollections({ services, logger, database, getSchema });
+        } catch (error: any) {
+          logger.error(`[inFrame Extension] Error during installation: ${error.message}`);
+        }
+      }
+    });
+
+    // Hook for when extensions are reloaded
+    action('extensions.reload', async () => {
+      logger.info('[inFrame Extension] Verifying collections configuration...');
+
+      try {
+        await verifyCollections({ logger, services, database, getSchema });
+      } catch (error: any) {
+        logger.warn(`[inFrame Extension] Error verifying collections: ${error.message}`);
+      }
+    });
+  },
+);
 
 // Function to verify if collections exist
-async function verifyCollections({ logger, services, getSchema }: any) {
+async function verifyCollections({ logger, services, getSchema }: SetupContext) {
   const { CollectionsService } = services;
   const currentSchema = await getSchema();
 
@@ -80,7 +92,7 @@ async function verifyCollections({ logger, services, getSchema }: any) {
 }
 
 // Main function to create collections - Based on schema-management-module logic
-async function setupCollections({ services, logger, database, getSchema }: any) {
+async function setupCollections({ services, logger, database, getSchema }: SetupContext) {
   const { CollectionsService, FieldsService, RelationsService } = services;
 
   logger.info('[inFrame Extension] Starting collections configuration...');
@@ -90,16 +102,6 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
 
   // Create services
   const collectionsService = new CollectionsService({
-    schema: currentSchema,
-    knex: database,
-  });
-
-  const fieldsService = new FieldsService({
-    schema: currentSchema,
-    knex: database,
-  });
-
-  const relationsService = new RelationsService({
     schema: currentSchema,
     knex: database,
   });
@@ -249,6 +251,7 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
             }
 
             await updatedFieldsService.createField(field.collection, fieldData);
+
             fieldsCreated++;
 
             logger.info(`[inFrame Extension] ✅ Field ${field.collection}.${field.field} created`);
@@ -326,7 +329,14 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
     logger.error(`[inFrame Extension] ❌ Error during relations import: ${error.message}`);
   }
 
-  // STEP 4: Final summary
+  // STEP 4: Setup default languages (Português, English, Español)
+  try {
+    await setupLanguages({ services, logger, database, getSchema });
+  } catch (error: any) {
+    logger.error(`[inFrame Extension] ❌ Error during languages setup: ${error.message}`);
+  }
+
+  // STEP 5: Final summary
   logger.info(
     `[inFrame Extension] 🎉 Configuration complete! Created: ${collectionsCreated} collection(s), ${fieldsCreated} field(s), ${relationsCreated} relation(s)`,
   );
@@ -334,8 +344,91 @@ async function setupCollections({ services, logger, database, getSchema }: any) 
   // Force schema refresh
   try {
     await getSchema({ accountability: null, database });
+
     logger.info('[inFrame Extension] ✅ Schema refreshed');
   } catch (error: any) {
     logger.warn(`[inFrame Extension] ⚠️  Error refreshing schema: ${error.message}`);
+  }
+}
+
+// Function to setup default languages
+async function setupLanguages({ services, logger, database, getSchema }: SetupContext) {
+  logger.info('[inFrame Extension] 🌍 Setting up default languages...');
+
+  const { ItemsService } = services;
+
+  // Default languages to create
+  const defaultLanguages = [
+    {
+      code: 'pt-BR',
+      name: 'Português',
+      direction: 'ltr',
+    },
+    {
+      code: 'en-US',
+      name: 'English',
+      direction: 'ltr',
+    },
+    {
+      code: 'es-ES',
+      name: 'Español',
+      direction: 'ltr',
+    },
+  ];
+
+  try {
+    // Check if language collection exists
+    const collectionExists = await database
+      .select('collection')
+      .from('directus_collections')
+      .where('collection', 'language')
+      .first();
+
+    if (!collectionExists) {
+      logger.warn('[inFrame Extension] ⚠️  Language collection does not exist, skipping language setup');
+
+      return;
+    }
+
+    // Get current schema
+    const currentSchema = await getSchema({ accountability: null, database });
+
+    // Create ItemsService for language collection
+    const languagesService = new ItemsService('language', {
+      schema: currentSchema,
+      knex: database,
+    });
+
+    let languagesCreated = 0;
+
+    for (const language of defaultLanguages) {
+      try {
+        // Check if language already exists
+        const existingLanguage = await database.select('*').from('language').where('code', language.code).first();
+
+        if (existingLanguage) {
+          logger.info(`[inFrame Extension] ⏭️  Language ${language.code} (${language.name}) already exists`);
+
+          continue;
+        }
+
+        // Create language
+        await languagesService.createOne(language);
+
+        languagesCreated++;
+
+        logger.info(`[inFrame Extension] ✅ Language ${language.code} (${language.name}) created`);
+      } catch (error: any) {
+        logger.error(`[inFrame Extension] ❌ Error creating language ${language.code}: ${error.message}`);
+      }
+    }
+
+    if (languagesCreated > 0) {
+      logger.info(`[inFrame Extension] ✅ Created ${languagesCreated} default language(s)`);
+    } else {
+      logger.info('[inFrame Extension] ℹ️  All default languages already exist');
+    }
+  } catch (error: any) {
+    logger.error(`[inFrame Extension] ❌ Error setting up languages: ${error.message}`);
   }
 }

@@ -1,16 +1,25 @@
 import { ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import type { LocationQueryValue, RouteLocationRaw } from 'vue-router';
 
 // Chave para armazenamento local
 const STORAGE_KEY = 'directus_inframe_last_route';
 const URL_PARAM_KEY = 'lastRoute';
+
+// Tipo customizado para o router com os métodos que precisamos
+interface VueRouter {
+  push: (to: RouteLocationRaw | string) => Promise<void>;
+  replace: (to: RouteLocationRaw) => Promise<void>;
+}
 
 /**
  * Composable para persistência de navegação
  * Salva e restaura automaticamente a última rota acessada
  */
 export const useNavigationPersistence = () => {
-  const router = useRouter();
+  const routerRaw = useRouter();
+  // Cast para nosso tipo customizado que tem os métodos necessários
+  const router = routerRaw as unknown as VueRouter;
   const route = useRoute();
   const isRestoringRoute = ref(false);
 
@@ -68,9 +77,9 @@ export const useNavigationPersistence = () => {
   const getLastRoute = (): string | null => {
     try {
       // Estratégia 1: Verifica query parameter da URL
-      const urlParam = route.query[URL_PARAM_KEY] as string;
+      const urlParam = route.query[URL_PARAM_KEY] as LocationQueryValue;
 
-      if (urlParam && urlParam !== 'undefined') {
+      if (urlParam && typeof urlParam === 'string' && urlParam !== 'undefined') {
         return urlParam;
       }
 

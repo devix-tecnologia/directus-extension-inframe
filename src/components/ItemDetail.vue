@@ -61,7 +61,7 @@ export default defineComponent({
       default: '',
     },
   },
-  setup(props) {
+  setup(props: { item: Item; items: Item[]; loading: boolean; title: string }) {
     const breadcrumb = [{ name: 'Home', to: `/inframe` }];
 
     // Normaliza a URL adicionando https:// se não tiver protocolo

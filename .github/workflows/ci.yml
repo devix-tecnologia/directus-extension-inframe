@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
     branches: ['main', 'develop']
+  push:
+    branches: ['main']
 
 jobs:
   lint:
@@ -28,8 +30,10 @@ jobs:
       - run: pnpm install
       - run: pnpm build
 
-  test:
+  test-quick:
     runs-on: ubuntu-latest
+    # Teste rápido apenas na versão mais recente para PRs em develop
+    if: github.event_name == 'pull_request' && github.base_ref == 'develop'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -39,15 +43,46 @@ jobs:
       - run: pnpm install
       - name: Build extension
         run: pnpm build
-      - name: List dist directory
-        run: ls -la dist/
-      - name: Start Docker Compose
-        run: docker compose -f docker-compose.test.yml up -d
-      - name: Run tests
-        run: pnpm test
-      - name: Docker logs (on failure)
-        if: failure()
-        run: docker compose -f docker-compose.test.yml logs
-      - name: Stop Docker Compose
-        if: always()
-        run: docker compose -f docker-compose.test.yml down
+      - name: Run quick integration test (latest version only)
+        env:
+          DIRECTUS_TEST_VERSION: '11.13.4'
+        run: pnpm test:integration
+
+  test-integration:
+    runs-on: ubuntu-latest
+    # Só roda testes completos em PRs para main (3 versões)
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    strategy:
+      matrix:
+        directus-version: ['10.8.3', '11.13.1', '11.13.4']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install
+      - name: Build extension
+        run: pnpm build
+      - name: Run integration tests for Directus ${{ matrix.directus-version }}
+        env:
+          DIRECTUS_TEST_VERSION: ${{ matrix.directus-version }}
+        run: pnpm test:integration
+
+  test-post-merge:
+    runs-on: ubuntu-latest
+    # Teste rápido após merge em main (apenas versão latest)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install
+      - name: Build extension
+        run: pnpm build
+      - name: Run integration test (latest version only)
+        env:
+          DIRECTUS_TEST_VERSION: '11.13.4'
+        run: pnpm test:integration
