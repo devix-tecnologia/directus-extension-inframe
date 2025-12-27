@@ -65,10 +65,10 @@ describe('Auto Setup Hook - Collection Creation', () => {
     logger.info('✓ inframe collection has correct metadata');
   });
 
-  test('Should have created languages collection', async () => {
+  test('Should have created language collection', async () => {
     const response = await dockerHttpRequest(
       'GET',
-      '/collections/languages',
+      '/collections/language',
       undefined,
       {
         Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
@@ -79,15 +79,15 @@ describe('Auto Setup Hook - Collection Creation', () => {
     const collection = response.data || response;
 
     expect(collection).toBeDefined();
-    expect(collection.collection).toBe('languages');
+    expect(collection.collection).toBe('language');
 
-    logger.info('✓ languages collection created');
+    logger.info('✓ language collection created');
   });
 
-  test('Should have created inframe_translations collection', async () => {
+  test('Should have created inframe_translation collection', async () => {
     const response = await dockerHttpRequest(
       'GET',
-      '/collections/inframe_translations',
+      '/collections/inframe_translation',
       undefined,
       {
         Authorization: `Bearer ${String(process.env.DIRECTUS_ACCESS_TOKEN)}`,
@@ -98,10 +98,10 @@ describe('Auto Setup Hook - Collection Creation', () => {
     const collection = response.data || response;
 
     expect(collection).toBeDefined();
-    expect(collection.collection).toBe('inframe_translations');
+    expect(collection.collection).toBe('inframe_translation');
     expect(collection.meta.hidden).toBe(true);
 
-    logger.info('✓ inframe_translations collection created');
+    logger.info('✓ inframe_translation collection created');
   });
 
   test('Should have created inframe_pasta collection (folder group)', async () => {
@@ -131,7 +131,7 @@ describe('Auto Setup Hook - Collection Creation', () => {
     expect(true).toBe(true);
   });
 
-  test('Should have created fields for languages collection', async () => {
+  test('Should have created fields for language collection', async () => {
     // NOTA: Os campos são criados manualmente via UI ou importando o schema.json completo
     // O hook cria apenas as coleções automaticamente
     logger.info('ℹ Fields should be configured manually in Directus admin UI or via schema import');

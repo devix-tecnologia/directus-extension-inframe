@@ -92,9 +92,6 @@ export const useFetchItem = () => {
       // A resposta pode vir como { data: {...} } ou diretamente o objeto
       const data = (response.data as any).data || response.data;
 
-      console.log('[useFetchItem] Response:', response.data);
-      console.log('[useFetchItem] Parsed data:', data);
-
       // Filtrar traduções do lado do cliente para priorizar o idioma do usuário
       if (data.translations && data.translations.length > 0) {
         const userLangTranslation = data.translations.find((t: any) => t.language === languageCode);
@@ -108,7 +105,6 @@ export const useFetchItem = () => {
       }
 
       item.value = data;
-      console.log('[useFetchItem] Final item:', item.value);
     } finally {
       loading.value = false;
     }

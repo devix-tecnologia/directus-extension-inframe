@@ -246,7 +246,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
 
   test('deve habilitar o módulo inframe nas configurações e verificar menu Extra', async () => {
     // 1. Navegar diretamente para a página de configurações do projeto
-    await sharedPage.goto('/admin/settings/project', { waitUntil: 'networkidle' });
+    await sharedPage.goto('/settings/project', { waitUntil: 'networkidle' });
     await sharedPage.waitForTimeout(2000);
 
     // Screenshot da página de configurações do projeto
@@ -256,6 +256,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const extraCheckbox = sharedPage.locator(
       '#main-content > div > main > div.settings > div > div:nth-child(7) > div.interface > div > ul > li:nth-child(8) > button',
     );
+
     await expect(extraCheckbox).toBeVisible({ timeout: 10000 });
 
     // Verificar se já está ativo
@@ -269,10 +270,8 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     // Screenshot após habilitar
     await sharedPage.screenshot({ path: 'tests/e2e/screenshots/extra-checkbox-enabled.png', fullPage: true });
 
-    // 3. Salvar as configurações - procurar pelo botão de check no header
-    const saveButton = sharedPage
-      .locator('button[type="submit"], button:has-text("check"), header button, .header-bar button')
-      .first();
+    // 3. Salvar as configurações - botão de check no canto superior direito
+    const saveButton = sharedPage.locator('header button.icon, .header-bar-actions button, button[data-v-6f44c4ef]').last();
     await expect(saveButton).toBeVisible({ timeout: 10000 });
     await saveButton.click();
     await sharedPage.waitForTimeout(3000);
@@ -342,6 +341,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const emptyStateText = sharedPage.locator(
       '.empty-state p:has-text("Crie um novo item na coleção inframe para começar")',
     );
+    
     await expect(emptyStateText).toBeVisible({ timeout: 5000 });
 
     // Screenshot do estado vazio
