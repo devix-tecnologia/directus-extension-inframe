@@ -1,7 +1,5 @@
 import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
 import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 /**
  * Credenciais de admin padrão do ambiente de teste
@@ -9,10 +7,8 @@ import { fileURLToPath } from 'url';
 const ADMIN_EMAIL = 'admin@example.com';
 const ADMIN_PASSWORD = 'admin123';
 
-// Para módulos ES, usamos import.meta.url
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const storageFile = path.resolve(__dirname, 'auth-storage.json');
+// Use path relativo ao workspace (funciona em CJS e ESM)
+const storageFile = `${process.cwd()}/tests/e2e/auth-storage.json`;
 
 // Variáveis compartilhadas entre os testes
 let sharedContext: BrowserContext;
@@ -50,14 +46,20 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
       // Caso contrário, fazer login normal
       await sharedPage.fill('input[type="email"]', ADMIN_EMAIL);
       await sharedPage.fill('input[type="password"]', ADMIN_PASSWORD);
-      await sharedPage.click('button[type="submit"]');
-      await sharedPage.waitForURL('**/admin/**', { timeout: 20000 });
+
+      // Enviar o formulário com Enter (mais robusto em headless e variações de DOM)
+      await Promise.all([
+        sharedPage.waitForURL('**/admin/**', { timeout: 20000 }),
+        sharedPage.press('input[type="password"]', 'Enter'),
+      ]);
+
       await sharedPage.waitForLoadState('networkidle');
     }
 
     // Esperar elementos de navegação visíveis (com timeout maior)
     await sharedPage.waitForSelector('#navigation, aside[role="navigation"], [data-test-id="navigation"]', {
-      timeout: 30000,
+      // Aumentado timeout para acomodar ambientes lentos/CI
+      timeout: 120000,
     });
   });
 
