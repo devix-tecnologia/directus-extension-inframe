@@ -18,9 +18,12 @@ let sharedPage: Page;
 test.describe.configure({ mode: 'serial' });
 
 test.describe('Directus Admin Panel - Login e Coleções', () => {
-  test.beforeAll(async ({ browser }: { browser: Browser }) => {
-    // Criar contexto e página compartilhados
-    sharedContext = await browser.newContext();
+  test.beforeAll(async ({ browser, baseURL }: { browser: Browser; baseURL: string | undefined }) => {
+    // Aumentar timeout do beforeAll para dar tempo de login + navegação completa (3 minutos)
+    test.setTimeout(180000);
+
+    // Criar contexto e página compartilhados com baseURL explícito
+    sharedContext = await browser.newContext({ baseURL });
     sharedPage = await sharedContext.newPage();
 
     // Navega para o login e faz autenticação

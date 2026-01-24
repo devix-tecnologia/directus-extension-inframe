@@ -4,7 +4,7 @@
 // Se uma versão específica for fornecida via env, usa apenas ela
 const specificVersion = process.env.DIRECTUS_TEST_VERSION;
 
-const allVersions = ['10.8.3', '11.13.1', '11.13.4'];
+const allVersions = ['11.14.1'];
 
 // Exporta apenas a versão específica se fornecida, ou todas as versões
 export const directusVersions = specificVersion ? [specificVersion] : allVersions;

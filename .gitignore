@@ -25,3 +25,5 @@ test-single.log
 schema.json.backup
 .gitignore
 schema.json.backup-before-singular
+
+.pnpm-store

@@ -35,6 +35,30 @@ services:
       retries: 40
       start_period: 60s
 
+  tests:
+    image: mcr.microsoft.com/playwright:v1.57.0
+    container_name: directus-inframe-tests-${TEST_SUITE_ID:-main}-${DIRECTUS_VERSION:-latest}
+    environment:
+      - CI=true
+      - DIRECTUS_URL=http://directus:8055
+    depends_on:
+      directus:
+        condition: service_healthy
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace:rw
+      - /dev/shm:/dev/shm
+    networks:
+      - directus-test-network
+    command:
+      - bash
+      - -lc
+      - |
+        npm i -g pnpm@10.20.0 && \
+        pnpm install --frozen-lockfile && \
+        pnpm exec playwright install --with-deps && \
+        pnpm test:e2e
+
 networks:
   directus-test-network:
     driver: bridge
