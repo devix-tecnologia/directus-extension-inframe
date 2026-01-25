@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "ES2019",
     "lib": ["ES2019", "DOM"],
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
@@ -22,7 +24,13 @@
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["./src/**/*", "./src/**/*.vue", "./shims-vue.d.ts"]
+  "include": ["./src/**/*", "./src/**/*.vue", "./shims-vue.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }

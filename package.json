@@ -1,5 +1,6 @@
 {
   "name": "directus-extension-inframe",
+  "type": "module",
   "description": "Display dashboards, reports and external sites in iframes, directly in your Directus panel. Install, configure and centralize everything in one place!",
   "icon": "web_asset",
   "private": false,

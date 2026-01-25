@@ -156,7 +156,7 @@ export const useNavigationPersistence = () => {
     // Monitora mudanças na rota e salva automaticamente
     watch(
       () => route.params.id,
-      (newId) => {
+      (newId: string | string[] | undefined) => {
         // Só salva se não estiver restaurando uma rota
         if (!isRestoringRoute.value && newId) {
           saveCurrentRoute(newId as string);
