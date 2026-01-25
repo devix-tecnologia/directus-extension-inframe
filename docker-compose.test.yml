@@ -2,8 +2,8 @@ services:
   directus:
     image: directus/directus:${DIRECTUS_VERSION:-9.23.1}
     container_name: directus-inframe-${TEST_SUITE_ID:-main}-${DIRECTUS_VERSION:-latest}
-    # Sem mapeamento de portas - testes usam docker exec diretamente no container
-    # Isso permite execução paralela de múltiplas versões do Directus
+    ports:
+      - "0:8055"  # Porta dinâmica - Docker escolhe porta livre automaticamente
     environment:
       DB_CLIENT: 'sqlite3'
       DB_FILENAME: '/tmp/data/directus.db'
@@ -19,6 +19,7 @@ services:
       CACHE_ENABLED: 'false'
       ACCEPT_TERMS: 'true'
       PROJECT_OWNER: 'admin@example.com'
+      PRESSURE_LIMITER_ENABLED: 'false'
     volumes:
       - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
       - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro
@@ -27,7 +28,7 @@ services:
       - /directus/uploads:rw,noexec,nosuid,size=64M,mode=777 # Usa memória temporária para uploads com permissões adequadas
       - /tmp/data:rw,size=64M,mode=777 # Usa memória temporária para o banco de dados
     networks:
-      - directus-test-network
+      - inframe-directus-test-network
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/health']
       interval: 3s
@@ -49,7 +50,7 @@ services:
       - ./:/workspace:rw
       - /dev/shm:/dev/shm
     networks:
-      - directus-test-network
+      - inframe-directus-test-network
     command:
       - bash
       - -lc
@@ -60,6 +61,6 @@ services:
         pnpm test:e2e
 
 networks:
-  directus-test-network:
+  inframe-directus-test-network:
     driver: bridge
     name: directus-inframe-test-${TEST_SUITE_ID:-main}-${DIRECTUS_VERSION:-latest}
