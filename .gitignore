@@ -4,6 +4,7 @@ dist/
 .eslintcache
 .DS_Store
 *.tgz
+.pnpm-store
 
 # Test artifacts
 coverage/
@@ -25,5 +26,3 @@ test-single.log
 schema.json.backup
 .gitignore
 schema.json.backup-before-singular
-
-.pnpm-store
