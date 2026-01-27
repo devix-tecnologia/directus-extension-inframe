@@ -87,6 +87,7 @@
     "prettier": "3.7.4",
     "rollup": "^4.54.0",
     "semantic-release": "^25.0.2",
+    "taskin": "^2.3.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "8.50.0",
     "vite": "^7.3.0",
@@ -97,10 +98,10 @@
   "dependencies": {
     "vue-router": "^4.6.3"
   },
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.28.2",
   "engines": {
     "node": "22",
-    "pnpm": "10.20.0"
+    "pnpm": "10.28.2"
   },
   "author": "Devix Tecnologia",
   "contributors": [

@@ -1,5 +1,8 @@
 {
   "version": "0.1.0",
+  "automation": {
+    "level": "autopilot"
+  },
   "provider": {
     "type": "fs",
     "config": {
