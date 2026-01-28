@@ -136,6 +136,7 @@ test.describe('Dynamic URL Variables', () => {
     const items = sharedPage.locator(
       '.card, [class*="card"], table tbody tr, [class*="table"] [class*="row"]:not([class*="header"])',
     );
+
     const itemCount = await items.count();
 
     // Se não houver items, criar um para o teste
