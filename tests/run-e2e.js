@@ -66,6 +66,7 @@ async function waitForHealthy(maxWaitSeconds = 180) {
       const { stdout: status } = await execAsync(
         `docker inspect --format='{{.State.Health.Status}}' ${CONTAINER_NAME}`,
       );
+
       const currentStatus = status.trim();
 
       if (currentStatus !== lastStatus) {
