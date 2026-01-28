@@ -85,6 +85,70 @@ In the Directus sidebar, click "Reports" (document icon).
 
 The content will be displayed in the iframe within the Directus panel, allowing direct interaction.
 
+## 🔗 Dynamic URL Variables
+
+You can use dynamic variables in your URLs to pass user context and authentication to external sites.
+
+### Available Variables
+
+**Authentication:**
+- `$token` - Directus access token (JWT) ⚠️ **Use with caution**
+- `$user_id` - Current user's ID
+- `$user_email` - Current user's email
+
+**User Identity:**
+- `$user_name` - User's full name
+- `$user_first_name` - User's first name
+- `$user_last_name` - User's last name
+- `$user_role` - User's role
+
+**Context:**
+- `$timestamp` - Current timestamp (ISO 8601)
+- `$locale` - User's language preference (e.g., pt-BR, en-US)
+
+### Examples
+
+**Power BI with authentication:**
+```
+https://app.powerbi.com/view?token=$token&user_id=$user_id
+```
+
+**Metabase with user context:**
+```
+https://metabase.company.com/dashboard/sales?user=$user_email&role=$user_role
+```
+
+**Custom analytics:**
+```
+https://analytics.company.com/view?viewer=$user_email&timestamp=$timestamp
+```
+
+### ⚠️ Security Warnings for `$token`
+
+Using the `$token` variable in URLs introduces security risks:
+
+- ❌ **Token exposure in logs**: The token will appear in server logs of the external site
+- ❌ **Browser history**: Token will be stored in browser history
+- ❌ **Referrer headers**: Token may leak via HTTP Referer header
+- ❌ **Session hijacking**: Anyone with the URL can impersonate the user
+
+**Security Requirements:**
+- ✅ **HTTPS only**: URLs with `$token` MUST use HTTPS (HTTP will be blocked)
+- ✅ **Trusted sites only**: Only use with sites you fully control and trust
+- ✅ **Review logs**: Ensure external sites don't log complete URLs
+- ✅ **Compliance**: Consider LGPD/GDPR implications
+
+**Best Practices:**
+1. Avoid using `$token` in URLs when possible
+2. Use non-sensitive variables like `$user_id` or `$user_email` instead
+3. Consider implementing a backend proxy for better security
+4. Document which sites receive tokens and why
+5. Regularly audit usage of token variables
+
+> [!WARNING]
+> The extension will show console warnings and block HTTP URLs when using `$token`.
+> This is not foolproof - use at your own risk and only with fully trusted external sites.
+
 ## ⚙️ Docker Configuration (Optional)
 
 If you use Docker, configure CSP to allow iframes:

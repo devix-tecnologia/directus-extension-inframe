@@ -1,6 +1,6 @@
 # Task 001 — suportar variaveis dinamicas na url do inframe
 
-Status: pending
+Status: completed
 Type: feat
 Assignee: Sidarta Veloso
 
@@ -24,11 +24,10 @@ URL cadastrada: https://metabase.com/dashboard/123?token=$token&user=$user_email
 URL renderizada: https://metabase.com/dashboard/123?token=eyJhbGc...&user=user@example.com
 ```
 
-### Variáveis a Implementar
+### Variáveis Implementadas
 
 **Autenticação:**
-- `$token` - Token JWT da sessão Directus (access token)
-- `$refresh_token` - Refresh token (se disponível)
+- `$token` - Token JWT da sessão Directus (access token) ⚠️
 
 **Identidade do Usuário:**
 - `$user_id` - ID do usuário
@@ -39,7 +38,6 @@ URL renderizada: https://metabase.com/dashboard/123?token=eyJhbGc...&user=user@e
 
 **Permissões:**
 - `$user_role` - Role principal do usuário
-- `$user_roles` - Lista de roles (JSON array ou comma-separated)
 
 **Contexto:**
 - `$timestamp` - Timestamp atual (ISO 8601)
@@ -47,7 +45,47 @@ URL renderizada: https://metabase.com/dashboard/123?token=eyJhbGc...&user=user@e
 
 ## Tasks
 
-- [ ] Criar composable `src/utils/useUrlVariableReplacement.ts`
+- [x] Criar composable `src/utils/useUrlVariableReplacement.ts`
+  - [x] Função `getUserData()` para buscar dados do usuário via API `/users/me`
+  - [x] Função `getAccessToken()` para obter token da sessão
+  - [x] Função `replaceVariables(url, userData, token)` para substituir placeholders
+  - [x] Adicionar tratamento de erros e fallbacks
+  - [x] Função `validateUrlSecurity()` - validação HTTPS obrigatório para $token
+  - [x] Função `processUrl()` - pipeline completo de processamento
+
+- [x] Modificar `src/components/ItemDetail.vue`
+  - [x] Importar e usar `useUrlVariableReplacement()`
+  - [x] Buscar dados do usuário no `onMounted`
+  - [x] Aplicar replace de variáveis antes de passar URL para iframe
+  - [x] Adicionar loading state durante fetch de user data
+  - [x] Tratar erros de API
+  - [x] Exibir mensagem de erro se validação HTTPS falhar
+
+- [x] Adicionar tipos TypeScript
+  - [x] Interface `UserData` em `src/types.ts`
+  - [x] Interface `SecurityValidationResult` em `src/types.ts`
+  - [x] Tipos para funções do composable
+
+- [x] Atualizar documentação (MVP)
+  - [x] README.md - seção "Dynamic URL Variables"
+  - [x] Adicionar exemplos práticos de uso
+  - [x] Listar todas as variáveis disponíveis
+  - [x] Adicionar warnings de segurança sobre $token
+  - [x] Documentar requisito HTTPS
+
+- [ ] Testes (pendente - task-002)
+  - [ ] Testes unitários para `replaceVariables()`
+  - [ ] Testes de integração E2E
+  - [ ] Validar substituição de todas as variáveis
+  - [ ] Validar comportamento com variáveis inexistentes
+  - [ ] Validar URLs sem variáveis (não devem quebrar)
+
+- [x] Validações e Segurança (MVP)
+  - [x] Validação HTTPS quando usar `$token` ✅
+  - [x] Console warning se usar `$token` ✅
+  - [x] Bloquear HTTP + $token ✅
+  - [x] Documentar riscos de segurança no README ✅
+  - [x] URL encoding automático dos valores substituídos ✅
   - [ ] Função `getUserData()` para buscar dados do usuário via API `/users/me`
   - [ ] Função `getAccessToken()` para obter token da sessão
   - [ ] Função `replaceVariables(url, userData, token)` para substituir placeholders
