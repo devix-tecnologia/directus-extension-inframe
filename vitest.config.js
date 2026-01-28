@@ -15,15 +15,11 @@ export default defineConfig({
       '**/.{idea,git,cache,output,temp}/**',
       '**/e2e/**', // Excluir testes E2E do Playwright
     ],
-    // Migração do poolOptions para top-level (Vitest 4+)
+    // Configuração de threads para Vitest 4+
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: false,
-      },
-    },
     maxThreads: 3,
     minThreads: 1,
+    singleThread: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
