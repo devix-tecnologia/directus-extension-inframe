@@ -7,13 +7,15 @@ our workflow.
 
 ### **Architecture Overview**
 
-This is a Directus "bundle" extension that combines a **frontend module** (user interface) + **backend hook** (automatic configuration).
+This is a Directus "bundle" extension that combines a **frontend module** (user interface) + **backend hook** (automatic
+configuration).
 
 ---
 
 ### **🎯 Complete Flow: From Registration to Display**
 
 #### **1. Initial Setup (Backend Hook)**
+
 - **File**: [src/hooks/inframe-setup/index.ts](src/hooks/inframe-setup/index.ts)
 - **When it runs**: Automatically when Directus starts (`server.start`, `routes.after`)
 - **What it does**: Creates 3 collections automatically if they don't exist:
@@ -24,6 +26,7 @@ This is a Directus "bundle" extension that combines a **frontend module** (user 
 - Creates all necessary fields, relations, and configurations
 
 #### **2. Registering an Item**
+
 - User accesses the `inframe` collection in Directus
 - Fills in:
   - **URL**: link to external site/dashboard
@@ -33,6 +36,7 @@ This is a Directus "bundle" extension that combines a **frontend module** (user 
   - **Translations**: titles in different languages
 
 #### **3. Listing (Home Screen)**
+
 - **Component**: [src/List.vue](src/List.vue)
 - **How it fetches**: `useFetchItems()` makes GET `/items/inframe`
   - Filters only `status: published`
@@ -44,13 +48,15 @@ This is a Directus "bundle" extension that combines a **frontend module** (user 
   - Click on card → navigates to `/inframe/{id}`
 
 #### **4. Navigation and Side Menu**
+
 - **Component**: [src/components/NavMenu.vue](src/components/NavMenu.vue)
 - Side menu always visible with all items
 - Each item has icon + translated title
 - Links routed to `/inframe/{id}`
 
 #### **5. iframe Display**
-- **Route**: `/inframe/:id` 
+
+- **Route**: `/inframe/:id`
 - **Route component**: [src/ItemDetailRoute.vue](src/ItemDetailRoute.vue)
   - Fetches specific item via `useFetchItem(id)`
   - Passes data to view component
@@ -61,6 +67,7 @@ This is a Directus "bundle" extension that combines a **frontend module** (user 
   - **IMPORTANT**: iframe takes up 100% of available area, displaying external content
 
 #### **6. Navigation Persistence**
+
 - **Utility**: [src/utils/useNavigationPersistence.ts](src/utils/useNavigationPersistence.ts)
 - Automatically saves last visited route
 - When reopening the module, returns to last viewed item

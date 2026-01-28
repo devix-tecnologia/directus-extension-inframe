@@ -3,7 +3,7 @@ services:
     image: directus/directus:${DIRECTUS_VERSION:-9.23.1}
     container_name: directus-inframe-${TEST_SUITE_ID:-main}-${DIRECTUS_VERSION:-latest}
     ports:
-      - "0:8055"  # Porta dinâmica - Docker escolhe porta livre automaticamente
+      - '0:8055' # Porta dinâmica - Docker escolhe porta livre automaticamente
     environment:
       DB_CLIENT: 'sqlite3'
       DB_FILENAME: '/tmp/data/directus.db'

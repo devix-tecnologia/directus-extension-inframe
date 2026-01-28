@@ -65,7 +65,7 @@ export const useUrlVariableReplacement = () => {
     try {
       const { useUserStore } = useStores();
       const userStore = useUserStore();
-      
+
       // Try to get token from user store
       if (userStore && userStore.currentUser) {
         accessToken.value = userStore.accessToken || '';
@@ -112,18 +112,16 @@ export const useUrlVariableReplacement = () => {
       if (urlPattern && !urlPattern.startsWith('https://')) {
         result.isValid = false;
 
-        result.errors.push(
-          '🔒 SECURITY ERROR: $token variable can only be used with HTTPS URLs. HTTP is not allowed.',
-        );
+        result.errors.push('🔒 SECURITY ERROR: $token variable can only be used with HTTPS URLs. HTTP is not allowed.');
       }
 
       // Add warning even for HTTPS
       result.warnings.push(
-        '⚠️ WARNING: You are using $token in the URL. The token will be exposed in server logs, browser history, and referrer headers.'
+        '⚠️ WARNING: You are using $token in the URL. The token will be exposed in server logs, browser history, and referrer headers.',
       );
 
       result.warnings.push(
-        '⚠️ Only use this with fully trusted external sites. Consider using a backend proxy for better security.'
+        '⚠️ Only use this with fully trusted external sites. Consider using a backend proxy for better security.',
       );
     }
 

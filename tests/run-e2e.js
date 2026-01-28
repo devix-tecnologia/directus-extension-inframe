@@ -63,14 +63,16 @@ async function waitForHealthy(maxWaitSeconds = 180) {
 
   while (Date.now() - startTime < maxWaitMs) {
     try {
-      const { stdout: status } = await execAsync(`docker inspect --format='{{.State.Health.Status}}' ${CONTAINER_NAME}`);
+      const { stdout: status } = await execAsync(
+        `docker inspect --format='{{.State.Health.Status}}' ${CONTAINER_NAME}`,
+      );
       const currentStatus = status.trim();
-      
+
       if (currentStatus !== lastStatus) {
         log(`Status do container: ${currentStatus}`);
         lastStatus = currentStatus;
       }
-      
+
       if (currentStatus === 'healthy') {
         log(`Container está healthy! ✓`);
         return true;
@@ -79,13 +81,13 @@ async function waitForHealthy(maxWaitSeconds = 180) {
       // Container pode não ter healthcheck ainda
     }
 
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     if (VERBOSE) {
       process.stdout.write('.');
     }
   }
-  
+
   if (VERBOSE) process.stdout.write('\n');
   logError(`Timeout: container não ficou healthy após ${maxWaitSeconds} segundos`);
   return false;
@@ -93,7 +95,7 @@ async function waitForHealthy(maxWaitSeconds = 180) {
 
 async function stopContainer(composeCmd) {
   log(`Parando container existente ${CONTAINER_NAME}...`);
-  
+
   try {
     const env = `TEST_SUITE_ID=${TEST_SUITE_ID} DIRECTUS_VERSION=${DIRECTUS_VERSION}`;
     await execAsync(`${env} ${composeCmd} -f docker-compose.test.yml down --remove-orphans --volumes`);
@@ -106,7 +108,7 @@ async function stopContainer(composeCmd) {
 
 async function startContainer(composeCmd) {
   log(`Iniciando container ${CONTAINER_NAME}...`);
-  
+
   try {
     const env = `TEST_SUITE_ID=${TEST_SUITE_ID} DIRECTUS_VERSION=${DIRECTUS_VERSION}`;
     await execAsync(`${env} ${composeCmd} -f docker-compose.test.yml up -d directus`);
@@ -119,18 +121,18 @@ async function startContainer(composeCmd) {
 
 async function runTests(port) {
   log('Iniciando execução dos testes E2E...');
-  
+
   const directusUrl = `http://localhost:${port}`;
   log(`Directus URL: ${directusUrl}`);
-  
+
   const testCommand = `DIRECTUS_URL=${directusUrl} playwright test ${process.argv.slice(2).join(' ')}`;
-  
+
   return new Promise((resolve, reject) => {
     const child = exec(testCommand);
-    
+
     child.stdout.on('data', (data) => process.stdout.write(data));
     child.stderr.on('data', (data) => process.stderr.write(data));
-    
+
     child.on('close', (code) => {
       if (code === 0) {
         log('Testes concluídos com sucesso ✓');
@@ -146,40 +148,39 @@ async function runTests(port) {
 async function main() {
   try {
     log('=== Iniciando pipeline de testes E2E ===\n');
-    
+
     // 1. Verificar comando docker compose
     const composeCmd = await getDockerComposeCommand();
     log(`Usando: ${composeCmd}`);
-    
+
     // 2. Parar container existente (se houver)
     log(`Verificando se container ${CONTAINER_NAME} está rodando...`);
     const isRunning = await isContainerRunning();
-    
+
     if (isRunning) {
       log('Container antigo encontrado, reiniciando para garantir configuração correta...');
       await stopContainer(composeCmd);
     } else {
       log('Nenhum container rodando ✓');
     }
-    
+
     // 3. Iniciar container novo
     await startContainer(composeCmd);
-    
+
     // 4. Aguardar ficar healthy
     if (!(await waitForHealthy())) {
       process.exit(1);
     }
-    
+
     // 5. Obter porta do container
     const port = await getContainerPort();
     log(`Container exposto na porta: ${port}`);
-    
+
     // 6. Rodar testes
     await runTests(port);
-    
+
     log('\n=== Pipeline de testes E2E concluído com sucesso ===');
     process.exit(0);
-    
   } catch (error) {
     logError(`\nFalha na execução: ${error.message}`);
     process.exit(1);

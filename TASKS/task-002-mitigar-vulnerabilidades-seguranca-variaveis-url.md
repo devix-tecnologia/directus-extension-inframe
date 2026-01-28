@@ -1,17 +1,16 @@
 # Task 002 — Mitigar vulnerabilidades de segurança das variáveis dinâmicas na URL
 
-Status: pending
-Type: security
-Assignee: Sidarta Veloso
-Priority: HIGH 🔴
-Depends on: task-001
+Status: pending Type: security Assignee: Sidarta Veloso Priority: HIGH 🔴 Depends on: task-001
 
 ## Description
 
-Implementar camadas de segurança para mitigar os riscos de usar `$token` e outras variáveis sensíveis nas URLs dos iframes.
+Implementar camadas de segurança para mitigar os riscos de usar `$token` e outras variáveis sensíveis nas URLs dos
+iframes.
 
 ### Problema
+
 A task-001 introduz riscos de segurança significativos:
+
 - **Token na URL**: Expõe JWT em logs, histórico, referrer headers
 - **Session hijacking**: URLs com token podem ser interceptadas/compartilhadas
 - **Sites maliciosos**: Admin pode cadastrar iframe apontando para site não confiável
@@ -19,9 +18,11 @@ A task-001 introduz riscos de segurança significativos:
 - **LGPD/GDPR**: Violação de regulamentações de privacidade
 
 ### Solução
+
 Implementar múltiplas camadas de proteção para reduzir (não eliminar completamente) os riscos quando `$token` for usado.
 
-**⚠️ IMPORTANTE**: Esta task mitiga, mas NÃO elimina todos os riscos. O uso de token em URL continua sendo uma prática insegura por natureza.
+**⚠️ IMPORTANTE**: Esta task mitiga, mas NÃO elimina todos os riscos. O uso de token em URL continua sendo uma prática
+insegura por natureza.
 
 ## Tasks
 
@@ -115,12 +116,7 @@ Implementar múltiplas camadas de proteção para reduzir (não eliminar complet
 - [ ] Domínios pré-aprovados (sugestão)
   ```json
   {
-    "trusted_domains": [
-      "app.powerbi.com",
-      "public.tableau.com",
-      "metabase.company.com",
-      "grafana.company.com"
-    ]
+    "trusted_domains": ["app.powerbi.com", "public.tableau.com", "metabase.company.com", "grafana.company.com"]
   }
   ```
 
@@ -201,6 +197,7 @@ Mesmo com todas as proteções implementadas, o uso de `$token` na URL continua 
 ### Alternativas Mais Seguras (Futuras)
 
 **Task 003 (Futura)**: Implementar backend proxy que:
+
 - ✅ Token nunca sai do servidor
 - ✅ Backend faz a requisição
 - ✅ Frontend recebe apenas o conteúdo
@@ -211,16 +208,19 @@ Mesmo com todas as proteções implementadas, o uso de `$token` na URL continua 
 Como esta funcionalidade precisa ser entregue hoje com SSO:
 
 **Fase 1 (MVP - Hoje)**: Implementar apenas:
+
 - ✅ Validação HTTPS obrigatório
 - ✅ Console warning
 - ✅ Documentação dos riscos
 
 **Fase 2 (Próximos dias)**: Adicionar:
+
 - ✅ Campo `is_trusted`
 - ✅ Permissões por role
 - ✅ Warnings visuais
 
 **Fase 3 (Médio prazo)**: Completar:
+
 - ✅ Whitelist de domínios
 - ✅ Logs de auditoria
 - ✅ Testes de segurança completos
@@ -272,12 +272,14 @@ Adicionar no README checklist para admins:
 ### Arquivos Afetados
 
 **Novos:**
+
 - `src/utils/useSecurityValidation.ts`
 - `src/utils/useAuditLog.ts`
 - `src/components/SecurityWarning.vue`
 - `SECURITY.md`
 
 **Modificados:**
+
 - `schema.json` (campos de segurança)
 - `src/hooks/inframe-setup/index.ts` (novos campos)
 - `src/components/ItemDetail.vue` (validações)

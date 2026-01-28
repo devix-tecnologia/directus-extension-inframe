@@ -29,19 +29,22 @@ module.exports = defineConfig({
   /* Preservar trace e vídeos */
   preserveOutput: 'always',
 
+  /* Output folder for test artifacts */
+  outputDir: 'test-results',
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.DIRECTUS_URL || 'http://localhost:8055',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    /* Collect trace on failure */
+    trace: 'retain-on-failure',
 
     /* Screenshot on failure */
     screenshot: 'only-on-failure',
 
-    /* Video on failure */
-    video: 'only-on-failure',
+    /* Video on */
+    video: 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
