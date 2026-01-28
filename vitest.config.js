@@ -15,10 +15,11 @@ export default defineConfig({
       '**/.{idea,git,cache,output,temp}/**',
       '**/e2e/**', // Excluir testes E2E do Playwright
     ],
-    // Usando forks ao invés de threads para evitar bug do Vitest 4.0.16
-    pool: 'forks',
-    maxForks: 3,
-    minForks: 1,
+    // Configuração para Vitest 4+ - isolate false evita o bug do suppress-warnings
+    pool: 'threads',
+    isolate: false,
+    maxThreads: 3,
+    minThreads: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
