@@ -3,7 +3,89 @@
 Thank you for your interest in contributing! This guide will help you set up your development environment and understand
 our workflow.
 
-## 🛠️ Development Setup
+## � How it Works
+
+### **Architecture Overview**
+
+This is a Directus "bundle" extension that combines a **frontend module** (user interface) + **backend hook** (automatic configuration).
+
+---
+
+### **🎯 Complete Flow: From Registration to Display**
+
+#### **1. Initial Setup (Backend Hook)**
+- **File**: [src/hooks/inframe-setup/index.ts](src/hooks/inframe-setup/index.ts)
+- **When it runs**: Automatically when Directus starts (`server.start`, `routes.after`)
+- **What it does**: Creates 3 collections automatically if they don't exist:
+  - `inframe` - stores items (URLs, icons, status)
+  - `languages` - available languages
+  - `inframe_translations` - title translations
+- Uses [schema.json](schema.json) file as template
+- Creates all necessary fields, relations, and configurations
+
+#### **2. Registering an Item**
+- User accesses the `inframe` collection in Directus
+- Fills in:
+  - **URL**: link to external site/dashboard
+  - **Status**: published/draft/archived
+  - **Icon**: Material Design icon
+  - **Thumbnail**: preview image (optional)
+  - **Translations**: titles in different languages
+
+#### **3. Listing (Home Screen)**
+- **Component**: [src/List.vue](src/List.vue)
+- **How it fetches**: `useFetchItems()` makes GET `/items/inframe`
+  - Filters only `status: published`
+  - Orders by `sort` field
+  - Fetches translations and prioritizes user's language
+- **Renders**: Grid of cards with:
+  - Thumbnail as background
+  - Translated title
+  - Click on card → navigates to `/inframe/{id}`
+
+#### **4. Navigation and Side Menu**
+- **Component**: [src/components/NavMenu.vue](src/components/NavMenu.vue)
+- Side menu always visible with all items
+- Each item has icon + translated title
+- Links routed to `/inframe/{id}`
+
+#### **5. iframe Display**
+- **Route**: `/inframe/:id` 
+- **Route component**: [src/ItemDetailRoute.vue](src/ItemDetailRoute.vue)
+  - Fetches specific item via `useFetchItem(id)`
+  - Passes data to view component
+- **View component**: [src/components/ItemDetail.vue](src/components/ItemDetail.vue)
+  - Renders `<iframe>` with item's URL
+  - Normalizes URL (adds `https://` if needed)
+  - Configures iframe sandbox and permissions
+  - **IMPORTANT**: iframe takes up 100% of available area, displaying external content
+
+#### **6. Navigation Persistence**
+- **Utility**: [src/utils/useNavigationPersistence.ts](src/utils/useNavigationPersistence.ts)
+- Automatically saves last visited route
+- When reopening the module, returns to last viewed item
+
+---
+
+### **🔑 Key Points**
+
+1. **Zero manual configuration**: Hook creates everything automatically
+2. **Automatic translation**: Detects user's language and shows correct title
+3. **Grid → Detail**: User chooses from grid, clicks and goes to iframe
+4. **Fullscreen iframe**: Takes up entire Directus usable area
+5. **Security**: Sandbox configured in iframe to limit permissions
+
+---
+
+### **📝 Practical Example**
+
+1. User registers: `url: "app.powerbi.com/dashboards/123"`, `title: "Sales 2024"`
+2. Item appears in grid with thumbnail
+3. Clicks card → goes to `/inframe/abc123`
+4. `ItemDetail.vue` renders iframe pointing to Power BI
+5. Power BI dashboard appears inside Directus panel
+
+## �🛠️ Development Setup
 
 ### Prerequisites
 
