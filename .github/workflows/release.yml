@@ -31,28 +31,28 @@ jobs:
       - run: pnpm install
       - run: pnpm build
 
-  # test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v6
-  #     - uses: actions/setup-node@v6
-  #       with:
-  #         node-version: 22.17.0
-  #     - uses: pnpm/action-setup@v4
-  #     - run: pnpm install
-  #     - run: pnpm build
-  #     - name: Install Playwright browsers
-  #       run: pnpm exec playwright install --with-deps
-  #     - name: Start Docker Compose
-  #       run: docker compose -f docker-compose.test.yml up -d
-  #     - name: Run tests
-  #       run: pnpm test
-  #     - name: Docker logs (on failure)
-  #       if: failure()
-  #       run: docker compose -f docker-compose.test.yml logs
-  #     - name: Stop Docker Compose
-  #       if: always()
-  #       run: docker compose -f docker-compose.test.yml down
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.17.0
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install
+      - run: pnpm build
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+      - name: Start Docker Compose
+        run: docker compose -f docker-compose.test.yml up -d
+      - name: Run tests
+        run: pnpm test
+      - name: Docker logs (on failure)
+        if: failure()
+        run: docker compose -f docker-compose.test.yml logs
+      - name: Stop Docker Compose
+        if: always()
+        run: docker compose -f docker-compose.test.yml down
 
   update-directus-versions:
     if: github.event_name == 'schedule'
@@ -79,7 +79,7 @@ jobs:
           delete-branch: true
 
   release:
-    needs: [lint, build]
+    needs: [lint, build, test]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
