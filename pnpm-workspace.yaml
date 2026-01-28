@@ -1,5 +1,8 @@
 onlyBuiltDependencies:
+  - '@opentask/taskin-file-system-provider'
+  - '@opentask/taskin-task-server-mcp'
   - esbuild
+  - taskin
   - vue-demi
 
 overrides:

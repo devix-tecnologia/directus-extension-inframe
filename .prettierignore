@@ -10,3 +10,4 @@ pnpm-lock.yaml
 /docs/packages/
 /api/uploads/
 /api/extensions/
+TASKS/**/*.md

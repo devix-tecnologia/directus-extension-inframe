@@ -1,6 +1,10 @@
 # Task 002 — Mitigar vulnerabilidades de segurança das variáveis dinâmicas na URL
 
-Status: pending Type: security Assignee: Sidarta Veloso Priority: HIGH 🔴 Depends on: task-001
+Status: done
+Type: security
+Assignee: Sidarta Veloso
+Priority: high
+Depends on: task-001
 
 ## Description
 

@@ -1,6 +1,8 @@
 # Task 001 — suportar variaveis dinamicas na url do inframe
 
-Status: completed Type: feat Assignee: Sidarta Veloso
+Status: done
+Type: feat
+Assignee: Sidarta Veloso
 
 ## Description
 

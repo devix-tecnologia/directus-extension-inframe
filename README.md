@@ -1,6 +1,8 @@
+![Overview of the inFrame Module in Directus](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/tela.jpg)
+
 # 🚀 inFrame: The Ultimate Module for External Content Integration in Directus
 
-[![npm version](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-v2-0-5.svg)](https://www.npmjs.com/package/directus-extension-inframe)
+[![npm version](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-v2-1-1.svg)](https://www.npmjs.com/package/directus-extension-inframe)
 [![License](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-license-gpl-3-0.svg)](https://github.com/devix-tecnologia/directus-extension-inframe/blob/main/LICENSE)
 
 ---
@@ -12,8 +14,6 @@ hub. Integrate BI dashboards, real-time reports, external tools, and any content
 Headless CMS.
 
 > **Boost Productivity:** Get instant access to critical data and third-party tools without ever leaving Directus.
-
-![Overview of the inFrame Module in Directus](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/tela.jpg)
 
 ---
 

@@ -16,24 +16,28 @@ export default defineHook(
     logger.info('[inFrame Extension] 🔌 Hook registered, waiting for events...');
 
     // Hook on initialization event - runs after routes are registered
+    // This ensures collections are created before server fully starts
     init('routes.after', async () => {
-      logger.info('[inFrame Extension] 🚀 routes.after event triggered, running setup...');
+      logger.info('[inFrame Extension] 🚀 routes.after event triggered, setting up collections...');
 
       try {
         await setupCollections({ services, logger, database, getSchema });
       } catch (error: any) {
-        logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
+        logger.error(`[inFrame Extension] Error during routes.after setup: ${error.message}`);
       }
     });
 
-    // Hook on server start event (action)
+    // Hook on server start event - runs once when server starts
+    // This is the ideal place to enable the module in settings
     action('server.start', async () => {
-      logger.info('[inFrame Extension] 🚀 server.start event triggered, running setup...');
+      logger.info('[inFrame Extension] 🚀 server.start event triggered, enabling module...');
 
       try {
+        // Also run setup collections here as backup, in case routes.after didn't run
         await setupCollections({ services, logger, database, getSchema });
+        await enableInframeModule({ logger, database });
       } catch (error: any) {
-        logger.error(`[inFrame Extension] Error during initial setup: ${error.message}`);
+        logger.error(`[inFrame Extension] Error during server.start setup: ${error.message}`);
       }
     });
 
@@ -430,5 +434,81 @@ async function setupLanguages({ services, logger, database, getSchema }: SetupCo
     }
   } catch (error: any) {
     logger.error(`[inFrame Extension] ❌ Error setting up languages: ${error.message}`);
+  }
+}
+
+// Function to enable inframe module in project settings
+async function enableInframeModule({ logger, database }: { logger: any; database: any }) {
+  try {
+    logger.info('[inFrame Extension] Checking module visibility in project settings...');
+
+    // Get current settings
+    const settings = await database.select('*').from('directus_settings').first();
+
+    if (!settings) {
+      logger.warn('[inFrame Extension] ⚠️  Settings not found, skipping module activation');
+      return;
+    }
+
+    // Parse module_bar JSON
+    let moduleBar = [];
+
+    try {
+      if (settings.module_bar) {
+        moduleBar = JSON.parse(settings.module_bar);
+      } else {
+        // Initialize with default Directus modules if module_bar is null
+        moduleBar = [
+          { type: 'module', id: 'content', enabled: true },
+          { type: 'module', id: 'users', enabled: true },
+          { type: 'module', id: 'files', enabled: true },
+          { type: 'module', id: 'insights', enabled: true },
+        ];
+
+        logger.info('[inFrame Extension] ℹ️  Initialized module_bar with default Directus modules');
+      }
+    } catch {
+      logger.warn('[inFrame Extension] ⚠️  Error parsing module_bar, initializing with default modules');
+
+      moduleBar = [
+        { type: 'module', id: 'content', enabled: true },
+        { type: 'module', id: 'users', enabled: true },
+        { type: 'module', id: 'files', enabled: true },
+        { type: 'module', id: 'insights', enabled: true },
+      ];
+    }
+
+    // Check if inframe module already exists in module_bar
+    const inframeModuleIndex = moduleBar.findIndex((m: any) => m.type === 'module' && m.id === 'inframe');
+
+    if (inframeModuleIndex !== -1) {
+      // Module exists, check if it's enabled
+      if (moduleBar[inframeModuleIndex].enabled) {
+        logger.info('[inFrame Extension] ✓ Inframe module already enabled in project settings');
+        return;
+      }
+
+      // Enable the module
+      moduleBar[inframeModuleIndex].enabled = true;
+      logger.info('[inFrame Extension] ✅ Enabled existing inframe module in project settings');
+    } else {
+      // Add inframe module to module_bar
+      moduleBar.push({
+        type: 'module',
+        id: 'inframe',
+        enabled: true,
+      });
+
+      logger.info('[inFrame Extension] ✅ Added inframe module to project settings');
+    }
+
+    // Update settings
+    await database('directus_settings').update({
+      module_bar: JSON.stringify(moduleBar),
+    });
+
+    logger.info('[inFrame Extension] ✅ Project settings updated successfully');
+  } catch (error: any) {
+    logger.error(`[inFrame Extension] ❌ Error enabling inframe module: ${error.message}`);
   }
 }
