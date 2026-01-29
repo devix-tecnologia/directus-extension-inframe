@@ -66,15 +66,26 @@ export const useUrlVariableReplacement = () => {
       const { useUserStore } = useStores();
       const userStore = useUserStore();
 
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] Getting access token...');
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] userStore:', userStore);
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] currentUser:', userStore?.currentUser);
+
       // Try to get token from user store
       if (userStore && userStore.currentUser) {
         accessToken.value = userStore.accessToken || '';
+        // eslint-disable-next-line no-console
+        console.log('[inFrame DEBUG] Token from userStore:', accessToken.value ? '***EXISTS***' : 'EMPTY');
         return accessToken.value;
       }
 
       // Fallback: try localStorage
       const token = localStorage.getItem('directus_token') || '';
       accessToken.value = token;
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] Token from localStorage:', token ? '***EXISTS***' : 'EMPTY');
       return token;
     } catch (err: any) {
       // eslint-disable-next-line no-console
@@ -99,12 +110,6 @@ export const useUrlVariableReplacement = () => {
     const hasToken = url.includes('$token') || url.includes('$refresh_token');
 
     if (hasToken) {
-      // CRITICAL: Token variables require HTTPS
-      if (!url.match(/\$token/) && !url.match(/\$refresh_token/)) {
-        // No token variables after all
-        return result;
-      }
-
       // Extract the base URL to check protocol
       const urlParts = url.split('?');
       const urlPattern = urlParts.length > 0 ? urlParts[0] : url;
@@ -134,11 +139,27 @@ export const useUrlVariableReplacement = () => {
   const replaceVariables = (url: string, user: UserData | null, token: string): string => {
     if (!url) return '';
 
+    // eslint-disable-next-line no-console
+    console.log('[inFrame DEBUG] replaceVariables called');
+    // eslint-disable-next-line no-console
+    console.log('[inFrame DEBUG] - url:', url);
+    // eslint-disable-next-line no-console
+    console.log('[inFrame DEBUG] - user:', user);
+    // eslint-disable-next-line no-console
+    console.log('[inFrame DEBUG] - token:', token ? '***EXISTS***' : 'EMPTY');
+
     let replacedUrl = url;
 
     // Authentication variables
     if (token && url.includes('$token')) {
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] Replacing $token...');
       replacedUrl = replacedUrl.replace(/\$token/g, encodeURIComponent(token));
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] After replacement:', replacedUrl);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] NOT replacing $token. token:', token ? 'exists' : 'EMPTY', 'includes:', url.includes('$token'));
     }
 
     // User identity variables
@@ -209,7 +230,11 @@ export const useUrlVariableReplacement = () => {
       }
 
       // Step 4: Get access token if needed
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] URL includes $token?', url.includes('$token'));
       const token = url.includes('$token') ? getAccessToken() : '';
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] Token retrieved:', token ? '***EXISTS***' : 'EMPTY');
 
       // Step 5: Replace variables
       const processedUrl = replaceVariables(url, user, token);
