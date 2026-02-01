@@ -1,5 +1,5 @@
 <template>
-  <private-view :title="title">
+  <private-view :title="reactiveTitle">
     <template v-if="breadcrumb.length > 0" #headline>
       <v-breadcrumb :items="breadcrumb" />
     </template>
@@ -45,7 +45,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted, watch } from 'vue';
+import { defineComponent, PropType, ref, onMounted, watch, toRef } from 'vue';
 import NavMenu from './NavMenu.vue';
 import { Item } from '../types';
 import { useUrlVariableReplacement } from '../utils/useUrlVariableReplacement';
@@ -76,6 +76,9 @@ export default defineComponent({
     const processedUrl = ref('');
     const urlProcessing = ref(false);
     const urlError = ref<string | null>(null);
+    
+    // Torna a prop title reativa
+    const reactiveTitle = toRef(props, 'title');
 
     const { processUrl } = useUrlVariableReplacement();
 
@@ -141,6 +144,7 @@ export default defineComponent({
       processedUrl,
       urlProcessing,
       urlError,
+      reactiveTitle,
     };
   },
 });
