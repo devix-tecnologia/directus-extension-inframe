@@ -1,6 +1,6 @@
 # 🚀 inFrame: The Ultimate Module for External Content Integration in Directus
 
-[![npm version v2.1.5](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-v2-1-5.svg)](https://www.npmjs.com/package/directus-extension-inframe)
+[![npm version v2.1.6](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-v2-1-6.svg)](https://www.npmjs.com/package/directus-extension-inframe)
 [![License GPL-3.0](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-license-gpl-3-0.svg)](https://github.com/devix-tecnologia/directus-extension-inframe/blob/main/LICENSE)
 
 ![Overview of the inFrame Module in Directus](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/tela.jpg)
