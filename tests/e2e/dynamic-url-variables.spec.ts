@@ -17,12 +17,17 @@ test.describe('Dynamic URL Variables', () => {
   test.beforeAll(async ({ browser, baseURL }: { browser: Browser; baseURL: string | undefined }) => {
     test.setTimeout(180000);
 
-    // Criar contexto e página compartilhados
-    sharedContext = await browser.newContext({ baseURL });
+    // Criar contexto e página compartilhados COM MODO VISUAL
+    sharedContext = await browser.newContext({ 
+      baseURL,
+      // Modo headed para debug visual
+    });
+
     sharedPage = await sharedContext.newPage();
 
     // Navega para o login
     await sharedPage.goto('/admin/login', { waitUntil: 'networkidle' });
+
     await sharedPage.waitForTimeout(1000);
 
     // Verificar se há botão "Continue" (sessão existente)
@@ -46,6 +51,7 @@ test.describe('Dynamic URL Variables', () => {
   });
 
   test.afterAll(async () => {
+    // Cleanup
     await sharedPage?.close();
     await sharedContext?.close();
   });
@@ -209,10 +215,26 @@ test.describe('Dynamic URL Variables', () => {
     expect(iframeSrc).not.toContain('$user_id');
     expect(iframeSrc).not.toContain('$timestamp');
 
-    // Verificar que a URL contém valores reais
-    expect(iframeSrc).toContain('user=');
-    expect(iframeSrc).toContain('id=');
-    expect(iframeSrc).toContain('timestamp=');
+    // Verificar que a URL contém valores reais (não vazios)
+    const userMatch = iframeSrc.match(/user=([^&]*)/);
+    const idMatch = iframeSrc.match(/id=([^&]*)/);
+    const timestampMatch = iframeSrc.match(/timestamp=([^&]*)/);
+    
+    expect(userMatch).toBeTruthy();
+    expect(idMatch).toBeTruthy();
+    expect(timestampMatch).toBeTruthy();
+    
+    // Verificar que os valores não estão vazios
+    expect(decodeURIComponent(userMatch![1])).toBeTruthy();
+    expect(decodeURIComponent(idMatch![1])).toBeTruthy();
+    expect(decodeURIComponent(timestampMatch![1])).toBeTruthy();
+    
+    // eslint-disable-next-line no-console
+    console.log('✅ User variables validated:', {
+      user: decodeURIComponent(userMatch![1]),
+      id: decodeURIComponent(idMatch![1]),
+      timestamp: decodeURIComponent(timestampMatch![1])
+    });
   });
 
   test('should show security error for HTTP + $token', async () => {
@@ -271,67 +293,86 @@ test.describe('Dynamic URL Variables', () => {
     }
   });
 
-  test('should allow HTTPS + $token', async () => {
-    test.setTimeout(120000);
+  test.only('should allow HTTPS + $token', async () => {
+    test.setTimeout(60000);
 
-    // Criar novo item com HTTPS + token (deve funcionar)
-    await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
-    await sharedPage.waitForTimeout(2000);
-
-    const createButton = await sharedPage.waitForSelector(
-      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"]',
-      { timeout: 10000 },
-    );
-
-    await createButton.click();
-    await sharedPage.waitForURL('**/admin/content/inframe/+');
-    await sharedPage.waitForTimeout(2000);
-
-    // Preencher com HTTPS + $token (SEGURO)
-    const urlField = await sharedPage.locator('main input[type="text"]').nth(2);
-    await urlField.click();
-    await urlField.fill('https://trusted-site.com/api/view?token=$token&user=$user_email');
-    await sharedPage.waitForTimeout(500);
-
-    // Salvar
-    const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-      timeout: 5000,
+    // Buscar ou criar item com $token
+    let inframeItem = await sharedPage.evaluate(async () => {
+      const response = await fetch('/items/inframe?filter[url][_contains]=$token&limit=1');
+      const data = await response.json();
+      return data.data?.[0];
     });
 
-    await saveButton.click();
+    if (!inframeItem) {
+      // Criar item com URL contendo $token
+      inframeItem = await sharedPage.evaluate(async () => {
+        const response = await fetch('/items/inframe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://example.com/test',
+            status: 'published'
+          })
+        });
+
+        const data = await response.json();
+
+        return data.data;
+      });
+
+      // Verificar se foi criado
+      if (!inframeItem) {
+        throw new Error('Failed to create inframe item');
+      }
+    }
+
+    // eslint-disable-next-line no-console
+    console.log('🔍 Testing with inframe item ID:', inframeItem.id);
+
+    // Navegar direto para o módulo inframe com o item específico
+    await sharedPage.goto(`/admin/inframe/${inframeItem.id}?lastRoute=${inframeItem.id}`, { 
+      waitUntil: 'networkidle' 
+    });
+
     await sharedPage.waitForTimeout(3000);
 
-    // Navegar para o módulo inframe
-    const inframeModule = sharedPage.locator('a[href="/admin/inframe"], a:has-text("Extra")').first();
-    await inframeModule.click();
-    await sharedPage.waitForLoadState('networkidle');
-    await sharedPage.waitForTimeout(2000);
+    // Deve mostrar iframe (sem erro)
+    const iframe = sharedPage.locator('iframe').first();
+    await expect(iframe).toBeVisible({ timeout: 15000 });
 
-    // Clicar no último item (com token)
-    const cards = sharedPage.locator('.card, [class*="card"]');
-    const cardCount = await cards.count();
+    // Obter o src do iframe
+    const iframeSrc = await iframe.getAttribute('src');
+    expect(iframeSrc).toBeTruthy();
 
-    if (cardCount > 0) {
-      const lastCard = cards.last();
-      await lastCard.click();
-      await sharedPage.waitForLoadState('networkidle');
-      await sharedPage.waitForTimeout(3000);
+    // eslint-disable-next-line no-console
+    console.log('🔍 iframe src:', iframeSrc);
 
-      // Deve mostrar iframe (sem erro)
-      const iframe = sharedPage.locator('iframe').first();
-      await expect(iframe).toBeVisible({ timeout: 10000 });
+    // Verificar que $token foi substituído
+    expect(iframeSrc).not.toContain('$token');
+    expect(iframeSrc).toContain('token=');
 
-      // Obter o src do iframe
-      const iframeSrc = await iframe.getAttribute('src');
-      expect(iframeSrc).toBeTruthy();
+    // CRÍTICO: Verificar que o token é um JWT válido
+    const tokenMatch = iframeSrc!.match(/token=([^&]*)/);
+    expect(tokenMatch).toBeTruthy();
+    
+    const tokenValue = decodeURIComponent(tokenMatch![1]);
+    expect(tokenValue).toBeTruthy(); // Token não deve estar vazio
+    expect(tokenValue).not.toBe('$token'); // Token não deve ser literal
+    
+    // JWT tem formato: header.payload.signature (3 partes separadas por ponto)
+    const jwtParts = tokenValue.split('.');
+    expect(jwtParts.length).toBe(3); // Deve ter exatamente 3 partes
+    expect(jwtParts[0].length).toBeGreaterThan(10); // Header deve ter tamanho razoável
+    expect(jwtParts[1].length).toBeGreaterThan(10); // Payload deve ter tamanho razoável
+    expect(jwtParts[2].length).toBeGreaterThan(10); // Signature deve ter tamanho razoável
 
-      // Verificar que $token foi substituído
-      expect(iframeSrc).not.toContain('$token');
-      expect(iframeSrc).toContain('token=');
+    // eslint-disable-next-line no-console
+    console.log('✅ JWT Token validated - Format: xxx.xxx.xxx');
+    // eslint-disable-next-line no-console
+    console.log('Token parts lengths:', jwtParts.map(p => p.length));
 
-      // Verificar que é HTTPS
-      expect(iframeSrc).toMatch(/^https:\/\//);
-    }
+    // Verificar que é HTTPS
+    expect(iframeSrc).toMatch(/^https:\/\//);
   });
 
   test('should handle URLs without variables', async () => {

@@ -80,8 +80,8 @@ export default defineComponent({
     const { processUrl } = useUrlVariableReplacement();
 
     // Normaliza a URL adicionando https:// se não tiver protocolo
-    const normalizeUrl = (url: string) => {
-      if (!url) return '';
+    const normalizeUrl = (url: string | null | undefined) => {
+      if (!url || typeof url !== 'string') return '';
 
       // Se já tem protocolo (http:// ou https://), retorna como está
       if (url.match(/^https?:\/\//i)) {

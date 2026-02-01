@@ -1,6 +1,6 @@
 services:
   directus:
-    image: directus/directus:11.13.1
+    image: directus/directus:11.14.1
     container_name: directus-inframe-e2e
     environment:
       # SQLite em memória para testes rápidos

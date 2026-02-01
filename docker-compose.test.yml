@@ -1,6 +1,6 @@
 services:
   directus:
-    image: directus/directus:${DIRECTUS_VERSION:-9.23.1}
+    image: directus/directus:${DIRECTUS_VERSION:-11.14.1}
     container_name: directus-inframe-${TEST_SUITE_ID:-main}-${DIRECTUS_VERSION:-latest}
     ports:
       - '0:8055' # Porta dinâmica - Docker escolhe porta livre automaticamente
@@ -20,6 +20,9 @@ services:
       ACCEPT_TERMS: 'true'
       PROJECT_OWNER: 'admin@example.com'
       PRESSURE_LIMITER_ENABLED: 'false'
+      # CSP para permitir iframes em testes
+      CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "'self' https://*"
+      CONTENT_SECURITY_POLICY_DIRECTIVES__CHILD_SRC: "'self' blob: https://*"
     volumes:
       - ./dist/app.js:/directus/extensions/directus-extension-inframe/dist/app.js:ro
       - ./dist/api.js:/directus/extensions/directus-extension-inframe/dist/api.js:ro
@@ -30,11 +33,18 @@ services:
     networks:
       - inframe-directus-test-network
     healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/health']
-      interval: 3s
-      timeout: 3s
-      retries: 40
-      start_period: 60s
+      test: 
+        - CMD
+        - sh
+        - -c
+        - |
+          wget --no-verbose --tries=1 --spider http://0.0.0.0:8055/server/health && \
+          wget --no-verbose --tries=1 --spider http://0.0.0.0:8055/extensions && \
+          sleep 2
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
 
   tests:
     image: mcr.microsoft.com/playwright:v1.57.0

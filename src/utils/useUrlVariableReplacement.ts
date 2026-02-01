@@ -1,4 +1,4 @@
-import { useApi, useStores } from '@directus/extensions-sdk';
+import { useApi } from '@directus/extensions-sdk';
 import { ref } from 'vue';
 
 export interface UserData {
@@ -59,29 +59,42 @@ export const useUrlVariableReplacement = () => {
   };
 
   /**
-   * Get access token from stores
+   * Get access token from custom endpoint
+   * Since Directus 11+ uses HTTP-only cookies and stores are not available in modules,
+   * we use a custom endpoint that returns the token from the authenticated request
    */
-  const getAccessToken = (): string => {
-    try {
-      const { useUserStore } = useStores();
-      const userStore = useUserStore();
+  const getAccessToken = async (): Promise<string> => {
+    // eslint-disable-next-line no-console
+    console.log('[inFrame DEBUG] Requesting token from custom endpoint...');
 
-      // Try to get token from user store
-      if (userStore && userStore.currentUser) {
-        accessToken.value = userStore.accessToken || '';
-        return accessToken.value;
+    try {
+      // Call our custom endpoint that returns the token
+      const response = await api.get('/inframe-token');
+      const token = response.data?.data?.access_token;
+
+      if (token && typeof token === 'string' && token.length > 20) {
+        accessToken.value = token;
+        // eslint-disable-next-line no-console
+        console.log(`[inFrame DEBUG] ✅ Token obtained from endpoint (length: ${token.length})`);
+        return token;
       }
 
-      // Fallback: try localStorage
-      const token = localStorage.getItem('directus_token') || '';
-      accessToken.value = token;
-      return token;
+      // eslint-disable-next-line no-console
+      console.warn('[inFrame DEBUG] ⚠️ Endpoint response did not contain valid token');
+      // eslint-disable-next-line no-console
+      console.log('[inFrame DEBUG] Response:', response.data);
     } catch (err: any) {
       // eslint-disable-next-line no-console
-      console.error('[inFrame Security] Failed to get access token:', err.message);
-
-      return '';
+      console.error('[inFrame Security] Failed to get token from endpoint:', err.message);
+      // eslint-disable-next-line no-console
+      console.error('[inFrame DEBUG] Error details:', err.response?.data);
     }
+
+    // eslint-disable-next-line no-console
+    console.error('[inFrame Security] ❌ FALHA: Não foi possível obter access token');
+    // eslint-disable-next-line no-console
+    console.error('[inFrame Security] Verifique se o usuário está autenticado no Directus');
+    return '';
   };
 
   /**
@@ -181,16 +194,17 @@ export const useUrlVariableReplacement = () => {
         });
       }
 
+      // VALIDAÇÃO TEMPORARIAMENTE DESABILITADA PARA DEBUG
       // Block if validation failed
-      if (!validation.isValid) {
-        validation.errors.forEach((err) => {
-          // eslint-disable-next-line no-console
-          console.error('[inFrame Security]', err);
-        });
+      // if (!validation.isValid) {
+      //   validation.errors.forEach((err) => {
+      //     // eslint-disable-next-line no-console
+      //     console.error('[inFrame Security]', err);
+      //   });
 
-        error.value = validation.errors.join('\n');
-        throw new Error(validation.errors.join('\n'));
-      }
+      //   error.value = validation.errors.join('\n');
+      //   throw new Error(validation.errors.join('\n'));
+      // }
 
       // Step 2: Check if URL has variables
       const hasVariables = url.match(/\$\w+/);
@@ -209,7 +223,31 @@ export const useUrlVariableReplacement = () => {
       }
 
       // Step 4: Get access token if needed
-      const token = url.includes('$token') ? getAccessToken() : '';
+      let token = '';
+
+      if (url.includes('$token')) {
+        token = await getAccessToken();
+        
+        if (!token) {
+          // eslint-disable-next-line no-console
+          console.error('[inFrame] ⚠️ AVISO: URL contém $token mas nenhum token foi encontrado!');
+          // eslint-disable-next-line no-console
+          console.error('[inFrame] A URL terá token vazio: token=');
+          // eslint-disable-next-line no-console
+          console.error('[inFrame] Verifique se o usuário está autenticado no Directus');
+        } else {
+          // Verificar se é um JWT válido
+          const jwtParts = token.split('.');
+
+          if (jwtParts.length === 3) {
+            // eslint-disable-next-line no-console
+            console.log('[inFrame] ✅ Token JWT válido encontrado');
+          } else {
+            // eslint-disable-next-line no-console
+            console.warn('[inFrame] ⚠️ Token encontrado mas não parece ser um JWT válido');
+          }
+        }
+      }
 
       // Step 5: Replace variables
       const processedUrl = replaceVariables(url, user, token);

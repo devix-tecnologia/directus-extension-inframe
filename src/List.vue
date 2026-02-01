@@ -22,7 +22,7 @@
         <div v-for="item in items" :key="item.id" class="card" @click="navigateToItem(item.id)">
           <div
             class="card-link"
-            :style="item.thumbnail ? `background-image: url(http://localhost:8055/assets/${item.thumbnail})` : ''"
+            :style="item.thumbnail ? `background-image: url(${getAssetUrl(item.thumbnail)})` : ''"
           >
             <div class="card-header">
               <h3>{{ getTitle(item.translations) }}</h3>
@@ -54,6 +54,21 @@ export default defineComponent({
     const route = useRoute();
     const { startAutoSave } = useNavigationPersistence();
 
+    // Pega a URL base do Directus dinamicamente usando window.location
+    // Segue o padrão oficial do Directus (getRootPath) extraindo até /admin
+    const getRootPath = (): string => {
+      const parts = window.location.pathname.split('/');
+      const adminIndex = parts.indexOf('admin');
+      return parts.slice(0, adminIndex).join('/') + '/';
+    };
+
+    const getAssetUrl = (assetId: string) => {
+      if (!assetId) return '';
+      const rootPath = getRootPath();
+      const baseUrl = `${window.location.origin}${rootPath}`;
+      return `${baseUrl}assets/${assetId}`;
+    };
+
     // Verifica se há um ID na rota atual
     const currentItemId = computed(() => route.params.id as string | undefined);
 
@@ -76,6 +91,7 @@ export default defineComponent({
       getTitle,
       currentItemId,
       navigateToItem,
+      getAssetUrl,
     };
   },
 });

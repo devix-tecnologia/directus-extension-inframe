@@ -4,7 +4,7 @@
   "description": "Display dashboards, reports and external sites in iframes, directly in your Directus panel. Install, configure and centralize everything in one place!",
   "icon": "web_asset",
   "private": false,
-  "version": "2.1.1",
+  "version": "2.1.4",
   "keywords": [
     "directus",
     "directus-extension",
@@ -36,6 +36,11 @@
         "type": "hook",
         "name": "inframe-setup",
         "source": "src/hooks/inframe-setup/index.ts"
+      },
+      {
+        "type": "endpoint",
+        "name": "inframe-token",
+        "source": "src/endpoints/get-token/index.ts"
       }
     ],
     "host": "^10.8.3"
@@ -53,6 +58,8 @@
     "dev": "directus-extension build -w --no-minify",
     "link": "directus-extension link",
     "validate": "directus-extension validate",
+    "update-badges": "node scripts/update-badges.js",
+    "version": "pnpm update-badges && git add docs/badge-npm-*.svg README.md",
     "lint": "eslint . --ext .ts,.vue",
     "lint:fix": "eslint . --ext .ts,.vue --fix",
     "format": "prettier --write .",
