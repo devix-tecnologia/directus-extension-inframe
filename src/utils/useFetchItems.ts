@@ -69,7 +69,7 @@ export const useFetchItems = () => {
 // Função para buscar um item específico
 export const useFetchItem = () => {
   const item = ref<Item | null>(null);
-  const loading = ref(false);
+  const loading = ref(true);
   const api = useApi();
 
   const fetchItem = async (id: string) => {
