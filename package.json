@@ -96,7 +96,7 @@
     "vue-eslint-parser": "^10.2.0"
   },
   "dependencies": {
-    "vue-router": "^4.6.4"
+    "vue-router": "^5.0.2"
   },
   "packageManager": "pnpm@10.28.2",
   "engines": {
