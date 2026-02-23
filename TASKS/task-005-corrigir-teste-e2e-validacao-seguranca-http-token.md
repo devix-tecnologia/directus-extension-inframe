@@ -1,6 +1,6 @@
 # Task 005 — Corrigir teste E2E de validação de segurança HTTP + $token
 
-Status: todo
+Status: in-progress
 Type: fix  
 Assignee: Sidarta Veloso
 Priority: high
