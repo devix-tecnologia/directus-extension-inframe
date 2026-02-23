@@ -30,9 +30,15 @@
           <iframe
             :src="processedUrl"
             frameborder="0"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
+            :sandbox="iframeAttrs.sandbox"
+            :allow="iframeAttrs.allow"
+            :loading="iframeAttrs.loading"
+            :referrerpolicy="iframeAttrs.referrerpolicy"
+            :allowfullscreen="iframeAttrs.allowfullscreen"
+            :credentialless="iframeAttrs.credentialless"
+            :name="iframeAttrs.name"
+            :title="iframeAttrs.title"
+            :csp="iframeAttrs.csp"
           ></iframe>
         </div>
       </div>
@@ -45,10 +51,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted, watch, toRef } from 'vue';
+import { defineComponent, PropType, ref, onMounted, watch, toRef, computed } from 'vue';
 import NavMenu from './NavMenu.vue';
 import { Item } from '../types';
 import { useUrlVariableReplacement } from '../utils/useUrlVariableReplacement';
+import { useIframeAttributes } from '../utils/useIframeAttributes';
 
 export default defineComponent({
   name: 'ItemDetail',
@@ -76,11 +83,15 @@ export default defineComponent({
     const processedUrl = ref('');
     const urlProcessing = ref(false);
     const urlError = ref<string | null>(null);
-    
+
     // Torna a prop title reativa
     const reactiveTitle = toRef(props, 'title');
 
     const { processUrl } = useUrlVariableReplacement();
+    const { buildIframeAttributes } = useIframeAttributes();
+
+    // Computed property para atributos do iframe (atualiza automaticamente quando item muda)
+    const iframeAttrs = computed(() => buildIframeAttributes(props.item));
 
     // Normaliza a URL adicionando https:// se não tiver protocolo
     const normalizeUrl = (url: string | null | undefined) => {
@@ -140,6 +151,7 @@ export default defineComponent({
 
     return {
       ...props,
+      iframeAttrs,
       breadcrumb,
       processedUrl,
       urlProcessing,

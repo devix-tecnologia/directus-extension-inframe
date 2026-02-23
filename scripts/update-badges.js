@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 import { readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -53,7 +54,9 @@ const readmePath = join(rootDir, 'README.md');
 let readme = readFileSync(readmePath, 'utf-8');
 
 // Replace version badge reference
-const versionBadgeRegex = /\[!\[npm version.*?\]\(https:\/\/raw\.githubusercontent\.com\/devix-tecnologia\/directus-extension-inframe\/main\/docs\/badge-npm-v[\d-]+\.svg\)\]\(https:\/\/www\.npmjs\.com\/package\/directus-extension-inframe\)/g;
+const versionBadgeRegex =
+  /\[!\[npm version.*?\]\(https:\/\/raw\.githubusercontent\.com\/devix-tecnologia\/directus-extension-inframe\/main\/docs\/badge-npm-v[\d-]+\.svg\)\]\(https:\/\/www\.npmjs\.com\/package\/directus-extension-inframe\)/g;
+
 const newVersionBadge = `[![npm version ${versionText}](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-${versionText.replace(/\./g, '-')}.svg)](https://www.npmjs.com/package/directus-extension-inframe)`;
 
 if (versionBadgeRegex.test(readme)) {
@@ -64,7 +67,9 @@ if (versionBadgeRegex.test(readme)) {
 }
 
 // Update license badge alt text
-const licenseBadgeRegex = /\[!\[License.*?\]\(https:\/\/raw\.githubusercontent\.com\/devix-tecnologia\/directus-extension-inframe\/main\/docs\/badge-license-gpl-3-0\.svg\)\]\(https:\/\/github\.com\/devix-tecnologia\/directus-extension-inframe\/blob\/main\/LICENSE\)/g;
+const licenseBadgeRegex =
+  /\[!\[License.*?\]\(https:\/\/raw\.githubusercontent\.com\/devix-tecnologia\/directus-extension-inframe\/main\/docs\/badge-license-gpl-3-0\.svg\)\]\(https:\/\/github\.com\/devix-tecnologia\/directus-extension-inframe\/blob\/main\/LICENSE\)/g;
+
 const newLicenseBadge = `[![License ${license}](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-license-gpl-3-0.svg)](https://github.com/devix-tecnologia/directus-extension-inframe/blob/main/LICENSE)`;
 
 if (licenseBadgeRegex.test(readme)) {

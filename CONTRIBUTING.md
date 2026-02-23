@@ -165,9 +165,7 @@ docker network prune -f
 
 Tests run on the following versions:
 
-- **Directus 9.x**: 9.22.4, 9.23.1, 9.24.0
-- **Directus 10.x**: 10.8.3
-- **Directus 11.x**: 11.13.1 and newer
+- **Directus 11.x**: 11.15.4 and newer
 
 **Note:** Directus 11.10.1 has known issues and is blocked in tests.
 

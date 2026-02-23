@@ -620,6 +620,517 @@
       }
     },
     {
+      "collection": "inframe",
+      "field": "sandbox_tokens",
+      "type": "json",
+      "schema": {
+        "name": "sandbox_tokens",
+        "table": "inframe",
+        "data_type": "json",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "sandbox_tokens",
+        "special": ["cast-json"],
+        "interface": "select-multiple-checkbox",
+        "options": {
+          "choices": [
+            { "text": "allow-downloads - Permite downloads via <a download>", "value": "allow-downloads" },
+            { "text": "allow-forms - Permite submissão de formulários", "value": "allow-forms" },
+            { "text": "allow-modals - Permite alert(), confirm(), prompt()", "value": "allow-modals" },
+            {
+              "text": "allow-orientation-lock - Permite bloquear orientação da tela",
+              "value": "allow-orientation-lock"
+            },
+            { "text": "allow-pointer-lock - Permite Pointer Lock API", "value": "allow-pointer-lock" },
+            { "text": "allow-popups - Permite window.open(), target=_blank", "value": "allow-popups" },
+            {
+              "text": "allow-popups-to-escape-sandbox - Popups não herdam sandbox",
+              "value": "allow-popups-to-escape-sandbox"
+            },
+            { "text": "allow-presentation - Permite Presentation API", "value": "allow-presentation" },
+            { "text": "allow-same-origin - Trata conteúdo como mesma origem", "value": "allow-same-origin" },
+            { "text": "allow-scripts - Permite JavaScript", "value": "allow-scripts" },
+            {
+              "text": "allow-storage-access-by-user-activation - Permite Storage Access API",
+              "value": "allow-storage-access-by-user-activation"
+            },
+            {
+              "text": "allow-top-navigation - Permite window.top.location (INSEGURO)",
+              "value": "allow-top-navigation"
+            },
+            {
+              "text": "allow-top-navigation-by-user-activation - Top navigation com interação",
+              "value": "allow-top-navigation-by-user-activation"
+            },
+            {
+              "text": "allow-top-navigation-to-custom-protocols - Permite mailto:, tel:",
+              "value": "allow-top-navigation-to-custom-protocols"
+            }
+          ]
+        },
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 8,
+        "width": "full",
+        "translations": [
+          { "language": "pt-BR", "translation": "Permissões Sandbox" },
+          { "language": "en-US", "translation": "Sandbox Permissions" }
+        ],
+        "note": "Controls iframe security restrictions. Default values: allow-scripts, allow-same-origin, allow-forms, allow-popups, allow-popups-to-escape-sandbox",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "allow_directives",
+      "type": "json",
+      "schema": {
+        "name": "allow_directives",
+        "table": "inframe",
+        "data_type": "json",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "allow_directives",
+        "special": ["cast-json"],
+        "interface": "select-multiple-checkbox",
+        "options": {
+          "choices": [
+            { "text": "accelerometer", "value": "accelerometer" },
+            { "text": "ambient-light-sensor", "value": "ambient-light-sensor" },
+            { "text": "autoplay", "value": "autoplay" },
+            { "text": "battery", "value": "battery" },
+            { "text": "camera", "value": "camera" },
+            { "text": "clipboard-write", "value": "clipboard-write" },
+            { "text": "display-capture", "value": "display-capture" },
+            { "text": "encrypted-media", "value": "encrypted-media" },
+            { "text": "fullscreen", "value": "fullscreen" },
+            { "text": "gamepad", "value": "gamepad" },
+            { "text": "geolocation", "value": "geolocation" },
+            { "text": "gyroscope", "value": "gyroscope" },
+            { "text": "microphone", "value": "microphone" },
+            { "text": "midi", "value": "midi" },
+            { "text": "payment", "value": "payment" },
+            { "text": "picture-in-picture", "value": "picture-in-picture" }
+          ]
+        },
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 9,
+        "width": "full",
+        "translations": [
+          { "language": "pt-BR", "translation": "Recursos Permitidos (Permissions Policy)" },
+          { "language": "en-US", "translation": "Allowed Features (Permissions Policy)" }
+        ],
+        "note": "Controls which browser APIs/features the iframe can access. Default: accelerometer, autoplay, clipboard-write, encrypted-media, gyroscope, picture-in-picture",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "loading",
+      "type": "string",
+      "schema": {
+        "name": "loading",
+        "table": "inframe",
+        "data_type": "character varying",
+        "default_value": "eager",
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "loading",
+        "special": null,
+        "interface": "select-dropdown",
+        "options": {
+          "choices": [
+            { "text": "Eager (carrega imediatamente)", "value": "eager" },
+            { "text": "Lazy (carrega quando próximo ao viewport)", "value": "lazy" }
+          ]
+        },
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 10,
+        "width": "half",
+        "translations": [
+          { "language": "pt-BR", "translation": "Carregamento" },
+          { "language": "en-US", "translation": "Loading" }
+        ],
+        "note": "Controls when the iframe should be loaded. Lazy loading improves performance.",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "referrerpolicy",
+      "type": "string",
+      "schema": {
+        "name": "referrerpolicy",
+        "table": "inframe",
+        "data_type": "character varying",
+        "default_value": "strict-origin-when-cross-origin",
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "referrerpolicy",
+        "special": null,
+        "interface": "select-dropdown",
+        "options": {
+          "choices": [
+            { "text": "no-referrer (não envia referrer)", "value": "no-referrer" },
+            { "text": "no-referrer-when-downgrade", "value": "no-referrer-when-downgrade" },
+            { "text": "origin (envia apenas origem)", "value": "origin" },
+            { "text": "origin-when-cross-origin", "value": "origin-when-cross-origin" },
+            { "text": "same-origin", "value": "same-origin" },
+            { "text": "strict-origin", "value": "strict-origin" },
+            { "text": "strict-origin-when-cross-origin (recomendado)", "value": "strict-origin-when-cross-origin" },
+            { "text": "unsafe-url (inseguro)", "value": "unsafe-url" }
+          ]
+        },
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 11,
+        "width": "half",
+        "translations": [
+          { "language": "pt-BR", "translation": "Política de Referrer" },
+          { "language": "en-US", "translation": "Referrer Policy" }
+        ],
+        "note": "Controls what referrer information is sent to the iframe.",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "allowfullscreen",
+      "type": "boolean",
+      "schema": {
+        "name": "allowfullscreen",
+        "table": "inframe",
+        "data_type": "boolean",
+        "default_value": true,
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "allowfullscreen",
+        "special": null,
+        "interface": "boolean",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 12,
+        "width": "half",
+        "translations": [
+          { "language": "pt-BR", "translation": "Permitir Tela Cheia" },
+          { "language": "en-US", "translation": "Allow Fullscreen" }
+        ],
+        "note": "Allows the iframe to use the fullscreen API.",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "credentialless",
+      "type": "boolean",
+      "schema": {
+        "name": "credentialless",
+        "table": "inframe",
+        "data_type": "boolean",
+        "default_value": false,
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "credentialless",
+        "special": null,
+        "interface": "boolean",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 13,
+        "width": "half",
+        "translations": [
+          { "language": "pt-BR", "translation": "Sem Credenciais (Experimental)" },
+          { "language": "en-US", "translation": "Credentialless (Experimental)" }
+        ],
+        "note": "Loads iframe without cookies or storage. Experimental - Chrome 110+",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "iframe_name",
+      "type": "string",
+      "schema": {
+        "name": "iframe_name",
+        "table": "inframe",
+        "data_type": "character varying",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "iframe_name",
+        "special": null,
+        "interface": "input",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 14,
+        "width": "half",
+        "translations": [
+          { "language": "pt-BR", "translation": "Nome do Iframe" },
+          { "language": "en-US", "translation": "Iframe Name" }
+        ],
+        "note": "Iframe name (used as target for links).",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "iframe_title",
+      "type": "string",
+      "schema": {
+        "name": "iframe_title",
+        "table": "inframe",
+        "data_type": "character varying",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "iframe_title",
+        "special": null,
+        "interface": "input",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 15,
+        "width": "half",
+        "translations": [
+          { "language": "pt-BR", "translation": "Título do Iframe (acessibilidade)" },
+          { "language": "en-US", "translation": "Iframe Title (accessibility)" }
+        ],
+        "note": "Descriptive title for accessibility (screen readers).",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
+      "collection": "inframe",
+      "field": "csp",
+      "type": "text",
+      "schema": {
+        "name": "csp",
+        "table": "inframe",
+        "data_type": "text",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "inframe",
+        "field": "csp",
+        "special": null,
+        "interface": "input-multiline",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 16,
+        "width": "full",
+        "translations": [
+          { "language": "pt-BR", "translation": "Content Security Policy (Experimental)" },
+          { "language": "en-US", "translation": "Content Security Policy (Experimental)" }
+        ],
+        "note": "Additional CSP for the iframe. Experimental - limited support.",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null,
+        "searchable": true
+      }
+    },
+    {
       "collection": "inframe_translation",
       "field": "id",
       "type": "integer",

@@ -260,6 +260,91 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     expect(itemCreated).toBeTruthy();
   });
 
+  // Module activation is now handled via API in dynamic-url-variables.spec.ts
+  // This test attempted UI-based activation but Directus UI structure varies by version
+  test.skip('deve ativar o módulo inframe nas configurações do projeto', async () => {
+    test.setTimeout(120000); // 2 minutos
+
+    // 1. Navegar para Settings
+    await sharedPage.goto('/admin/settings/project', { waitUntil: 'networkidle' });
+    await sharedPage.waitForTimeout(2000);
+
+    console.log('[E2E] Acessando configurações do projeto...');
+
+    // 2. Procurar pelo campo Module Bar (pode estar em um accordion ou seção)
+    // Vamos procurar por um input ou área que controla os módulos
+    const moduleBarSection = sharedPage.locator('text=Module Bar, text=Modules').first();
+    const hasModuleBarSection = await moduleBarSection.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (hasModuleBarSection) {
+      console.log('[E2E] Seção Module Bar encontrada, expandindo...');
+      await moduleBarSection.click();
+      await sharedPage.waitForTimeout(1000);
+    }
+
+    // 3. Procurar pelo checkbox ou toggle do módulo "inframe" ou "Extra"
+    // Directus 11 usa uma interface de drag-and-drop com checkboxes
+    const inframeModuleToggle = sharedPage
+      .locator(
+        'input[type="checkbox"][value="inframe"], ' +
+          'label:has-text("Extra") input[type="checkbox"], ' +
+          '[data-module="inframe"] input[type="checkbox"]',
+      )
+      .first();
+
+    const hasToggle = await inframeModuleToggle.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (hasToggle) {
+      console.log('[E2E] Toggle do módulo inframe encontrado');
+
+      // Verificar se já está marcado
+      const isChecked = await inframeModuleToggle.isChecked();
+
+      if (!isChecked) {
+        console.log('[E2E] Ativando módulo inframe...');
+        await inframeModuleToggle.check();
+        await sharedPage.waitForTimeout(1000);
+
+        // 4. Salvar configurações
+        const saveButton = sharedPage.locator('button:has-text("Save"), button[type="submit"]').first();
+        await saveButton.click();
+        await sharedPage.waitForTimeout(2000);
+
+        console.log('[E2E] Configurações salvas');
+      } else {
+        console.log('[E2E] Módulo já estava ativado');
+      }
+    } else {
+      console.log('[E2E] ⚠️ Toggle do módulo não encontrado, tentando ativar via module_bar diretamente...');
+
+      // Fallback: tentar encontrar e editar o campo module_bar JSON diretamente se existir
+      // (Isso é menos comum mas pode existir em algumas versões do Directus)
+    }
+
+    // 5. Navegar de volta para a home e verificar se o módulo aparece
+    await sharedPage.goto('/admin', { waitUntil: 'networkidle' });
+    await sharedPage.waitForTimeout(2000);
+
+    // Screenshot para debug
+    await sharedPage.screenshot({ path: 'tests/e2e/screenshots/after-enable-module.png', fullPage: true });
+
+    // 6. Verificar se o módulo Extra está visível na navegação
+    const extraButton = sharedPage.locator('a[href="/admin/inframe"], button:has-text("Extra")').first();
+    const isModuleVisible = await extraButton.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (isModuleVisible) {
+      console.log('[E2E] ✅ Módulo inframe está visível na navegação');
+    } else {
+      console.log('[E2E] ⚠️ Módulo não apareceu na navegação (pode precisar de reload)');
+
+      // Tentar reload
+      await sharedPage.reload({ waitUntil: 'networkidle' });
+      await sharedPage.waitForTimeout(2000);
+
+      await expect(extraButton).toBeVisible({ timeout: 10000 });
+    }
+  });
+
   // This test is covered by dynamic-url-variables.spec.ts "should navigate to inframe module"
   test.skip('deve verificar que o módulo inframe foi habilitado automaticamente pelo hook', async () => {
     // O hook deve ter habilitado o módulo automaticamente
@@ -325,6 +410,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
         await confirmButton.click({ timeout: 5000 });
         await sharedPage.waitForTimeout(2000);
       } catch (error: any) {
+        // eslint-disable-next-line no-console
         console.log('Error deleting items, continuing test:', error.message);
       }
     }

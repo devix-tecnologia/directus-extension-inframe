@@ -227,7 +227,7 @@ export const useUrlVariableReplacement = () => {
 
       if (url.includes('$token')) {
         token = await getAccessToken();
-        
+
         if (!token) {
           // eslint-disable-next-line no-console
           console.error('[inFrame] ⚠️ AVISO: URL contém $token mas nenhum token foi encontrado!');

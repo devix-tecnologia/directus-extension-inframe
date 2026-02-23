@@ -20,10 +20,7 @@
       <!-- Lista de cards quando está na página inicial (sem ID na rota) -->
       <div v-else-if="!currentItemId" class="card-container">
         <div v-for="item in items" :key="item.id" class="card" @click="navigateToItem(item.id)">
-          <div
-            class="card-link"
-            :style="item.thumbnail ? `background-image: url(${getAssetUrl(item.thumbnail)})` : ''"
-          >
+          <div class="card-link" :style="item.thumbnail ? `background-image: url(${getAssetUrl(item.thumbnail)})` : ''">
             <div class="card-header">
               <h3>{{ getTitle(item.translations) }}</h3>
             </div>

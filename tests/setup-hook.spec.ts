@@ -4,7 +4,7 @@ import { logger } from './test-logger.js';
 import schema from '../schema.json';
 
 describe('Auto Setup Hook - Collection Creation', () => {
-  const version = process.env.DIRECTUS_TEST_VERSION || '10.8.3';
+  const version = process.env.DIRECTUS_TEST_VERSION || '11.15.4';
   const testSuiteId = `hook-${version.replace(/\./g, '-')}`;
 
   beforeAll(async () => {

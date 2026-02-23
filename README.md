@@ -120,9 +120,7 @@ environment:
 
 Tested and compatible with:
 
-- **Directus 9.x**: 9.22.4, 9.23.1, 9.24.0
-- **Directus 10.x**: 10.8.3
-- **Directus 11.x**: 11.13.1 and newer versions
+- **Directus 11.x**: 11.15.4 and newer versions
 
 ## 🤝 Contributing
 

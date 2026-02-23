@@ -453,17 +453,26 @@ async function enableInframeModule({ logger, database }: { logger: any; database
     // Parse module_bar JSON
     let moduleBar = [];
 
-    // If module_bar is null, don't initialize it - Directus will show all modules by default
+    // If module_bar is null, create default module_bar with standard modules
     if (!settings.module_bar) {
-      logger.info('[inFrame Extension] ℹ️  module_bar is null, skipping module activation (all modules visible by default)');
-      return;
-    }
+      logger.info('[inFrame Extension] ℹ️  module_bar is null, creating default configuration...');
 
-    try {
-      moduleBar = JSON.parse(settings.module_bar);
-    } catch (error) {
-      logger.warn('[inFrame Extension] ⚠️  Error parsing module_bar, skipping module activation');
-      return;
+      // Create default module_bar with Directus standard modules
+      moduleBar = [
+        { type: 'module', id: 'content', enabled: true },
+        { type: 'module', id: 'users', enabled: true },
+        { type: 'module', id: 'files', enabled: true },
+        { type: 'module', id: 'insights', enabled: true },
+        { type: 'link', id: 'docs', enabled: true },
+        { type: 'module', id: 'settings', enabled: true },
+      ];
+    } else {
+      try {
+        moduleBar = JSON.parse(settings.module_bar);
+      } catch {
+        logger.warn('[inFrame Extension] ⚠️  Error parsing module_bar, skipping module activation');
+        return;
+      }
     }
 
     // Check if inframe module already exists in module_bar
