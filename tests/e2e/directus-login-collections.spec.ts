@@ -269,6 +269,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     await sharedPage.goto('/admin/settings/project', { waitUntil: 'networkidle' });
     await sharedPage.waitForTimeout(2000);
 
+    // eslint-disable-next-line no-console
     console.log('[E2E] Acessando configurações do projeto...');
 
     // 2. Procurar pelo campo Module Bar (pode estar em um accordion ou seção)
@@ -277,6 +278,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const hasModuleBarSection = await moduleBarSection.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (hasModuleBarSection) {
+      // eslint-disable-next-line no-console
       console.log('[E2E] Seção Module Bar encontrada, expandindo...');
       await moduleBarSection.click();
       await sharedPage.waitForTimeout(1000);
@@ -295,12 +297,14 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const hasToggle = await inframeModuleToggle.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (hasToggle) {
+      // eslint-disable-next-line no-console
       console.log('[E2E] Toggle do módulo inframe encontrado');
 
       // Verificar se já está marcado
       const isChecked = await inframeModuleToggle.isChecked();
 
       if (!isChecked) {
+        // eslint-disable-next-line no-console
         console.log('[E2E] Ativando módulo inframe...');
         await inframeModuleToggle.check();
         await sharedPage.waitForTimeout(1000);
@@ -310,11 +314,14 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
         await saveButton.click();
         await sharedPage.waitForTimeout(2000);
 
+        // eslint-disable-next-line no-console
         console.log('[E2E] Configurações salvas');
       } else {
+        // eslint-disable-next-line no-console
         console.log('[E2E] Módulo já estava ativado');
       }
     } else {
+      // eslint-disable-next-line no-console
       console.log('[E2E] ⚠️ Toggle do módulo não encontrado, tentando ativar via module_bar diretamente...');
 
       // Fallback: tentar encontrar e editar o campo module_bar JSON diretamente se existir
@@ -333,8 +340,10 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     const isModuleVisible = await extraButton.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (isModuleVisible) {
+      // eslint-disable-next-line no-console
       console.log('[E2E] ✅ Módulo inframe está visível na navegação');
     } else {
+      // eslint-disable-next-line no-console
       console.log('[E2E] ⚠️ Módulo não apareceu na navegação (pode precisar de reload)');
 
       // Tentar reload

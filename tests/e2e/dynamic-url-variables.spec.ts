@@ -279,8 +279,10 @@ test.describe('Dynamic URL Variables', () => {
 
     // Verificar se pelo menos um dos localizadores encontra a mensagem de erro
     let errorFound = false;
+
     for (const locator of securityErrorLocators) {
       const count = await locator.count();
+
       if (count > 0) {
         errorFound = true;
         // eslint-disable-next-line no-console
@@ -300,6 +302,7 @@ test.describe('Dynamic URL Variables', () => {
       const response = await fetch(
         '/items/inframe?filter[url][_starts_with]=https&filter[url][_contains]=$token&limit=1',
       );
+
       const data = await response.json();
       return data.data?.[0];
     });

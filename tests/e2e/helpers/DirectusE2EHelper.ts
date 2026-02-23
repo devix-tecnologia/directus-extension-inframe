@@ -249,12 +249,12 @@ export class DirectusE2EHelper {
    */
   async isModuleEnabled(moduleId: string): Promise<boolean> {
     try {
-      console.log(`[DirectusE2E] Checking if module ${moduleId} is enabled...`);
+      this.log(`[DirectusE2E] Checking if module ${moduleId} is enabled...`);
 
       const settingsResponse = await this.page.request.get(`${this.baseURL}/settings`);
 
       if (!settingsResponse.ok()) {
-        console.log(`[DirectusE2E] Failed to fetch settings: ${settingsResponse.status()}`);
+        this.log(`[DirectusE2E] Failed to fetch settings: ${settingsResponse.status()}`);
         return false;
       }
 
@@ -262,23 +262,23 @@ export class DirectusE2EHelper {
       const settings = settingsData.data || settingsData;
 
       if (!settings.module_bar) {
-        console.log(`[DirectusE2E] module_bar is null/undefined`);
+        this.log(`[DirectusE2E] module_bar is null/undefined`);
         return false;
       }
 
       // Check if module_bar is already an array or needs parsing
       const moduleBar = typeof settings.module_bar === 'string' ? JSON.parse(settings.module_bar) : settings.module_bar;
 
-      console.log(`[DirectusE2E] module_bar parsed:`, moduleBar);
+      this.log(`[DirectusE2E] module_bar parsed:`, moduleBar);
 
       const module = moduleBar.find((m: any) => m.type === 'module' && m.id === moduleId);
 
-      console.log(`[DirectusE2E] Found module:`, module);
-      console.log(`[DirectusE2E] Module enabled: ${module?.enabled === true}`);
+      this.log(`[DirectusE2E] Found module:`, module);
+      this.log(`[DirectusE2E] Module enabled: ${module?.enabled === true}`);
 
       return module?.enabled === true;
     } catch (error: any) {
-      console.error(`[DirectusE2E] Error checking module:`, error.message);
+      this.error(`[DirectusE2E] Error checking module:`, error.message);
       return false;
     }
   }
