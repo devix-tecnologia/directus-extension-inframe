@@ -157,8 +157,7 @@ pnpm typecheck
 
 ```bash
 # Remove all test containers
-docker rm -f $(docker ps -aq --filter "name=directus-inframe") 2>/dev/null
-docker network prune -f
+pnpm docker:clear
 ```
 
 ### Tested Directus Versions
@@ -250,14 +249,17 @@ src/
 ### Available Scripts
 
 ```bash
-pnpm build       # Build for production
-pnpm dev         # Build in development mode with watch
-pnpm lint        # Check code with ESLint
-pnpm lint:fix    # Auto-fix ESLint issues
-pnpm format      # Format code with Prettier
-pnpm format:check # Check formatting
-pnpm typecheck   # TypeScript type checking
-pnpm test        # Run tests
+pnpm build          # Build for production
+pnpm dev            # Build in development mode with watch
+pnpm lint           # Check code with ESLint
+pnpm lint:fix       # Auto-fix ESLint issues
+pnpm format         # Format code with Prettier
+pnpm format:check   # Check formatting
+pnpm typecheck      # TypeScript type checking
+pnpm test           # Run tests
+pnpm docker:start   # Start local Directus dev container (port 8055)
+pnpm docker:stop    # Stop local Directus dev container
+pnpm docker:clear   # Remove all test containers and prune networks
 ```
 
 ### Local Development with Directus
@@ -265,7 +267,7 @@ pnpm test        # Run tests
 1. **Start a local Directus instance:**
 
 ```bash
-docker compose up -d
+pnpm docker:start
 ```
 
 2. **Configure CSP to allow iframes:**

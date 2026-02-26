@@ -74,6 +74,9 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
+    "docker:start": "node scripts/docker-start.js",
+    "docker:stop": "node scripts/docker-stop.js",
+    "docker:clear": "node scripts/docker-clear.js",
     "semantic-release": "semantic-release"
   },
   "devDependencies": {

@@ -301,6 +301,36 @@ export class DirectusE2EHelper {
   }
 
   /**
+   * Wait until a collection exists via API, with polling.
+   *
+   * The extension setup hook creates collections after the server starts.
+   * The Docker healthcheck can pass before the hook finishes, so we need
+   * to poll until the collection is available.
+   *
+   * @param collectionName - Collection to wait for
+   * @param timeoutMs      - Max time to wait in milliseconds (default 60 s)
+   * @param intervalMs     - Polling interval in milliseconds (default 2 s)
+   */
+  async waitForCollection(collectionName: string, timeoutMs = 60000, intervalMs = 2000): Promise<void> {
+    this.log(`[DirectusE2E] Waiting for collection "${collectionName}" to be available...`);
+    const deadline = Date.now() + timeoutMs;
+
+    while (Date.now() < deadline) {
+      if (await this.collectionExists(collectionName)) {
+        this.log(`[DirectusE2E] Collection "${collectionName}" is ready ✓`);
+        return;
+      }
+
+      await this.page.waitForTimeout(intervalMs);
+    }
+
+    throw new Error(
+      `Collection "${collectionName}" was not available after ${timeoutMs / 1000}s. ` +
+        `The extension setup hook may not have run yet.`,
+    );
+  }
+
+  /**
    * Create an item in a collection via API
    */
   async createItem(collection: string, data: any): Promise<any> {
@@ -441,6 +471,67 @@ export class DirectusE2EHelper {
     } catch {
       return false;
     }
+  }
+
+  // ============================================================================
+  // UI ACTIONS
+  // ============================================================================
+
+  /**
+   * Click "Save and Stay" from the split save button dropdown.
+   *
+   * In Directus, the save button area contains a main save button and a small
+   * chevron/arrow button on its right that opens a dropdown menu with options:
+   * "Save and Stay", "Save and Create Another", "Discard and Leave".
+   *
+   * This method opens that dropdown and clicks the "Save and Stay" option,
+   * which saves the current item and keeps the browser on the same edit page,
+   * making the item ID available in the URL.
+   *
+   * @param timeout - How long to wait for the save to complete (default 10 s)
+   */
+  async saveAndStay(timeout: number = 10000): Promise<void> {
+    this.log('[DirectusE2E] Opening save dropdown menu...');
+
+    // In Directus the header (banner) contains two action buttons:
+    //   1. "check"      – main save button
+    //   2. "more_vert"  – kebab menu with "Save and Stay", "Discard", etc.
+    //
+    // We use getByRole with the accessible name "more_vert" as shown in the
+    // a11y tree, which is the most reliable way to find Material Design icon
+    // buttons regardless of their CSS rendering.
+    const moreVertBtn = this.page.getByRole('button', { name: 'more_vert' });
+
+    await expect(moreVertBtn).toBeVisible({ timeout });
+    await moreVertBtn.click();
+
+    this.log('[DirectusE2E] Waiting for "Save and Stay" menu item...');
+
+    // Click the "Save and Stay" option – Directus can render it in multiple
+    // languages, so we match common variants and Portuguese labels.
+    const saveAndStayOption = this.page
+      .locator(
+        [
+          'li:has-text("Save and Stay")',
+          'button:has-text("Save and Stay")',
+          '[role="menuitem"]:has-text("Save and Stay")',
+          // Portuguese label used in some Directus locales
+          'li:has-text("Salvar e Ficar")',
+          'button:has-text("Salvar e Ficar")',
+          // Another common variant
+          'li:has-text("Save & Stay")',
+        ].join(', '),
+      )
+      .first();
+
+    await expect(saveAndStayOption).toBeVisible({ timeout });
+    await saveAndStayOption.click();
+
+    // Wait for the network to settle after saving
+    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForTimeout(1000);
+
+    this.log('[DirectusE2E] Save and Stay completed ✓');
   }
 
   // ============================================================================

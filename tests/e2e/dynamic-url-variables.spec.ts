@@ -11,6 +11,7 @@ const ADMIN_PASSWORD = 'admin123';
 let sharedContext: BrowserContext;
 let sharedPage: Page;
 let directus: DirectusE2EHelper;
+let itemIdWithVariables: string; // ID do item criado com variáveis dinâmicas na URL
 
 // Rodar os testes em série para evitar conflitos de sessão
 test.describe.configure({ mode: 'serial' });
@@ -31,6 +32,11 @@ test.describe('Dynamic URL Variables', () => {
 
     // Enable inframe module via API
     await directus.enableModule('inframe');
+
+    // Wait for the extension setup hook to create the inframe collection.
+    // The healthcheck passes before the hook finishes on a fresh DB (tmpfs),
+    // so we poll until the collection exists.
+    await directus.waitForCollection('inframe', 60000);
 
     // Reload page to apply module changes
     await directus.reload();
@@ -59,44 +65,17 @@ test.describe('Dynamic URL Variables', () => {
   test('should create inframe item with dynamic variables', async () => {
     test.setTimeout(120000);
 
-    // Navegar para coleção inframe
-    await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
-    await sharedPage.waitForTimeout(2000);
-
-    // No Directus 11, o botão de criar é um link <a>
-    const createButton = await sharedPage.waitForSelector(
-      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"]',
-      { timeout: 10000 },
-    );
-
-    await createButton.click();
-
-    // Aguardar formulário de criação
-    await sharedPage.waitForURL('**/admin/content/inframe/+');
-    await sharedPage.waitForTimeout(2000);
-
-    // Preencher URL com variáveis dinâmicas
-    const urlField = await sharedPage.locator('main input[type="text"]').nth(2);
-    await urlField.click();
-    await urlField.fill('https://example.com/dashboard?user=$user_email&id=$user_id&timestamp=$timestamp');
-    await sharedPage.waitForTimeout(500);
-
-    // Salvar (botão check no header)
-    const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-      timeout: 5000,
+    // Criar via API para ter o ID disponível imediatamente
+    const item = await directus.createItem('inframe', {
+      url: 'https://example.com/dashboard?user=$user_email&id=$user_id&timestamp=$timestamp',
+      status: 'published',
     });
 
-    await saveButton.click();
+    expect(item).toBeTruthy();
+    expect(item.id).toBeTruthy();
 
-    // Aguardar salvamento
-    await sharedPage.waitForTimeout(3000);
-
-    // Verificar que o item foi salvo
-    // Aceita qualquer URL que contenha 'inframe' e não seja a página de criação ('+')
-    const currentUrl = sharedPage.url();
-    const isSuccess = currentUrl.includes('/inframe') && !currentUrl.endsWith('/inframe/+');
-
-    expect(isSuccess).toBeTruthy();
+    // Armazenar o ID para ser usado pelo próximo teste
+    itemIdWithVariables = item.id;
   });
 
   test('should navigate to inframe module', async () => {
@@ -108,8 +87,8 @@ test.describe('Dynamic URL Variables', () => {
     expect(isEnabled).toBeTruthy();
 
     // Navigate directly to module URL (UI refresh issue after API changes)
-    await directus.page.goto('/admin/inframe', { waitUntil: 'networkidle' });
-    await directus.page.waitForTimeout(2000);
+    await directus.getPage().goto('/admin/inframe', { waitUntil: 'networkidle' });
+    await directus.getPage().waitForTimeout(2000);
 
     // Verificar que estamos na página do inframe
     expect(directus.urlContains('/admin/inframe')).toBeTruthy();
@@ -169,17 +148,10 @@ test.describe('Dynamic URL Variables', () => {
   test('should process URL variables when clicking on item', async () => {
     test.setTimeout(120000);
 
-    // Primeiro, pegar o ID de um item da coleção via API
-    const itemsResponse = await sharedPage.evaluate(async () => {
-      const response = await fetch('/items/inframe?limit=1&fields=id');
-      const data = await response.json();
-      return data.data;
-    });
+    // Usar o ID do item criado com variáveis no teste anterior
+    expect(itemIdWithVariables).toBeTruthy();
 
-    expect(itemsResponse).toBeTruthy();
-    expect(itemsResponse.length).toBeGreaterThan(0);
-
-    const itemId = itemsResponse[0].id;
+    const itemId = itemIdWithVariables;
 
     // Navegar para o módulo inframe com o ID do item
     await sharedPage.goto(`/admin/inframe/${itemId}`, { waitUntil: 'networkidle' });
@@ -196,14 +168,14 @@ test.describe('Dynamic URL Variables', () => {
     expect(iframeSrc).toBeTruthy();
 
     // Verificar que as variáveis foram substituídas (não deve conter $)
-    expect(iframeSrc).not.toContain('$user_email');
-    expect(iframeSrc).not.toContain('$user_id');
-    expect(iframeSrc).not.toContain('$timestamp');
+    expect(iframeSrc!).not.toContain('$user_email');
+    expect(iframeSrc!).not.toContain('$user_id');
+    expect(iframeSrc!).not.toContain('$timestamp');
 
     // Verificar que a URL contém valores reais (não vazios)
-    const userMatch = iframeSrc.match(/user=([^&]*)/);
-    const idMatch = iframeSrc.match(/id=([^&]*)/);
-    const timestampMatch = iframeSrc.match(/timestamp=([^&]*)/);
+    const userMatch = iframeSrc!.match(/user=([^&]*)/);
+    const idMatch = iframeSrc!.match(/id=([^&]*)/);
+    const timestampMatch = iframeSrc!.match(/timestamp=([^&]*)/);
 
     expect(userMatch).toBeTruthy();
     expect(idMatch).toBeTruthy();
@@ -386,12 +358,12 @@ test.describe('Dynamic URL Variables', () => {
   test('should handle URLs without variables', async () => {
     test.setTimeout(120000);
 
-    // Criar item sem variáveis (URL estática normal)
+    // Criar item sem variáveis (URL estática normal) via UI
     await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
     await sharedPage.waitForTimeout(2000);
 
     const createButton = await sharedPage.waitForSelector(
-      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"]',
+      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"], a[href*="/inframe/+"]',
       { timeout: 10000 },
     );
 
@@ -400,25 +372,20 @@ test.describe('Dynamic URL Variables', () => {
     await sharedPage.waitForTimeout(2000);
 
     // URL sem variáveis
-    const urlField = await sharedPage.locator('main input[type="text"]').nth(2);
+    const urlField = sharedPage.locator('main input[type="text"]').nth(2);
     await urlField.click();
     await urlField.fill('https://example.com/static-page');
     await sharedPage.waitForTimeout(500);
 
-    // Salvar
-    const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-      timeout: 5000,
-    });
+    // Usar "Save and Stay" para permanecer na página e ter o ID disponível na URL
+    await directus.saveAndStay();
 
-    await saveButton.click();
-    await sharedPage.waitForTimeout(3000);
-
-    // Get the created item ID from URL
+    // Extrair o ID do item criado a partir da URL atual
     const currentUrl = sharedPage.url();
-    const itemIdMatch = currentUrl.match(/\/inframe\/([a-f0-9-]+)/);
+    const itemIdMatch = currentUrl.match(/\/inframe\/([a-f0-9-]{36})/);
 
     if (!itemIdMatch) {
-      throw new Error('Could not extract item ID from URL');
+      throw new Error(`Could not extract item ID from URL: ${currentUrl}`);
     }
 
     const itemId = itemIdMatch[1];
