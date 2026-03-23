@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22.17.0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - run: pnpm install
       - run: pnpm lint
       - run: pnpm format:check
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22.17.0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - run: pnpm install
       - run: pnpm build
 
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22.17.0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - run: pnpm install
       - run: pnpm build
       - name: Install Playwright browsers
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22.17.0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - run: pnpm install
       - name: Update Directus versions in tests
         run: node .github/scripts/updateDirectusVersions.js
@@ -87,7 +87,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22.17.0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
       - run: pnpm install
       - run: pnpm build
       - name: Release
