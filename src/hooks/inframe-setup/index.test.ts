@@ -46,9 +46,7 @@ describe('enableInframeModule', () => {
 
     await enableInframeModule({ logger, database });
 
-    expect(logger.warn).not.toHaveBeenCalledWith(
-      expect.stringContaining('Error parsing module_bar'),
-    );
+    expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Error parsing module_bar'));
 
     expect(update).toHaveBeenCalledTimes(1);
     const savedModuleBar = JSON.parse(update.mock.calls[0]![0].module_bar);
@@ -64,9 +62,7 @@ describe('enableInframeModule', () => {
 
     await enableInframeModule({ logger, database });
 
-    expect(logger.warn).not.toHaveBeenCalledWith(
-      expect.stringContaining('Error parsing module_bar'),
-    );
+    expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('Error parsing module_bar'));
 
     expect(update).toHaveBeenCalledTimes(1);
     const savedModuleBar = JSON.parse(update.mock.calls[0]![0].module_bar);
@@ -79,9 +75,7 @@ describe('enableInframeModule', () => {
 
     await enableInframeModule({ logger, database });
 
-    expect(logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining('Error parsing module_bar'),
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Error parsing module_bar'));
 
     expect(update).not.toHaveBeenCalled();
   });

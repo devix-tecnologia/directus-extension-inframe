@@ -258,7 +258,7 @@ async function waitForBootstrap(testSuiteId: string, retries = 90, delay = 2000)
     } catch (error: any) {
       if (i === retries - 1) {
         logger.error('Failed to connect to Directus', error);
-        throw new Error('Directus failed to start');
+        throw new Error('Directus failed to start', { cause: error });
       }
 
       await new Promise((resolve) => setTimeout(resolve, delay));

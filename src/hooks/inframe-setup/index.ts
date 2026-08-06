@@ -111,7 +111,7 @@ async function setupCollections({ services, logger, database, getSchema }: Setup
   });
 
   // Get existing collections
-  let allCollections: any[] = [];
+  let allCollections: any[];
 
   try {
     allCollections = await collectionsService.readByQuery();
