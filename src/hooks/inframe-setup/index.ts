@@ -438,7 +438,7 @@ async function setupLanguages({ services, logger, database, getSchema }: SetupCo
 }
 
 // Function to enable inframe module in project settings
-async function enableInframeModule({ logger, database }: { logger: any; database: any }) {
+export async function enableInframeModule({ logger, database }: { logger: any; database: any }) {
   try {
     logger.info('[inFrame Extension] Checking module visibility in project settings...');
 
@@ -466,13 +466,17 @@ async function enableInframeModule({ logger, database }: { logger: any; database
         { type: 'link', id: 'docs', enabled: true },
         { type: 'module', id: 'settings', enabled: true },
       ];
-    } else {
+    } else if (typeof settings.module_bar === 'string') {
       try {
         moduleBar = JSON.parse(settings.module_bar);
       } catch {
         logger.warn('[inFrame Extension] ⚠️  Error parsing module_bar, skipping module activation');
         return;
       }
+    } else {
+      // Colunas do tipo json/jsonb (ex.: Postgres via pg/knex) já chegam
+      // parseadas como array/objeto — não há string pra fazer JSON.parse.
+      moduleBar = settings.module_bar;
     }
 
     // Check if inframe module already exists in module_bar
