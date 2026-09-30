@@ -1,6 +1,6 @@
 # 🧩 Task 006 — Validar e declarar suporte às versões mais recentes do Directus 11
 
-- Status: in-progress
+- Status: done
 - Type: chore
 - Assignee: sidarta-veloso
 
