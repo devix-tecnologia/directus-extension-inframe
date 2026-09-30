@@ -12,8 +12,13 @@ const versionsPath = path.resolve(__dirname, '../../tests/directus-versions.js')
 // Importa versões bloqueadas do arquivo de versões
 import { blockedDirectusVersions } from '../../tests/directus-versions.js';
 
-// Versões fixas que você quer sempre testar
-const fixedVersions = ['11.15.4'];
+// Versões fixas que você quer sempre testar (a 11.x mais antiga validada)
+const fixedVersions = ['11.0.2'];
+
+// Política Devix: Directus nunca >= 12 (a v12 muda a licença).
+// Só entram versões com major <= MAX_DIRECTUS_MAJOR; a tag 'latest' não é usada
+// porque já aponta para a 12.x.
+const MAX_DIRECTUS_MAJOR = 11;
 
 function getAllDirectusVersions() {
   return new Promise((resolve, reject) => {
@@ -29,7 +34,8 @@ function getAllDirectusVersions() {
             const versions = Object.entries(json.versions)
               .filter(([v, meta]) => !meta.deprecated && !blockedDirectusVersions.includes(v))
               .map(([v]) => v)
-              .filter((v) => /^\d+\.\d+\.\d+$/.test(v));
+              .filter((v) => /^\d+\.\d+\.\d+$/.test(v))
+              .filter((v) => Number(v.split('.')[0]) <= MAX_DIRECTUS_MAJOR);
 
             resolve(versions);
           } catch (e) {
@@ -53,16 +59,16 @@ async function updateVersions() {
   // Mantém as últimas 5 versões não-deprecadas
   const latestVersions = allVersions.slice(-5);
 
-  // Junta as fixas, as últimas e o "latest"
-  const uniqueVersions = Array.from(new Set([...fixedVersions, ...latestVersions, 'latest']));
+  // Junta as fixas e as últimas (sem 'latest': ver MAX_DIRECTUS_MAJOR)
+  const uniqueVersions = Array.from(new Set([...fixedVersions, ...latestVersions]));
 
   // Lê o conteúdo atual do arquivo
   let fileContent = fs.readFileSync(versionsPath, 'utf8');
 
-  // Substitui apenas o array directusVersions
-  const newArray = `export const directusVersions = [\n  '${uniqueVersions.join("',\n  '")}',\n];`;
+  // Substitui apenas o array allVersions
+  const newArray = `const allVersions = [\n  '${uniqueVersions.join("',\n  '")}',\n];`;
 
-  fileContent = fileContent.replace(/export const directusVersions = \[[^\]]*\];/m, newArray);
+  fileContent = fileContent.replace(/const allVersions = \[[^\]]*\];/m, newArray);
 
   fs.writeFileSync(versionsPath, fileContent);
 

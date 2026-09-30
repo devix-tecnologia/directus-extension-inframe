@@ -4,7 +4,8 @@
 // Se uma versão específica for fornecida via env, usa apenas ela
 const specificVersion = process.env.DIRECTUS_TEST_VERSION;
 
-const allVersions = ['11.17.3'];
+// Política Devix: Directus nunca >= 12 (a v12 muda a licença). Não incluir 12.x nem 'latest'.
+const allVersions = ['11.0.2', '11.17.4'];
 
 // Exporta apenas a versão específica se fornecida, ou todas as versões
 export const directusVersions = specificVersion ? [specificVersion] : allVersions;

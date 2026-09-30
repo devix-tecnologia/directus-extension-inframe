@@ -7,7 +7,7 @@ const execAsync = promisify(exec);
 
 const VERBOSE = process.env.VERBOSE === 'true' || process.argv.includes('--verbose');
 const TEST_SUITE_ID = process.env.TEST_SUITE_ID || 'main';
-const DIRECTUS_VERSION = process.env.DIRECTUS_VERSION || '11.14.1';
+const DIRECTUS_VERSION = process.env.DIRECTUS_VERSION || '11.17.4';
 const CONTAINER_NAME = `directus-inframe-${TEST_SUITE_ID}-${DIRECTUS_VERSION}`;
 
 function log(message) {

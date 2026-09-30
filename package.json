@@ -43,7 +43,7 @@
         "source": "src/endpoints/get-token/index.ts"
       }
     ],
-    "host": "^11.14.0"
+    "host": "^11.0.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
