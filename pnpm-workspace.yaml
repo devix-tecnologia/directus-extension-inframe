@@ -1,9 +1,9 @@
-onlyBuiltDependencies:
-  - '@opentask/taskin-file-system-provider'
-  - '@opentask/taskin-task-server-mcp'
-  - esbuild
-  - taskin
-  - vue-demi
+allowBuilds:
+  '@opentask/taskin-file-system-provider': true
+  '@opentask/taskin-task-server-mcp': true
+  esbuild: true
+  taskin: true
+  vue-demi: true
 
 overrides:
   axios@>=1.0.0 <1.12.0: '>=1.12.0'
