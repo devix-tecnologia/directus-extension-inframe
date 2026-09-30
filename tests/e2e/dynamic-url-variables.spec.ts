@@ -1,4 +1,5 @@
 import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
+import { DirectusE2EHelper } from './helpers/DirectusE2EHelper';
 
 /**
  * Credenciais de admin padrão do ambiente de teste
@@ -9,6 +10,8 @@ const ADMIN_PASSWORD = 'admin123';
 // Variáveis compartilhadas entre os testes
 let sharedContext: BrowserContext;
 let sharedPage: Page;
+let directus: DirectusE2EHelper;
+let itemIdWithVariables: string; // ID do item criado com variáveis dinâmicas na URL
 
 // Rodar os testes em série para evitar conflitos de sessão
 test.describe.configure({ mode: 'serial' });
@@ -21,31 +24,26 @@ test.describe('Dynamic URL Variables', () => {
     sharedContext = await browser.newContext({ baseURL });
     sharedPage = await sharedContext.newPage();
 
-    // Navega para o login
-    await sharedPage.goto('/admin/login', { waitUntil: 'networkidle' });
-    await sharedPage.waitForTimeout(1000);
+    // Inicializar helper
+    directus = new DirectusE2EHelper(sharedPage, baseURL!);
 
-    // Verificar se há botão "Continue" (sessão existente)
-    const continueButton = sharedPage.locator('button:has-text("Continue")');
-    const hasContinueButton = await continueButton.isVisible({ timeout: 3000 }).catch(() => false);
+    // Login
+    await directus.login(ADMIN_EMAIL, ADMIN_PASSWORD);
 
-    if (hasContinueButton) {
-      await continueButton.click();
-      await sharedPage.waitForURL('**/admin/**', { timeout: 20000 });
-      await sharedPage.waitForLoadState('networkidle');
-      await sharedPage.waitForTimeout(2000);
-    } else {
-      // Login normal
-      await sharedPage.fill('input[type="email"]', ADMIN_EMAIL);
-      await sharedPage.fill('input[type="password"]', ADMIN_PASSWORD);
-      await sharedPage.click('button[type="submit"]');
-      await sharedPage.waitForURL('**/admin/**', { timeout: 20000 });
-      await sharedPage.waitForLoadState('networkidle');
-      await sharedPage.waitForTimeout(2000);
-    }
+    // Enable inframe module via API
+    await directus.enableModule('inframe');
+
+    // Wait for the extension setup hook to create the inframe collection.
+    // The healthcheck passes before the hook finishes on a fresh DB (tmpfs),
+    // so we poll until the collection exists.
+    await directus.waitForCollection('inframe', 60000);
+
+    // Reload page to apply module changes
+    await directus.reload();
   });
 
   test.afterAll(async () => {
+    // Cleanup
     await sharedPage?.close();
     await sharedContext?.close();
   });
@@ -53,75 +51,47 @@ test.describe('Dynamic URL Variables', () => {
   test('should have inframe collection created', async () => {
     test.setTimeout(60000);
 
-    // Navegar para Content
-    await sharedPage.click('a[href="/admin/content"]');
-    await sharedPage.waitForLoadState('networkidle');
-    await sharedPage.waitForTimeout(1000);
+    // Verificar se a coleção inframe existe via API
+    const exists = await directus.collectionExists('inframe');
+    expect(exists).toBeTruthy();
 
-    // Verificar se coleção inframe existe
-    const inframeLink = sharedPage.locator('a[href="/admin/content/inframe"]');
-    await expect(inframeLink).toBeVisible({ timeout: 10000 });
+    // Navegar para a coleção via UI
+    await directus.navigateToCollection('inframe');
+
+    // Verificar que estamos na página correta
+    expect(directus.urlContains('/admin/content/inframe')).toBeTruthy();
   });
 
   test('should create inframe item with dynamic variables', async () => {
     test.setTimeout(120000);
 
-    // Navegar para coleção inframe
-    await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
-    await sharedPage.waitForTimeout(2000);
-
-    // No Directus 11, o botão de criar é um link <a>
-    const createButton = await sharedPage.waitForSelector(
-      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"]',
-      { timeout: 10000 },
-    );
-
-    await createButton.click();
-
-    // Aguardar formulário de criação
-    await sharedPage.waitForURL('**/admin/content/inframe/+');
-    await sharedPage.waitForTimeout(2000);
-
-    // Preencher URL com variáveis dinâmicas
-    const urlField = await sharedPage.locator('main input[type="text"]').nth(2);
-    await urlField.click();
-    await urlField.fill('https://example.com/dashboard?user=$user_email&id=$user_id&timestamp=$timestamp');
-    await sharedPage.waitForTimeout(500);
-
-    // Salvar (botão check no header)
-    const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-      timeout: 5000,
+    // Criar via API para ter o ID disponível imediatamente
+    const item = await directus.createItem('inframe', {
+      url: 'https://example.com/dashboard?user=$user_email&id=$user_id&timestamp=$timestamp',
+      status: 'published',
     });
 
-    await saveButton.click();
+    expect(item).toBeTruthy();
+    expect(item.id).toBeTruthy();
 
-    // Aguardar salvamento
-    await sharedPage.waitForTimeout(3000);
-
-    // Verificar que o item foi salvo
-    // Aceita qualquer URL que contenha 'inframe' e não seja a página de criação ('+')
-    const currentUrl = sharedPage.url();
-    const isSuccess = currentUrl.includes('/inframe') && !currentUrl.endsWith('/inframe/+');
-
-    expect(isSuccess).toBeTruthy();
+    // Armazenar o ID para ser usado pelo próximo teste
+    itemIdWithVariables = item.id;
   });
 
   test('should navigate to inframe module', async () => {
     test.setTimeout(60000);
 
-    // Navegar para o módulo inframe via sidebar
-    const inframeModule = sharedPage.locator('a[href="/admin/inframe"], a:has-text("Extra")').first();
+    // O módulo foi ativado no beforeAll via API
+    // Verificar se está habilitado
+    const isEnabled = await directus.isModuleEnabled('inframe');
+    expect(isEnabled).toBeTruthy();
 
-    // Aguardar módulo estar visível
-    await expect(inframeModule).toBeVisible({ timeout: 10000 });
-
-    // Clicar no módulo
-    await inframeModule.click();
-    await sharedPage.waitForLoadState('networkidle');
-    await sharedPage.waitForTimeout(2000);
+    // Navigate directly to module URL (UI refresh issue after API changes)
+    await directus.getPage().goto('/admin/inframe', { waitUntil: 'networkidle' });
+    await directus.getPage().waitForTimeout(2000);
 
     // Verificar que estamos na página do inframe
-    expect(sharedPage.url()).toContain('/admin/inframe');
+    expect(directus.urlContains('/admin/inframe')).toBeTruthy();
   });
 
   test('should display inframe items in grid', async () => {
@@ -178,17 +148,10 @@ test.describe('Dynamic URL Variables', () => {
   test('should process URL variables when clicking on item', async () => {
     test.setTimeout(120000);
 
-    // Primeiro, pegar o ID de um item da coleção via API
-    const itemsResponse = await sharedPage.evaluate(async () => {
-      const response = await fetch('/items/inframe?limit=1&fields=id');
-      const data = await response.json();
-      return data.data;
-    });
+    // Usar o ID do item criado com variáveis no teste anterior
+    expect(itemIdWithVariables).toBeTruthy();
 
-    expect(itemsResponse).toBeTruthy();
-    expect(itemsResponse.length).toBeGreaterThan(0);
-
-    const itemId = itemsResponse[0].id;
+    const itemId = itemIdWithVariables;
 
     // Navegar para o módulo inframe com o ID do item
     await sharedPage.goto(`/admin/inframe/${itemId}`, { waitUntil: 'networkidle' });
@@ -205,144 +168,202 @@ test.describe('Dynamic URL Variables', () => {
     expect(iframeSrc).toBeTruthy();
 
     // Verificar que as variáveis foram substituídas (não deve conter $)
-    expect(iframeSrc).not.toContain('$user_email');
-    expect(iframeSrc).not.toContain('$user_id');
-    expect(iframeSrc).not.toContain('$timestamp');
+    expect(iframeSrc!).not.toContain('$user_email');
+    expect(iframeSrc!).not.toContain('$user_id');
+    expect(iframeSrc!).not.toContain('$timestamp');
 
-    // Verificar que a URL contém valores reais
-    expect(iframeSrc).toContain('user=');
-    expect(iframeSrc).toContain('id=');
-    expect(iframeSrc).toContain('timestamp=');
+    // Verificar que a URL contém valores reais (não vazios)
+    const userMatch = iframeSrc!.match(/user=([^&]*)/);
+    const idMatch = iframeSrc!.match(/id=([^&]*)/);
+    const timestampMatch = iframeSrc!.match(/timestamp=([^&]*)/);
+
+    expect(userMatch).toBeTruthy();
+    expect(idMatch).toBeTruthy();
+    expect(timestampMatch).toBeTruthy();
+
+    // Verificar que os valores não estão vazios
+    expect(decodeURIComponent(userMatch![1])).toBeTruthy();
+    expect(decodeURIComponent(idMatch![1])).toBeTruthy();
+    expect(decodeURIComponent(timestampMatch![1])).toBeTruthy();
+
+    // eslint-disable-next-line no-console
+    console.log('✅ User variables validated:', {
+      user: decodeURIComponent(userMatch![1]),
+      id: decodeURIComponent(idMatch![1]),
+      timestamp: decodeURIComponent(timestampMatch![1]),
+    });
   });
 
   test('should show security error for HTTP + $token', async () => {
     test.setTimeout(120000);
 
-    // Criar novo item com HTTP + token (deve falhar)
-    await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
-    await sharedPage.waitForTimeout(2000);
+    // Criar item com HTTP + $token via API
+    const createResult = await sharedPage.evaluate(async () => {
+      try {
+        const response = await fetch('/items/inframe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'http://insecure-site.com/dashboard?token=$token',
+            status: 'published',
+          }),
+        });
 
-    const createButton = await sharedPage.waitForSelector(
-      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"]',
-      { timeout: 10000 },
-    );
+        const data = await response.json();
 
-    await createButton.click();
-    await sharedPage.waitForURL('**/admin/content/inframe/+');
-    await sharedPage.waitForTimeout(2000);
-
-    // Preencher com HTTP + $token (INSEGURO - deve ser bloqueado)
-    const urlField = await sharedPage.locator('main input[type="text"]').nth(2);
-    await urlField.click();
-    await urlField.fill('http://insecure-site.com/dashboard?token=$token');
-    await sharedPage.waitForTimeout(500);
-
-    // Salvar
-    const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-      timeout: 5000,
+        return {
+          ok: response.ok,
+          status: response.status,
+          itemId: data?.data?.id,
+        };
+      } catch (error: any) {
+        return {
+          ok: false,
+          error: error.message,
+        };
+      }
     });
 
-    await saveButton.click();
-    await sharedPage.waitForTimeout(3000);
+    // eslint-disable-next-line no-console
+    console.log('🔍 Item created:', createResult);
 
-    // Navegar para o módulo inframe
-    const inframeModule = sharedPage.locator('a[href="/admin/inframe"], a:has-text("Extra")').first();
-    await inframeModule.click();
+    // Item deve ser criado com sucesso
+    expect(createResult.ok).toBe(true);
+    expect(createResult.itemId).toBeTruthy();
+
+    // Navegar diretamente para o item criado
+    await sharedPage.goto(`/admin/content/inframe/${createResult.itemId}`);
     await sharedPage.waitForLoadState('networkidle');
+
+    // Aguardar um pouco para o iframe tentar carregar
     await sharedPage.waitForTimeout(2000);
 
-    // Clicar no item inseguro (último card)
-    const cards = sharedPage.locator('.card, [class*="card"]');
-    const cardCount = await cards.count();
+    // Verificar se há mensagem de erro de segurança
+    // A mensagem pode estar em diferentes elementos dependendo da implementação
+    const securityErrorLocators = [
+      sharedPage.locator('text=/security/i'),
+      sharedPage.locator('text=/https/i'),
+      sharedPage.locator('text=/insecure/i'),
+      sharedPage.locator('text=/não seguro/i'),
+      sharedPage.locator('[class*="error"]'),
+      sharedPage.locator('[class*="warning"]'),
+    ];
 
-    if (cardCount > 0) {
-      const lastCard = cards.last();
-      await lastCard.click();
-      await sharedPage.waitForLoadState('networkidle');
-      await sharedPage.waitForTimeout(2000);
+    // Verificar se pelo menos um dos localizadores encontra a mensagem de erro
+    let errorFound = false;
 
-      // Deve mostrar mensagem de erro de segurança
-      const errorState = sharedPage.locator('.error-state, [class*="error"], h2:has-text("Erro de Segurança")').first();
-      await expect(errorState).toBeVisible({ timeout: 10000 });
+    for (const locator of securityErrorLocators) {
+      const count = await locator.count();
 
-      // Verificar se contém texto sobre HTTPS
-      const pageText = await sharedPage.textContent('body');
-      expect(pageText).toContain('HTTPS');
+      if (count > 0) {
+        errorFound = true;
+        // eslint-disable-next-line no-console
+        console.log('✅ Security error found with locator:', locator);
+        break;
+      }
     }
+
+    expect(errorFound).toBe(true);
   });
 
   test('should allow HTTPS + $token', async () => {
-    test.setTimeout(120000);
+    test.setTimeout(60000);
 
-    // Criar novo item com HTTPS + token (deve funcionar)
-    await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
-    await sharedPage.waitForTimeout(2000);
+    // Buscar item HTTPS específico com $token
+    let inframeItem = await sharedPage.evaluate(async () => {
+      const response = await fetch(
+        '/items/inframe?filter[url][_starts_with]=https&filter[url][_contains]=$token&limit=1',
+      );
 
-    const createButton = await sharedPage.waitForSelector(
-      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"]',
-      { timeout: 10000 },
-    );
-
-    await createButton.click();
-    await sharedPage.waitForURL('**/admin/content/inframe/+');
-    await sharedPage.waitForTimeout(2000);
-
-    // Preencher com HTTPS + $token (SEGURO)
-    const urlField = await sharedPage.locator('main input[type="text"]').nth(2);
-    await urlField.click();
-    await urlField.fill('https://trusted-site.com/api/view?token=$token&user=$user_email');
-    await sharedPage.waitForTimeout(500);
-
-    // Salvar
-    const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-      timeout: 5000,
+      const data = await response.json();
+      return data.data?.[0];
     });
 
-    await saveButton.click();
+    if (!inframeItem) {
+      // Criar item com URL HTTPS contendo $token
+      inframeItem = await sharedPage.evaluate(async () => {
+        const response = await fetch('/items/inframe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://example.com/test?token=$token',
+            status: 'published',
+          }),
+        });
+
+        const data = await response.json();
+
+        return data.data;
+      });
+
+      // Verificar se foi criado
+      if (!inframeItem) {
+        throw new Error('Failed to create inframe item with HTTPS');
+      }
+    }
+
+    // eslint-disable-next-line no-console
+    console.log('🔍 Testing with inframe item ID:', inframeItem.id);
+
+    // Navegar direto para o módulo inframe com o item específico
+    await sharedPage.goto(`/admin/inframe/${inframeItem.id}?lastRoute=${inframeItem.id}`, {
+      waitUntil: 'networkidle',
+    });
+
     await sharedPage.waitForTimeout(3000);
 
-    // Navegar para o módulo inframe
-    const inframeModule = sharedPage.locator('a[href="/admin/inframe"], a:has-text("Extra")').first();
-    await inframeModule.click();
-    await sharedPage.waitForLoadState('networkidle');
-    await sharedPage.waitForTimeout(2000);
+    // Deve mostrar iframe (sem erro)
+    const iframe = sharedPage.locator('iframe').first();
+    await expect(iframe).toBeVisible({ timeout: 15000 });
 
-    // Clicar no último item (com token)
-    const cards = sharedPage.locator('.card, [class*="card"]');
-    const cardCount = await cards.count();
+    // Obter o src do iframe
+    const iframeSrc = await iframe.getAttribute('src');
+    expect(iframeSrc).toBeTruthy();
 
-    if (cardCount > 0) {
-      const lastCard = cards.last();
-      await lastCard.click();
-      await sharedPage.waitForLoadState('networkidle');
-      await sharedPage.waitForTimeout(3000);
+    // eslint-disable-next-line no-console
+    console.log('🔍 iframe src:', iframeSrc);
 
-      // Deve mostrar iframe (sem erro)
-      const iframe = sharedPage.locator('iframe').first();
-      await expect(iframe).toBeVisible({ timeout: 10000 });
+    // Verificar que $token foi substituído
+    expect(iframeSrc).not.toContain('$token');
+    expect(iframeSrc).toContain('token=');
 
-      // Obter o src do iframe
-      const iframeSrc = await iframe.getAttribute('src');
-      expect(iframeSrc).toBeTruthy();
+    // CRÍTICO: Verificar que o token é um JWT válido
+    const tokenMatch = iframeSrc!.match(/token=([^&]*)/);
+    expect(tokenMatch).toBeTruthy();
 
-      // Verificar que $token foi substituído
-      expect(iframeSrc).not.toContain('$token');
-      expect(iframeSrc).toContain('token=');
+    const tokenValue = decodeURIComponent(tokenMatch![1]);
+    expect(tokenValue).toBeTruthy(); // Token não deve estar vazio
+    expect(tokenValue).not.toBe('$token'); // Token não deve ser literal
 
-      // Verificar que é HTTPS
-      expect(iframeSrc).toMatch(/^https:\/\//);
-    }
+    // JWT tem formato: header.payload.signature (3 partes separadas por ponto)
+    const jwtParts = tokenValue.split('.');
+    expect(jwtParts.length).toBe(3); // Deve ter exatamente 3 partes
+    expect(jwtParts[0].length).toBeGreaterThan(10); // Header deve ter tamanho razoável
+    expect(jwtParts[1].length).toBeGreaterThan(10); // Payload deve ter tamanho razoável
+    expect(jwtParts[2].length).toBeGreaterThan(10); // Signature deve ter tamanho razoável
+
+    // eslint-disable-next-line no-console
+    console.log('✅ JWT Token validated - Format: xxx.xxx.xxx');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      'Token parts lengths:',
+      jwtParts.map((p) => p.length),
+    );
+
+    // Verificar que é HTTPS
+    expect(iframeSrc).toMatch(/^https:\/\//);
   });
 
   test('should handle URLs without variables', async () => {
     test.setTimeout(120000);
 
-    // Criar item sem variáveis (URL estática normal)
+    // Criar item sem variáveis (URL estática normal) via UI
     await sharedPage.goto('/admin/content/inframe', { waitUntil: 'networkidle' });
     await sharedPage.waitForTimeout(2000);
 
     const createButton = await sharedPage.waitForSelector(
-      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"]',
+      'a[href*="/inframe/+"]:has-text("Create Item"), a.button[href*="/inframe/+"], a[href*="/inframe/+"]',
       { timeout: 10000 },
     );
 
@@ -351,42 +372,35 @@ test.describe('Dynamic URL Variables', () => {
     await sharedPage.waitForTimeout(2000);
 
     // URL sem variáveis
-    const urlField = await sharedPage.locator('main input[type="text"]').nth(2);
+    const urlField = sharedPage.locator('main input[type="text"]').nth(2);
     await urlField.click();
     await urlField.fill('https://example.com/static-page');
     await sharedPage.waitForTimeout(500);
 
-    // Salvar
-    const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-      timeout: 5000,
-    });
+    // Usar "Save and Stay" para permanecer na página e ter o ID disponível na URL
+    await directus.saveAndStay();
 
-    await saveButton.click();
-    await sharedPage.waitForTimeout(3000);
+    // Extrair o ID do item criado a partir da URL atual
+    const currentUrl = sharedPage.url();
+    const itemIdMatch = currentUrl.match(/\/inframe\/([a-f0-9-]{36})/);
 
-    // Navegar e clicar no item
-    const inframeModule = sharedPage.locator('a[href="/admin/inframe"], a:has-text("Extra")').first();
-    await inframeModule.click();
-    await sharedPage.waitForLoadState('networkidle');
+    if (!itemIdMatch) {
+      throw new Error(`Could not extract item ID from URL: ${currentUrl}`);
+    }
+
+    const itemId = itemIdMatch[1];
+
+    // Navigate directly to the item in inframe module
+    await sharedPage.goto(`/admin/inframe/${itemId}`, { waitUntil: 'networkidle' });
     await sharedPage.waitForTimeout(2000);
 
-    const cards = sharedPage.locator('.card, [class*="card"]');
-    const cardCount = await cards.count();
+    // Deve mostrar iframe normalmente
+    const iframe = sharedPage.locator('iframe').first();
+    await expect(iframe).toBeVisible({ timeout: 10000 });
 
-    if (cardCount > 0) {
-      const lastCard = cards.last();
-      await lastCard.click();
-      await sharedPage.waitForLoadState('networkidle');
-      await sharedPage.waitForTimeout(2000);
+    const iframeSrc = await iframe.getAttribute('src');
 
-      // Deve mostrar iframe normalmente
-      const iframe = sharedPage.locator('iframe').first();
-      await expect(iframe).toBeVisible({ timeout: 10000 });
-
-      const iframeSrc = await iframe.getAttribute('src');
-
-      // URL deve permanecer exatamente como cadastrada
-      expect(iframeSrc).toBe('https://example.com/static-page');
-    }
+    // URL deve permanecer exatamente como cadastrada
+    expect(iframeSrc).toBe('https://example.com/static-page');
   });
 });

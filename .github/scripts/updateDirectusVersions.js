@@ -13,7 +13,7 @@ const versionsPath = path.resolve(__dirname, '../../tests/directus-versions.js')
 import { blockedDirectusVersions } from '../../tests/directus-versions.js';
 
 // Versões fixas que você quer sempre testar
-const fixedVersions = ['9.23.1', '9.22.4', '9.24.0', '10.8.3', '11.10.2'];
+const fixedVersions = ['11.15.4'];
 
 function getAllDirectusVersions() {
   return new Promise((resolve, reject) => {

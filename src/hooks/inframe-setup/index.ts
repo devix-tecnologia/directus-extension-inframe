@@ -111,7 +111,7 @@ async function setupCollections({ services, logger, database, getSchema }: Setup
   });
 
   // Get existing collections
-  let allCollections: any[] = [];
+  let allCollections: any[];
 
   try {
     allCollections = await collectionsService.readByQuery();
@@ -438,7 +438,7 @@ async function setupLanguages({ services, logger, database, getSchema }: SetupCo
 }
 
 // Function to enable inframe module in project settings
-async function enableInframeModule({ logger, database }: { logger: any; database: any }) {
+export async function enableInframeModule({ logger, database }: { logger: any; database: any }) {
   try {
     logger.info('[inFrame Extension] Checking module visibility in project settings...');
 
@@ -453,29 +453,30 @@ async function enableInframeModule({ logger, database }: { logger: any; database
     // Parse module_bar JSON
     let moduleBar = [];
 
-    try {
-      if (settings.module_bar) {
-        moduleBar = JSON.parse(settings.module_bar);
-      } else {
-        // Initialize with default Directus modules if module_bar is null
-        moduleBar = [
-          { type: 'module', id: 'content', enabled: true },
-          { type: 'module', id: 'users', enabled: true },
-          { type: 'module', id: 'files', enabled: true },
-          { type: 'module', id: 'insights', enabled: true },
-        ];
+    // If module_bar is null, create default module_bar with standard modules
+    if (!settings.module_bar) {
+      logger.info('[inFrame Extension] ℹ️  module_bar is null, creating default configuration...');
 
-        logger.info('[inFrame Extension] ℹ️  Initialized module_bar with default Directus modules');
-      }
-    } catch {
-      logger.warn('[inFrame Extension] ⚠️  Error parsing module_bar, initializing with default modules');
-
+      // Create default module_bar with Directus standard modules
       moduleBar = [
         { type: 'module', id: 'content', enabled: true },
         { type: 'module', id: 'users', enabled: true },
         { type: 'module', id: 'files', enabled: true },
         { type: 'module', id: 'insights', enabled: true },
+        { type: 'link', id: 'docs', enabled: true },
+        { type: 'module', id: 'settings', enabled: true },
       ];
+    } else if (typeof settings.module_bar === 'string') {
+      try {
+        moduleBar = JSON.parse(settings.module_bar);
+      } catch {
+        logger.warn('[inFrame Extension] ⚠️  Error parsing module_bar, skipping module activation');
+        return;
+      }
+    } else {
+      // Colunas do tipo json/jsonb (ex.: Postgres via pg/knex) já chegam
+      // parseadas como array/objeto — não há string pra fazer JSON.parse.
+      moduleBar = settings.module_bar;
     }
 
     // Check if inframe module already exists in module_bar

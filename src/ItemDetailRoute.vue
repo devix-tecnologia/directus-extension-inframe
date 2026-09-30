@@ -1,5 +1,5 @@
 <template>
-  <ItemDetail v-if="item" :item="item" :items="items" :loading="loading" :title="getTitle(item?.translations || [])" />
+  <ItemDetail v-if="item" :item="item" :items="items" :loading="loading" :title="currentTitle" />
   <div v-else-if="loading" class="loading-state">
     <p>Carregando item...</p>
   </div>
@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, watch } from 'vue';
+import { defineComponent, onMounted, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import ItemDetail from './components/ItemDetail.vue';
 import { useFetchItems, useFetchItem } from './utils/useFetchItems';
@@ -23,6 +23,9 @@ export default defineComponent({
     const { items, fetchItems, getTitle } = useFetchItems();
     const { item, loading, fetchItem } = useFetchItem();
     const { saveCurrentRoute, startAutoSave } = useNavigationPersistence();
+
+    // Título reativo que atualiza quando o item muda
+    const currentTitle = computed(() => getTitle(item.value?.translations || []));
 
     onMounted(async () => {
       // Busca todos os itens para o menu de navegação
@@ -57,6 +60,7 @@ export default defineComponent({
       items,
       loading,
       getTitle,
+      currentTitle,
     };
   },
 });

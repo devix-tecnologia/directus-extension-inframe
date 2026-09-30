@@ -1,0 +1,90 @@
+
+> directus-extension-inframe@2.1.4 test /Users/sidarta/repositorios/directus-extension-inframe
+> pnpm test:e2e
+
+
+> directus-extension-inframe@2.1.4 test:e2e /Users/sidarta/repositorios/directus-extension-inframe
+> VERBOSE=true node tests/run-e2e.js
+
+[E2E] === Iniciando pipeline de testes E2E ===
+
+[E2E] Usando: docker-compose
+[E2E] Verificando se container directus-inframe-main-11.14.1 está rodando...
+[E2E] Container antigo encontrado, reiniciando para garantir configuração correta...
+[E2E] Parando container existente directus-inframe-main-11.14.1...
+[E2E] Container parado com sucesso ✓
+[E2E] Iniciando container directus-inframe-main-11.14.1...
+[E2E] Container iniciado com sucesso ✓
+[E2E] Aguardando container directus-inframe-main-11.14.1 ficar healthy (timeout: 180s)...
+[E2E] Status do container: starting
+.........................[E2E] Status do container: healthy
+[E2E] Container está healthy! ✓
+[E2E] Container exposto na porta: 32775
+[E2E] Iniciando execução dos testes E2E...
+[E2E] Directus URL: http://localhost:32775
+
+Running 15 tests using 2 workers
+
+[1A[2K[1/15] [chromium] › tests/e2e/directus-login-collections.spec.ts:85:3 › Directus Admin Panel - Login e Coleções › deve fazer login com sucesso e estabilizar o dashboard
+[1A[2K[2/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:53:3 › Dynamic URL Variables › should have inframe collection created
+[1A[2K[3/15] [chromium] › tests/e2e/directus-login-collections.spec.ts:100:3 › Directus Admin Panel - Login e Coleções › deve acessar a listagem de coleções (Content)
+[1A[2K[4/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:66:3 › Dynamic URL Variables › should create inframe item with dynamic variables
+[1A[2K[5/15] [chromium] › tests/e2e/directus-login-collections.spec.ts:119:3 › Directus Admin Panel - Login e Coleções › deve verificar que a coleção "inframe" existe e está acessível
+[1A[2K[6/15] [chromium] › tests/e2e/directus-login-collections.spec.ts:142:8 › Directus Admin Panel - Login e Coleções › deve listar as coleções customizadas criadas pelo hook
+[1A[2K[7/15] [chromium] › tests/e2e/directus-login-collections.spec.ts:185:3 › Directus Admin Panel - Login e Coleções › deve criar um novo registro na coleção inframe
+[1A[2K[8/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:109:3 › Dynamic URL Variables › should navigate to inframe module
+[1A[2K[9/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:127:3 › Dynamic URL Variables › should display inframe items in grid
+[1A[2K[10/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:178:3 › Dynamic URL Variables › should process URL variables when clicking on item
+[1A[2K[11/15] [chromium] › tests/e2e/directus-login-collections.spec.ts:264:8 › Directus Admin Panel - Login e Coleções › deve verificar que o módulo inframe foi habilitado automaticamente pelo hook
+[1A[2K[12/15] [chromium] › tests/e2e/directus-login-collections.spec.ts:301:8 › Directus Admin Panel - Login e Coleções › deve exibir mensagem quando não há inframes cadastrados
+[1A[2K[chromium] › tests/e2e/dynamic-url-variables.spec.ts:178:3 › Dynamic URL Variables › should process URL variables when clicking on item
+✅ User variables validated: {
+  user: [32m'admin@example.com'[39m,
+  id: [32m'c4c20846-4bac-4d1c-85d8-d93fc04cbef3'[39m,
+  timestamp: [32m'2026-01-30T21:14:22.235Z'[39m
+}
+
+[1A[2K[13/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:233:3 › Dynamic URL Variables › should show security error for HTTP + $token
+[1A[2K[14/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:289:3 › Dynamic URL Variables › should allow HTTPS + $token
+[1A[2K  1) [chromium] › tests/e2e/dynamic-url-variables.spec.ts:289:3 › Dynamic URL Variables › should allow HTTPS + $token 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      328 |
+      329 |     // CRÍTICO: Deve ter pelo menos 1 card
+    > 330 |     expect(cardCount).toBeGreaterThan(0);
+          |                       ^
+      331 |
+      332 |     const lastCard = cards.last();
+      333 |     await lastCard.click();
+        at /Users/sidarta/repositorios/directus-extension-inframe/tests/e2e/dynamic-url-variables.spec.ts:330:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dynamic-url-variables-Dyna-9d92e-es-should-allow-HTTPS-token-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dynamic-url-variables-Dyna-9d92e-es-should-allow-HTTPS-token-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/dynamic-url-variables-Dyna-9d92e-es-should-allow-HTTPS-token-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/dynamic-url-variables-Dyna-9d92e-es-should-allow-HTTPS-token-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[15/15] [chromium] › tests/e2e/dynamic-url-variables.spec.ts:370:3 › Dynamic URL Variables › should handle URLs without variables
+[1A[2K  1 failed
+    [chromium] › tests/e2e/dynamic-url-variables.spec.ts:289:3 › Dynamic URL Variables › should allow HTTPS + $token 
+  3 skipped
+  1 did not run
+  10 passed (1.0m)
+[E2E ERROR] Testes finalizaram com código de erro: 1
+[E2E ERROR] 
+Falha na execução: Tests failed with exit code 1
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Test failed. See above for more details.

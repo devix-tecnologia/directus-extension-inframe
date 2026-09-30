@@ -1,9 +1,9 @@
-![Overview of the inFrame Module in Directus](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/tela.jpg)
-
 # 🚀 inFrame: The Ultimate Module for External Content Integration in Directus
 
-[![npm version](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-v2-1-1.svg)](https://www.npmjs.com/package/directus-extension-inframe)
-[![License](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-license-gpl-3-0.svg)](https://github.com/devix-tecnologia/directus-extension-inframe/blob/main/LICENSE)
+[![npm version v2.2.0](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-npm-v2-2-0.svg)](https://www.npmjs.com/package/directus-extension-inframe)
+[![License GPL-3.0](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/badge-license-gpl-3-0.svg)](https://github.com/devix-tecnologia/directus-extension-inframe/blob/main/LICENSE)
+
+![Overview of the inFrame Module in Directus](https://raw.githubusercontent.com/devix-tecnologia/directus-extension-inframe/main/docs/tela.jpg)
 
 ---
 
@@ -120,9 +120,7 @@ environment:
 
 Tested and compatible with:
 
-- **Directus 9.x**: 9.22.4, 9.23.1, 9.24.0
-- **Directus 10.x**: 10.8.3
-- **Directus 11.x**: 11.13.1 and newer versions
+- **Directus 11.x**: 11.15.4 and newer versions
 
 ## 🤝 Contributing
 

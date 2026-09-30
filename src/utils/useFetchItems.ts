@@ -31,9 +31,25 @@ export const useFetchItems = () => {
 
       const response = await api.get<Item[]>('/items/inframe', {
         params: {
-          fields: ['id', 'sort', 'status', 'icon', 'url', 'thumbnail', 'translations.language', 'translations.title'],
-          // Removido o filtro deep para buscar TODAS as traduções
-          // O getTitle() vai usar a primeira disponível
+          fields: [
+            'id',
+            'sort',
+            'status',
+            'icon',
+            'url',
+            'thumbnail',
+            'translations.language',
+            'translations.title',
+            'sandbox_tokens',
+            'allow_directives',
+            'loading',
+            'referrerpolicy',
+            'allowfullscreen',
+            'credentialless',
+            'iframe_name',
+            'iframe_title',
+            'csp',
+          ],
           filter: {
             status: { _eq: 'published' }, // Filtra apenas itens publicados
           },
@@ -69,7 +85,7 @@ export const useFetchItems = () => {
 // Função para buscar um item específico
 export const useFetchItem = () => {
   const item = ref<Item | null>(null);
-  const loading = ref(false);
+  const loading = ref(true);
   const api = useApi();
 
   const fetchItem = async (id: string) => {
@@ -84,7 +100,25 @@ export const useFetchItem = () => {
 
       const response = await api.get<Item>(`/items/inframe/${id}`, {
         params: {
-          fields: ['id', 'status', 'sort', 'icon', 'url', 'thumbnail', 'translations.language', 'translations.title'],
+          fields: [
+            'id',
+            'status',
+            'sort',
+            'icon',
+            'url',
+            'thumbnail',
+            'translations.language',
+            'translations.title',
+            'sandbox_tokens',
+            'allow_directives',
+            'loading',
+            'referrerpolicy',
+            'allowfullscreen',
+            'credentialless',
+            'iframe_name',
+            'iframe_title',
+            'csp',
+          ],
           // Removido o filtro deep para buscar TODAS as traduções
         },
       });
