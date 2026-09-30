@@ -163,7 +163,7 @@ export async function setupTestEnvironment(testSuiteId: string = 'main') {
     const composeCmd = await getDockerComposeCommand();
 
     const { stdout, stderr } = await execAsync(
-      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} ${composeCmd} -f docker-compose.test.yml up -d`,
+      `TEST_SUITE_ID=${testSuiteId} DIRECTUS_VERSION=${process.env.DIRECTUS_VERSION} ${composeCmd} -f docker-compose.test.yml up -d directus`,
     );
 
     // Docker Compose uses stderr for progress messages

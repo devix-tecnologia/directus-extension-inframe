@@ -118,9 +118,17 @@ environment:
 
 ## 🌍 Compatibility
 
-Tested and compatible with:
+Declared host range: `^11.0.0` (`directus:extension.host`).
 
-- **Directus 11.x**: 11.15.4 and newer versions
+| Directus   | Status           | Validation                                                                        |
+| ---------- | ---------------- | --------------------------------------------------------------------------------- |
+| 11.17.4    | ✅ Supported     | Integration (Vitest) + E2E (Playwright, headless Chromium)                        |
+| 11.0.2     | ✅ Supported     | Integration (Vitest) + E2E (Playwright, headless Chromium)                        |
+| 11.1–11.16 | ✅ Supported     | Covered by the declared range, not individually tested (11.10.1 has known issues) |
+| 10.x       | ❌ Not supported | E2E fails on 10.8.3 (older 2.1.x releases declared ^10.8.3)                       |
+| 12.x       | ❌ Not supported | Out of scope for now (Directus 12 license change)                                 |
+
+Built with `@directus/extensions-sdk` 17.x (the SDK line used by Directus 11).
 
 ## 🤝 Contributing
 

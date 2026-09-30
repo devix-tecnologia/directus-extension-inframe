@@ -2,17 +2,25 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { useUrlVariableReplacement } from '../src/utils/useUrlVariableReplacement';
 
 // Mock do SDK do Directus
+// Desde a 2.2.0 o token vem do endpoint customizado /inframe-token (o Directus 11 usa
+// cookies HTTP-only); os dados do usuário continuam vindo de /users/me.
 vi.mock('@directus/extensions-sdk', () => ({
   useApi: vi.fn(() => ({
-    get: vi.fn().mockResolvedValue({
-      data: {
-        id: 'test-user-123',
-        email: 'test@example.com',
-        first_name: 'John',
-        last_name: 'Doe',
-        role: 'admin',
-        language: 'en-US',
-      },
+    get: vi.fn(async (path: string) => {
+      if (path === '/inframe-token') {
+        return { data: { data: { access_token: 'test-access-token-xyz' } } };
+      }
+
+      return {
+        data: {
+          id: 'test-user-123',
+          email: 'test@example.com',
+          first_name: 'John',
+          last_name: 'Doe',
+          role: 'admin',
+          language: 'en-US',
+        },
+      };
     }),
   })),
   useStores: vi.fn(() => ({

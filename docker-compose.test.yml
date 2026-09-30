@@ -1,6 +1,6 @@
 services:
   directus:
-    image: directus/directus:${DIRECTUS_VERSION:-11.14.1}
+    image: directus/directus:${DIRECTUS_VERSION:-11.17.4}
     container_name: directus-inframe-${TEST_SUITE_ID:-main}-${DIRECTUS_VERSION:-latest}
     ports:
       - '0:8055' # Porta dinâmica - Docker escolhe porta livre automaticamente
@@ -63,7 +63,7 @@ services:
       - bash
       - -lc
       - |
-        npm i -g pnpm@10.28.2 && \
+        npm i -g pnpm@12.7.0 && \
         pnpm install --frozen-lockfile && \
         pnpm exec playwright install --with-deps && \
         pnpm test:e2e

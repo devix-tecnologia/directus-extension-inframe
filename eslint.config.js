@@ -26,6 +26,7 @@ export default [
       'docs/.vitepress/cache/',
       'api/extensions/',
       'tests/debug-items.js',
+      'test-token-debug.cjs',
       'playwright-report/**',
       'test-results/**',
       'node_modules/**',
