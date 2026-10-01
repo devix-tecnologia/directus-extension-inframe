@@ -25,10 +25,10 @@ Este documento descreve a estratégia de testes implementada para a extensão `d
 
 Os testes são executados contra múltiplas versões do Directus para garantir compatibilidade:
 
-- **Directus 9.x**: Versões finais da linha 9.x
-- **Directus 10.x**: Versões estáveis da linha 10.x
-- **Directus 11.x**: Versões mais recentes da linha 11.x
-- **Latest**: Sempre a versão mais recente disponível
+- **Directus 11.x**: 11.0.2 (mais antiga validada) e 11.17.4 (padrão dos testes)
+- **Directus 12.x**: somente a 12.4.1, fixada
+
+A tag `latest` não é usada: sempre versões exatas (lista em `tests/directus-versions.js`).
 
 ### Testes Implementados
 
@@ -118,7 +118,7 @@ O `docker-compose.test.yml` configura:
 ### Variáveis de Ambiente
 
 ```env
-DIRECTUS_VERSION=latest
+DIRECTUS_VERSION=11.17.4
 DIRECTUS_PUBLIC_URL=http://localhost:18055
 DIRECTUS_ADMIN_EMAIL=admin@example.com
 DIRECTUS_ADMIN_PASSWORD=admin123
@@ -161,7 +161,7 @@ export const blockedDirectusVersions = ['11.10.1'];
 ### Problemas de Rede
 
 - Verificar configuração de rede no Docker
-- Testar conectividade: `curl http://localhost:18055/server/health`
+- Testar conectividade: `curl http://localhost:18055/server/ping`
 - Verificar firewall/proxy
 
 ## Referências

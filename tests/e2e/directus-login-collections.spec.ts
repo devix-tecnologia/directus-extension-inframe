@@ -1,5 +1,6 @@
 import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
 import fs from 'fs';
+import { dismissLicensePrompts } from './helpers/dismissLicensePrompts';
 
 /**
  * Credenciais de admin padrão do ambiente de teste
@@ -24,6 +25,7 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
 
     // Criar contexto e página compartilhados com baseURL explícito
     sharedContext = await browser.newContext({ baseURL });
+    await dismissLicensePrompts(sharedContext, baseURL);
     sharedPage = await sharedContext.newPage();
 
     // Navega para o login e faz autenticação
@@ -228,14 +230,10 @@ test.describe('Directus Admin Panel - Login e Coleções', () => {
     // Screenshot antes de salvar
     await sharedPage.screenshot({ path: 'tests/e2e/screenshots/create-inframe-form.png', fullPage: true });
 
-    // Clicar no botão de salvar (ícone check no banner/header)
-    const saveButton = await sharedPage.waitForSelector(
-      'banner button:has-text("check"), button:has([data-icon="check"])',
-      {
-        timeout: 5000,
-      },
-    );
+    // Clicar no botão de salvar do header: ícone "check" no Directus 11, botão "Save" no Directus 12
+    const saveButton = sharedPage.getByRole('banner').getByRole('button', { name: /^(check|Save)$/ });
 
+    await expect(saveButton).toBeVisible({ timeout: 5000 });
     await saveButton.click();
 
     // Aguardar o salvamento e redirecionamento

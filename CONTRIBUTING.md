@@ -165,8 +165,8 @@ pnpm docker:clear
 Tests run on the following versions:
 
 - **Directus 11.x**: 11.0.2 (oldest) and 11.17.4 (latest 11.x)
-- **Directus 12.x**: not tested and not supported (license change). `.github/scripts/updateDirectusVersions.js` only
-  picks versions with major <= 11.
+- **Directus 12.x**: 12.4.1 only (pinned; no 12.x matrix). `.github/scripts/updateDirectusVersions.js` auto-discovers
+  versions with major <= 11 and keeps 12.4.1 as a fixed version. Never use the `latest` tag, only exact versions.
 
 **Note:** Directus 11.10.1 has known issues and is blocked in tests.
 

@@ -12,12 +12,14 @@ const versionsPath = path.resolve(__dirname, '../../tests/directus-versions.js')
 // Importa versões bloqueadas do arquivo de versões
 import { blockedDirectusVersions } from '../../tests/directus-versions.js';
 
-// Versões fixas que você quer sempre testar (a 11.x mais antiga validada)
-const fixedVersions = ['11.0.2'];
+// Versões fixas que sempre são testadas:
+// - 11.0.2: a 11.x mais antiga validada;
+// - 12.4.1: única 12.x testada (compatibilidade declarada com autorização explícita).
+const fixedVersions = ['11.0.2', '12.4.1'];
 
-// Política Devix: Directus nunca >= 12 (a v12 muda a licença).
-// Só entram versões com major <= MAX_DIRECTUS_MAJOR; a tag 'latest' não é usada
-// porque já aponta para a 12.x.
+// A busca automática só traz versões com major <= MAX_DIRECTUS_MAJOR, para não criar
+// uma matriz 12.x sem decisão explícita. Versões 12.x entram só pela lista fixa acima.
+// A tag 'latest' nunca é usada: só versões exatas.
 const MAX_DIRECTUS_MAJOR = 11;
 
 function getAllDirectusVersions() {
@@ -59,7 +61,7 @@ async function updateVersions() {
   // Mantém as últimas 5 versões não-deprecadas
   const latestVersions = allVersions.slice(-5);
 
-  // Junta as fixas e as últimas (sem 'latest': ver MAX_DIRECTUS_MAJOR)
+  // Junta as fixas e as últimas (sem 'latest': só versões exatas)
   const uniqueVersions = Array.from(new Set([...fixedVersions, ...latestVersions]));
 
   // Lê o conteúdo atual do arquivo

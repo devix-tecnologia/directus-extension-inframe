@@ -41,7 +41,7 @@ services:
       - /tmp/data:rw,size=64M,mode=777
 
     healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/health']
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://0.0.0.0:8055/server/ping']
       interval: 3s
       timeout: 3s
       retries: 40

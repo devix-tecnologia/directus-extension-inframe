@@ -494,13 +494,14 @@ export class DirectusE2EHelper {
     this.log('[DirectusE2E] Opening save dropdown menu...');
 
     // In Directus the header (banner) contains two action buttons:
-    //   1. "check"      – main save button
-    //   2. "more_vert"  – kebab menu with "Save and Stay", "Discard", etc.
+    //   1. main save button – "check" (Directus 11) or "Save" (Directus 12)
+    //   2. save options menu – "more_vert" (Directus 11) or "More options" (Directus 12),
+    //      with "Save and Stay", "Discard", etc.
     //
-    // We use getByRole with the accessible name "more_vert" as shown in the
-    // a11y tree, which is the most reliable way to find Material Design icon
-    // buttons regardless of their CSS rendering.
-    const moreVertBtn = this.page.getByRole('button', { name: 'more_vert' });
+    // We use getByRole with the accessible name as shown in the a11y tree,
+    // which is the most reliable way to find these buttons regardless of
+    // their CSS rendering.
+    const moreVertBtn = this.page.getByRole('button', { name: /^(more_vert|More options)$/ });
 
     await expect(moreVertBtn).toBeVisible({ timeout });
     await moreVertBtn.click();
