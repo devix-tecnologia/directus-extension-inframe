@@ -1,6 +1,6 @@
 # 🧩 Task 008 — Validar e declarar compatibilidade com o Directus 12.4.1
 
-- Status: in-progress
+- Status: done
 - Type: chore
 - Assignee: sidarta-veloso
 
