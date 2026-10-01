@@ -16,6 +16,20 @@ export interface SecurityValidationResult {
   warnings: string[];
 }
 
+/** Variables that carry a Directus credential and therefore require HTTPS */
+const TOKEN_VARIABLE_PATTERN = /\$(refresh_)?token/;
+
+const HTTPS_REQUIRED_ERROR =
+  '🔒 SECURITY ERROR: $token variable can only be used with HTTPS URLs. HTTP is not allowed.';
+
+const isHttpsUrl = (url: string): boolean => {
+  try {
+    return new URL(url).protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 /**
  * Composable for URL variable replacement with security validations
  */
@@ -61,45 +75,41 @@ export const useUrlVariableReplacement = () => {
   /**
    * Get access token from custom endpoint
    * Since Directus 11+ uses HTTP-only cookies and stores are not available in modules,
-   * we use a custom endpoint that returns the token from the authenticated request
+   * we use a custom endpoint that returns the token from the authenticated request.
+   *
+   * SECURITY: never log the token, any part of it, its length or the raw endpoint response.
    */
   const getAccessToken = async (): Promise<string> => {
-    // eslint-disable-next-line no-console
-    console.log('[inFrame DEBUG] Requesting token from custom endpoint...');
-
     try {
-      // Call our custom endpoint that returns the token
       const response = await api.get('/inframe-token');
       const token = response.data?.data?.access_token;
 
       if (token && typeof token === 'string' && token.length > 20) {
         accessToken.value = token;
-        // eslint-disable-next-line no-console
-        console.log(`[inFrame DEBUG] ✅ Token obtained from endpoint (length: ${token.length})`);
         return token;
       }
 
       // eslint-disable-next-line no-console
-      console.warn('[inFrame DEBUG] ⚠️ Endpoint response did not contain valid token');
-      // eslint-disable-next-line no-console
-      console.log('[inFrame DEBUG] Response:', response.data);
+      console.error('[inFrame Security] The /inframe-token endpoint did not return a valid access token');
     } catch (err: any) {
       // eslint-disable-next-line no-console
-      console.error('[inFrame Security] Failed to get token from endpoint:', err.message);
-      // eslint-disable-next-line no-console
-      console.error('[inFrame DEBUG] Error details:', err.response?.data);
+      console.error('[inFrame Security] Failed to get access token from /inframe-token:', err?.message);
     }
 
-    // eslint-disable-next-line no-console
-    console.error('[inFrame Security] ❌ FALHA: Não foi possível obter access token');
-    // eslint-disable-next-line no-console
-    console.error('[inFrame Security] Verifique se o usuário está autenticado no Directus');
     return '';
   };
 
   /**
-   * Validate URL security before replacing variables
-   * MVP: Only validates HTTPS when using $token
+   * Validate URL security before replacing variables.
+   *
+   * Rules for URLs that contain a token variable ($token or $refresh_token):
+   * - the URL must be absolute and parseable;
+   * - the scheme must be https: (case-insensitive). There is NO exception for http://localhost or 127.0.0.1;
+   * - the token variable may not appear in the host name (it would leak through DNS).
+   *
+   * URLs without token variables are not restricted by this function (HTTP is allowed).
+   * The URL must already be normalized (see normalizeUrl in ItemDetail.vue, which adds https:// when the
+   * protocol is missing) and is validated as a template, before any variable is replaced.
    */
   const validateUrlSecurity = (url: string): SecurityValidationResult => {
     const result: SecurityValidationResult = {
@@ -108,35 +118,37 @@ export const useUrlVariableReplacement = () => {
       warnings: [],
     };
 
-    // Check if URL contains $token
-    const hasToken = url.includes('$token') || url.includes('$refresh_token');
+    if (!url || !TOKEN_VARIABLE_PATTERN.test(url)) {
+      return result;
+    }
 
-    if (hasToken) {
-      // CRITICAL: Token variables require HTTPS
-      if (!url.match(/\$token/) && !url.match(/\$refresh_token/)) {
-        // No token variables after all
-        return result;
-      }
+    let parsed: URL | null;
 
-      // Extract the base URL to check protocol
-      const urlParts = url.split('?');
-      const urlPattern = urlParts.length > 0 ? urlParts[0] : url;
+    try {
+      parsed = new URL(url.trim());
+    } catch {
+      parsed = null;
+    }
 
-      if (urlPattern && !urlPattern.startsWith('https://')) {
-        result.isValid = false;
+    if (!parsed || parsed.protocol !== 'https:') {
+      result.isValid = false;
+      result.errors.push(HTTPS_REQUIRED_ERROR);
+    } else if (TOKEN_VARIABLE_PATTERN.test(parsed.hostname)) {
+      result.isValid = false;
 
-        result.errors.push('🔒 SECURITY ERROR: $token variable can only be used with HTTPS URLs. HTTP is not allowed.');
-      }
-
-      // Add warning even for HTTPS
-      result.warnings.push(
-        '⚠️ WARNING: You are using $token in the URL. The token will be exposed in server logs, browser history, and referrer headers.',
-      );
-
-      result.warnings.push(
-        '⚠️ Only use this with fully trusted external sites. Consider using a backend proxy for better security.',
+      result.errors.push(
+        '🔒 SECURITY ERROR: $token variable cannot be used in the host name of the URL. Use it in the path or query string.',
       );
     }
+
+    // Add warning even for HTTPS
+    result.warnings.push(
+      '⚠️ WARNING: You are using $token in the URL. The token will be exposed in server logs, browser history, and referrer headers.',
+    );
+
+    result.warnings.push(
+      '⚠️ Only use this with fully trusted external sites. Consider using a backend proxy for better security.',
+    );
 
     return result;
   };
@@ -183,28 +195,18 @@ export const useUrlVariableReplacement = () => {
     error.value = null;
 
     try {
-      // Step 1: Validate security
+      // Step 1: Validate security (before fetching the token or replacing anything)
       const validation = validateUrlSecurity(url);
 
-      // Log warnings
-      if (validation.warnings.length > 0) {
-        validation.warnings.forEach((warning) => {
-          // eslint-disable-next-line no-console
-          console.warn('[inFrame Security]', warning);
-        });
-      }
+      validation.warnings.forEach((warning) => {
+        // eslint-disable-next-line no-console
+        console.warn('[inFrame Security]', warning);
+      });
 
-      // VALIDAÇÃO TEMPORARIAMENTE DESABILITADA PARA DEBUG
       // Block if validation failed
-      // if (!validation.isValid) {
-      //   validation.errors.forEach((err) => {
-      //     // eslint-disable-next-line no-console
-      //     console.error('[inFrame Security]', err);
-      //   });
-
-      //   error.value = validation.errors.join('\n');
-      //   throw new Error(validation.errors.join('\n'));
-      // }
+      if (!validation.isValid) {
+        throw new Error(validation.errors.join('\n'));
+      }
 
       // Step 2: Check if URL has variables
       const hasVariables = url.match(/\$\w+/);
@@ -230,42 +232,26 @@ export const useUrlVariableReplacement = () => {
 
         if (!token) {
           // eslint-disable-next-line no-console
-          console.error('[inFrame] ⚠️ AVISO: URL contém $token mas nenhum token foi encontrado!');
-          // eslint-disable-next-line no-console
-          console.error('[inFrame] A URL terá token vazio: token=');
-          // eslint-disable-next-line no-console
-          console.error('[inFrame] Verifique se o usuário está autenticado no Directus');
-        } else {
-          // Verificar se é um JWT válido
-          const jwtParts = token.split('.');
-
-          if (jwtParts.length === 3) {
-            // eslint-disable-next-line no-console
-            console.log('[inFrame] ✅ Token JWT válido encontrado');
-          } else {
-            // eslint-disable-next-line no-console
-            console.warn('[inFrame] ⚠️ Token encontrado mas não parece ser um JWT válido');
-          }
+          console.error(
+            '[inFrame] The URL contains $token but no access token was found; the variable will not be replaced',
+          );
         }
       }
 
       // Step 5: Replace variables
       const processedUrl = replaceVariables(url, user, token);
 
-      // Step 6: Log success (but not the full URL with token)
-      if (url.includes('$token')) {
-        // eslint-disable-next-line no-console
-        console.info('[inFrame] URL processed with token variable (not logging full URL for security)');
-      } else {
-        // eslint-disable-next-line no-console
-        console.info('[inFrame] URL processed:', processedUrl);
+      // Step 6: Defense in depth - the final URL that carries the token must still be HTTPS
+      if (token && !isHttpsUrl(processedUrl)) {
+        throw new Error(HTTPS_REQUIRED_ERROR);
       }
 
+      // Never log the processed URL: it may contain the token or personal data
       return processedUrl;
     } catch (err: any) {
-      error.value = err.message;
+      error.value = err?.message || String(err);
       // eslint-disable-next-line no-console
-      console.error('[inFrame] Error processing URL:', err);
+      console.error('[inFrame Security]', error.value);
       throw err;
     } finally {
       loading.value = false;

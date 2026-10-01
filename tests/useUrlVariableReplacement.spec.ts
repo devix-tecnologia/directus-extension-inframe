@@ -1,4 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { useApi } from '@directus/extensions-sdk';
 import { useUrlVariableReplacement } from '../src/utils/useUrlVariableReplacement';
 
 // Mock do SDK do Directus
@@ -219,6 +220,105 @@ describe('useUrlVariableReplacement', () => {
         expect(validation.isValid).toBe(true);
         expect(validation.warnings.length).toBeGreaterThan(0);
       });
+    });
+  });
+
+  describe('Security rules (task-007)', () => {
+    const TOKEN = 'test-access-token-xyz';
+
+    const getApiMock = () => vi.mocked(useApi).mock.results.at(-1)!.value as { get: ReturnType<typeof vi.fn> };
+
+    test.each([
+      ['http://insecure.example.com/report?auth=$token'],
+      ['HTTP://insecure.example.com/report?auth=$token'],
+      ['http://localhost:3000/report?auth=$token'],
+      ['http://127.0.0.1:8080/report?auth=$token'],
+      ['ftp://files.example.com/?auth=$token'],
+      ['javascript:alert(1)//$token'],
+      ['/relative/path?auth=$token'],
+      ['example.com/report?auth=$token'],
+      ['http://insecure.example.com/report?auth=$refresh_token'],
+    ])('should block token variable in non-HTTPS URL: %s', async (inputUrl) => {
+      const fresh = useUrlVariableReplacement();
+      const api = getApiMock();
+
+      await expect(fresh.processUrl(inputUrl)).rejects.toThrow(/SECURITY ERROR.*HTTPS/);
+      expect(fresh.error.value).toMatch(/SECURITY ERROR/);
+      expect(fresh.loading.value).toBe(false);
+      // The token must not even be requested for a blocked URL
+      expect(api.get).not.toHaveBeenCalledWith('/inframe-token');
+    });
+
+    test('should block $token in the host name', async () => {
+      const fresh = useUrlVariableReplacement();
+
+      await expect(fresh.processUrl('https://$token.attacker.example.com/')).rejects.toThrow(/host name/);
+    });
+
+    test('should accept HTTPS scheme in any letter case', async () => {
+      const result = await composable.processUrl('HTTPS://dashboard.example.com/report?auth=$token');
+
+      expect(result).toContain(`auth=${TOKEN}`);
+    });
+
+    test('should allow HTTP URLs without token variables', async () => {
+      const result = await composable.processUrl('http://intranet.example.com/report?user=$user_id');
+
+      expect(result).toBe('http://intranet.example.com/report?user=test-user-123');
+      expect(composable.error.value).toBeNull();
+    });
+
+    test('should never log the token', async () => {
+      const spies = (['log', 'info', 'warn', 'error', 'debug'] as const).map((method) =>
+        vi.spyOn(console, method).mockImplementation(() => {}),
+      );
+
+      try {
+        await composable.processUrl('https://dashboard.example.com/report?auth=$token&user=$user_id');
+        await expect(composable.processUrl('http://insecure.example.com/?auth=$token')).rejects.toThrow();
+
+        const logged = spies
+          .flatMap((spy) => spy.mock.calls.flat())
+          .map((arg) => {
+            try {
+              return typeof arg === 'string' ? arg : JSON.stringify(arg);
+            } catch {
+              return String(arg);
+            }
+          });
+
+        expect(logged.some((line) => line.includes(TOKEN))).toBe(false);
+        expect(logged.some((line) => line.includes('test-access'))).toBe(false);
+        expect(logged.some((line) => /inFrame DEBUG/.test(line))).toBe(false);
+      } finally {
+        spies.forEach((spy) => spy.mockRestore());
+      }
+    });
+
+    test('should not log the endpoint response when the token is invalid', async () => {
+      const shortToken = 'short-secret';
+      const fresh = useUrlVariableReplacement();
+      const api = getApiMock();
+
+      api.get.mockImplementation(async (path: string) =>
+        path === '/inframe-token' ? { data: { data: { access_token: shortToken } } } : { data: { id: 'u1' } },
+      );
+
+      const spies = (['log', 'info', 'warn', 'error', 'debug'] as const).map((method) =>
+        vi.spyOn(console, method).mockImplementation(() => {}),
+      );
+
+      try {
+        const result = await fresh.processUrl('https://dashboard.example.com/report?auth=$token');
+
+        // Invalid token is rejected (not sent to the iframe)
+        expect(result).not.toContain(shortToken);
+
+        const logged = spies.flatMap((spy) => spy.mock.calls.flat()).map((arg) => JSON.stringify(arg));
+        expect(logged.some((line) => line.includes(shortToken))).toBe(false);
+      } finally {
+        spies.forEach((spy) => spy.mockRestore());
+      }
     });
   });
 
