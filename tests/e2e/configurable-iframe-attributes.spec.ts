@@ -1,4 +1,5 @@
 import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
+import { dismissLicensePrompts } from './helpers/dismissLicensePrompts';
 
 /**
  * Credenciais de admin padrão do ambiente de teste
@@ -21,6 +22,8 @@ test.describe('Configurable Iframe Attributes', () => {
     sharedContext = await browser.newContext({
       baseURL,
     });
+
+    await dismissLicensePrompts(sharedContext, baseURL);
 
     sharedPage = await sharedContext.newPage();
 

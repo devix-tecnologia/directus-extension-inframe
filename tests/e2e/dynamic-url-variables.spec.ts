@@ -1,5 +1,6 @@
 import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
 import { DirectusE2EHelper } from './helpers/DirectusE2EHelper';
+import { dismissLicensePrompts } from './helpers/dismissLicensePrompts';
 
 /**
  * Credenciais de admin padrão do ambiente de teste
@@ -22,6 +23,7 @@ test.describe('Dynamic URL Variables', () => {
 
     // Criar contexto e página compartilhados
     sharedContext = await browser.newContext({ baseURL });
+    await dismissLicensePrompts(sharedContext, baseURL);
     sharedPage = await sharedContext.newPage();
 
     // Inicializar helper
@@ -128,11 +130,10 @@ test.describe('Dynamic URL Variables', () => {
       await urlField.fill('https://httpbin.org/get?test=grid');
       await sharedPage.waitForTimeout(500);
 
-      // Salvar
-      const saveButton = await sharedPage.waitForSelector('button:has-text("check"), button:has([data-icon="check"])', {
-        timeout: 5000,
-      });
+      // Salvar: ícone "check" no Directus 11, botão "Save" no Directus 12
+      const saveButton = sharedPage.getByRole('banner').getByRole('button', { name: /^(check|Save)$/ });
 
+      await expect(saveButton).toBeVisible({ timeout: 5000 });
       await saveButton.click();
       await sharedPage.waitForTimeout(3000);
 
