@@ -161,7 +161,7 @@ export const blockedDirectusVersions = ['11.10.1'];
 ### Problemas de Rede
 
 - Verificar configuração de rede no Docker
-- Testar conectividade: `curl http://localhost:18055/server/health`
+- Testar conectividade: `curl http://localhost:18055/server/ping`
 - Verificar firewall/proxy
 
 ## Referências

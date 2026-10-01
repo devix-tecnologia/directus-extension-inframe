@@ -230,31 +230,26 @@ async function waitForBootstrap(testSuiteId: string, retries = 90, delay = 2000)
     try {
       logger.debug(`Connection attempt ${i + 1}/${retries}`);
 
-      // Check if server is responding via docker exec
-      const healthCheck = await dockerHttpRequest('GET', '/server/health', undefined, undefined, testSuiteId);
+      // O healthcheck do container (/server/ping) já garante que o servidor responde.
+      // Não usamos /server/health aqui: no Directus 12 ele exige autenticação (403 para anônimos).
+      // O login confirma que o sistema está pronto (funciona no 11 e no 12).
+      const loginResponse = await dockerHttpRequest(
+        'POST',
+        '/auth/login',
+        {
+          email: testEnv.DIRECTUS_ADMIN_EMAIL,
+          password: testEnv.DIRECTUS_ADMIN_PASSWORD,
+        },
+        undefined,
+        testSuiteId,
+      );
 
-      if (healthCheck.status !== 'ok') {
-        throw new Error('Health check failed');
-      }
-
-      // Try to login to verify if the system is fully ready
-      try {
-        await dockerHttpRequest(
-          'POST',
-          '/auth/login',
-          {
-            email: testEnv.DIRECTUS_ADMIN_EMAIL,
-            password: testEnv.DIRECTUS_ADMIN_PASSWORD,
-          },
-          undefined,
-          testSuiteId,
-        );
-
-        logger.info('Directus is ready and accepting authentication');
-        return;
-      } catch {
+      if (!loginResponse?.data?.access_token) {
         throw new Error('System not ready for authentication');
       }
+
+      logger.info('Directus is ready and accepting authentication');
+      return;
     } catch (error: any) {
       if (i === retries - 1) {
         logger.error('Failed to connect to Directus', error);
