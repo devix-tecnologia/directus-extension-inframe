@@ -1,6 +1,6 @@
 # 🧩 Task 007 — Reativar validação de segurança de URLs com $token
 
-- Status: in-progress
+- Status: done
 - Type: fix
 - Assignee: sidarta-veloso
 
