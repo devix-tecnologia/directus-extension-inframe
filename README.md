@@ -53,6 +53,25 @@ using `$user_id` or `$user_email` whenever possible.**
 > [!WARNING] **Use `$token` ONLY with sites you fully trust and control.** The token can leak in server logs, browser
 > history, and `Referer` headers. The extension will block the use of `$token` in URLs that do not use HTTPS.
 
+#### URL rules enforced by the extension
+
+When the URL contains `$token` (or `$refresh_token`), the iframe is **not rendered** and a "Security Error" is shown
+unless all of these hold:
+
+- The URL is absolute and its scheme is `https://` (case-insensitive). URLs saved without a scheme (e.g.
+  `app.site.com/report?auth=$token`) are treated as `https://`.
+- `$token` is used in the path, query string or fragment, never in the host name (`https://$token.site.com` is blocked,
+  since the host name leaks through DNS).
+
+There are **no exceptions**: `http://localhost` and `http://127.0.0.1` are blocked too. For local development, serve the
+embedded app over HTTPS (e.g. with a local certificate) or test without `$token`. URLs without `$token` are not
+restricted and may use `http://`.
+
+The validation runs in the browser before the token is requested, and the token is never written to the browser console.
+
+> [!IMPORTANT] Versions 2.1.5 to 2.2.0 did not enforce this rule (the check was accidentally left disabled), so an
+> `http://` URL with `$token` received the token in clear text. Upgrade and review your inFrame items.
+
 ---
 
 ## 🛠️ Installation: Click & Go (Zero Config)
