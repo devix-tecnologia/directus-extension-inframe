@@ -231,39 +231,20 @@ test.describe('Dynamic URL Variables', () => {
     expect(createResult.ok).toBe(true);
     expect(createResult.itemId).toBeTruthy();
 
-    // Navegar diretamente para o item criado
-    await sharedPage.goto(`/admin/content/inframe/${createResult.itemId}`);
-    await sharedPage.waitForLoadState('networkidle');
+    // Abrir o item no módulo inFrame, onde a URL é processada e o iframe seria renderizado
+    await sharedPage.goto(`/admin/inframe/${createResult.itemId}?lastRoute=${createResult.itemId}`, {
+      waitUntil: 'networkidle',
+    });
 
-    // Aguardar um pouco para o iframe tentar carregar
-    await sharedPage.waitForTimeout(2000);
+    // Deve mostrar o erro de segurança do inFrame
+    await expect(sharedPage.locator('.error-state h2', { hasText: 'Erro de Segurança' })).toBeVisible({
+      timeout: 15000,
+    });
 
-    // Verificar se há mensagem de erro de segurança
-    // A mensagem pode estar em diferentes elementos dependendo da implementação
-    const securityErrorLocators = [
-      sharedPage.locator('text=/security/i'),
-      sharedPage.locator('text=/https/i'),
-      sharedPage.locator('text=/insecure/i'),
-      sharedPage.locator('text=/não seguro/i'),
-      sharedPage.locator('[class*="error"]'),
-      sharedPage.locator('[class*="warning"]'),
-    ];
+    await expect(sharedPage.locator('.error-state')).toContainText(/SECURITY ERROR.*HTTPS/);
 
-    // Verificar se pelo menos um dos localizadores encontra a mensagem de erro
-    let errorFound = false;
-
-    for (const locator of securityErrorLocators) {
-      const count = await locator.count();
-
-      if (count > 0) {
-        errorFound = true;
-        // eslint-disable-next-line no-console
-        console.log('✅ Security error found with locator:', locator);
-        break;
-      }
-    }
-
-    expect(errorFound).toBe(true);
+    // E não deve renderizar o iframe (o token não pode ir para a URL HTTP)
+    await expect(sharedPage.locator('.iframe-area iframe')).toHaveCount(0);
   });
 
   test('should allow HTTPS + $token', async () => {
@@ -320,8 +301,7 @@ test.describe('Dynamic URL Variables', () => {
     const iframeSrc = await iframe.getAttribute('src');
     expect(iframeSrc).toBeTruthy();
 
-    // eslint-disable-next-line no-console
-    console.log('🔍 iframe src:', iframeSrc);
+    // Não registrar o src: ele contém o token
 
     // Verificar que $token foi substituído
     expect(iframeSrc).not.toContain('$token');
